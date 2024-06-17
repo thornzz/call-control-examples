@@ -48,23 +48,24 @@ npm start
 
 If you are succeed, your browser will be opened automatically.
 
-
-
-##Binding IVR external application to dummy route point on PBX
+## Binding IVR external application to dummy route point on PBX
 
 Create new processing script assigned to "dialcode" and specify following implementation (script code)
 
+```
 using CallFlow;
 namespace dummy
 {
-    public class ExternalWebApp:ScriptBase<ExternalWebApp>
-    {
-        public override void Start()
-        {
-         
+public class ExternalWebApp:ScriptBase<ExternalWebApp>
+{
+public override void Start()
+{
+
         }
     }
+
 }
+```
 
 This script will answer the call and do nothing.
 Use Advanced/Parameters to assign the following properties:

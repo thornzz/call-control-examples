@@ -62,8 +62,13 @@ export class DialerAppService {
       const thesource: DnInfoModel = this.fullInfo.callcontrol
         .values()
         .next()?.value;
-      if (!thesource) {
-        throw new Error("DN is not founed");
+      if (
+        !thesource ||
+        (thesource.type !== "Wivr" && thesource.type !== "Wqueue")
+      ) {
+        throw new Error(
+          "Application binded to the wrong dn or dn is not founded, type should be Queue or Ivr"
+        );
       }
       this.sourceDn = thesource.dn ?? null;
       if (!this.sourceDn) {
@@ -75,6 +80,9 @@ export class DialerAppService {
       throw err;
     }
   }
+  /**
+   * App disconect from pbx method
+   */
   async disconenct() {
     this.externalApiSvc.disconnect();
     this.sourceDn = null;
@@ -84,7 +92,10 @@ export class DialerAppService {
     this.callQueue.clear();
     this.connected = false;
   }
-
+  /**
+   * receive app status
+   * @returns
+   */
   public status(): AppStatus {
     const callQueue = [];
     for (const item of this.callQueue.items) {
@@ -103,9 +114,13 @@ export class DialerAppService {
         : [],
     };
   }
-
-  public async webHookEventEmitter(webhook: WebhookEvent) {
-    if (!this.connected) {
+  /**
+   * webhook event handler
+   * @param webhook
+   * @returns
+   */
+  public async webHookEventHandler(webhook: WebhookEvent) {
+    if (!this.connected || !webhook?.event?.entity) {
       return;
     }
     const { dn, id, type } = determineOperation(webhook.event.entity);
@@ -126,7 +141,9 @@ export class DialerAppService {
                   return;
                 }
                 if (participant.status === PARTICIPANT_STATUS_CONNECTED) {
-                  // TODO
+                  /**
+                   * handle here connected participants
+                   */
                 }
               }
             }
@@ -145,7 +162,9 @@ export class DialerAppService {
         );
         if (dn === this.sourceDn) {
           if (type === PARTICIPANT_TYPE_UPDATE) {
-            // const participants = this.getParticipantsOfDn(this.sourceDn);
+            /**
+             * handle here removed participants
+             */
             if (removed.id) {
               this.incomingCallsParticipants.delete(removed.id);
               const participants = this.getParticipantsOfDn(this.sourceDn);

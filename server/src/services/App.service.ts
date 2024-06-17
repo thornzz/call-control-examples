@@ -6,6 +6,7 @@ import * as wav from "wav";
 import Koa, { ExtendableContext } from "koa";
 import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service";
 import { DialerAppService } from "./DialerExample/DialerApp.service";
+import * as path from "path";
 
 @injectable()
 @singleton()
@@ -46,10 +47,14 @@ export class AppService {
         const { filename, mimeType } = info;
         if (mimeType === "audio/wav") {
           config.wavSource = filename;
-          const outputWriter = new wav.FileWriter("output.wav", {
-            sampleRate: 8000,
-            channels: 1,
-          });
+          const pathToFile = path.resolve(__dirname, "../../", "public");
+          const outputWriter = new wav.FileWriter(
+            path.join(pathToFile, "output.wav"),
+            {
+              sampleRate: 8000,
+              channels: 1,
+            }
+          );
           file.pipe(outputWriter);
         }
       });

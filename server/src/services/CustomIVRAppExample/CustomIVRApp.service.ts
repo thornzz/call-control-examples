@@ -151,7 +151,7 @@ export class CustomIVRAppService {
     this.connected = true;
   }
 
-  public async webHookEventEmitter(webhook: WebhookEvent) {
+  public async webHookEventHandler(webhook: WebhookEvent) {
     if (!this.connected || !webhook?.event?.entity) {
       return;
     }
@@ -168,6 +168,9 @@ export class CustomIVRAppService {
             set(this.fullInfo!, webhook.event.entity, data);
             if (dn === this.sourceDn) {
               if (type === PARTICIPANT_TYPE_UPDATE) {
+                /**
+                 * handle here updated participants
+                 */
                 const participant = this.getParticipantOfDnById(dn, id);
                 if (!participant || !this.connected) {
                   return;
@@ -188,6 +191,9 @@ export class CustomIVRAppService {
         {
           if (dn === this.sourceDn) {
             if (type === PARTICIPANT_TYPE_UPDATE) {
+              /**
+               * handle here recieved DTMF strings
+               */
               const participant = this.getParticipantOfDnById(dn, id);
               if (
                 this.connected &&
@@ -213,6 +219,9 @@ export class CustomIVRAppService {
         );
         if (dn === this.sourceDn) {
           if (type === PARTICIPANT_TYPE_UPDATE) {
+            /**
+             * handle here removed participants
+             */
             if (removed?.id) {
               this.incomingCallsParticipants.delete(removed.id);
               this.gratefulShutDownStream(removed.id);
@@ -288,7 +297,7 @@ export class CustomIVRAppService {
         this.token.emit("cancel");
       }
       const readable = fs.createReadStream(
-        path.resolve(__dirname, "../../../", wavPath)
+        path.resolve(__dirname, "../../../", "public", wavPath)
       );
       const chunks: Buffer[] = [];
       readable.on("data", async (chunk: Buffer) => {
@@ -297,7 +306,9 @@ export class CustomIVRAppService {
       readable.on("end", async () => {
         try {
           if (isLoop) {
+            // Repeat stream from audio file
             while (true) {
+              console.log("loop");
               await writeSlicedAudioStream(
                 Buffer.concat(chunks),
                 outputWriter,

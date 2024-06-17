@@ -45,7 +45,7 @@ export default function init(koa: Koa) {
   });
 
   router.post("/api/webhook/ivr", async (ctx, next) => {
-    app.customIvrSvc.webHookEventEmitter(ctx.request.body);
+    app.customIvrSvc.webHookEventHandler(ctx.request.body);
     ctx.res.statusCode = 202;
     ctx.body = {
       message: "Accepted",
@@ -54,7 +54,7 @@ export default function init(koa: Koa) {
   });
 
   router.post("/api/webhook/dialer", async (ctx, next) => {
-    app.dialerAppSvc.webHookEventEmitter(ctx.request.body);
+    app.dialerAppSvc.webHookEventHandler(ctx.request.body);
     ctx.res.statusCode = 202;
     ctx.body = {
       message: "Accepted",
