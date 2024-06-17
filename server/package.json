@@ -8,7 +8,6 @@
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc -p .",
     "start": "ts-node ./src/index.ts",
-    "start-dev": "node --inspect -r ts-node/register src/index.ts",
     "tslint": "tslint --project tsconfig.json"
   },
   "devDependencies": {
