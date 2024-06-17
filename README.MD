@@ -1,9 +1,6 @@
-# Getting Started with Call Control API Example
+# Getting Started with External Call flow Application example
 
-This is a Fullstack Web Application for 3CX Call Control API demonstration.
-
-Server created utilizing Node.js and Koa.
-Client created utilizing React.
+This is a Full-stack Web Application for 3CX Call Control API demonstration.
 
 ## Installation
 
@@ -36,7 +33,7 @@ Got to the `server` folder and run following command:
 npm start
 ```
 
-If you are succeed, you will see `SERVER STARTED` message in the console
+If you are succeeded, you will see `SERVER STARTED` message in the console
 
 2. To run Client:
 
@@ -46,24 +43,22 @@ Open a separate command prompt instance and go to the `client` folder, then run 
 npm start
 ```
 
-If you are succeed, your browser will be opened automatically.
+If you are succeeded, your browser will be opened automatically.
 
 ## Binding IVR external application to dummy route point on PBX
 
-Create new processing script assigned to "dialcode" and specify following implementation (script code)
+Create new processing script assigned to "dial code" and specify following implementation (script code)
 
 ```
 using CallFlow;
 namespace dummy
 {
-public class ExternalWebApp:ScriptBase<ExternalWebApp>
-{
-public override void Start()
-{
-
+    public class dummy:ScriptBase<dummy>
+    {
+        public override void Start()
+        {
         }
     }
-
 }
 ```
 
@@ -76,18 +71,18 @@ set APPHOOK to http://localhost:8080/api/webhook/ivr
 if application is running in PBX local network (not straight on the PBX host)
 set APPHOOK to http://<ip_of_application_server_host>:8080/api/webhook/ivr
 
-then in the example UI (browser will be opened as specified above) click on "Custom IVR"
-enter pbx webaddress APPID and APPSECTRET in corresponding fields.
-Preass Connect button
+Then in the example UI (browser will be opened as specified above) click on "Custom IVR"
+enter PBX web address APPID and APPSECTRET in corresponding fields.
+Press Connect button
 If all is done correctly, configuration of external application configuration page will appear.
 Follow the instruction on the screen to configure IVR.
 It contains:
 prompt file and destinations for different DTMF digits.
 Press Update config
 Make call to RoutePoint number.
-Routepoint will answer and you should hear the prompt.
+RoutePoint will answer and you should hear the prompt.
 Press DTMF button, call should be redirected to the specified destination.
-If destination will not answer, prompt will be repeated and you can retry with other (or same) DTMF
+If destination does not answer, prompt will be repeated, and you can retry with other (or same) DTMF
 
-You can enter comma separated list of number at the borrom of the page and then press StartDialing.
+You can enter comma separated list of number at the bottom of the page and then press Start Dialing.
 The IVR application will make sequence of the calls to each number specified in the list (one by one)
