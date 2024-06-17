@@ -1,0 +1,39 @@
+{
+  "name": "outbound-caller-demo",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "author": "kka@3cx.com",
+  "license": "MIT",
+  "scripts": {
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
+    "build": "tsc -p .",
+    "start": "ts-node ./src/index.ts",
+    "start-dev": "node --inspect -r ts-node/register src/index.ts",
+    "tslint": "tslint --project tsconfig.json"
+  },
+  "devDependencies": {
+    "@types/busboy": "^1.5.4",
+    "@types/koa": "^2.15.0",
+    "@types/koa__cors": "^5.0.0",
+    "@types/koa__router": "^12.0.4",
+    "@types/node": "^20.14.2",
+    "@types/wav": "^1.0.4",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@koa/bodyparser": "^5.1.1",
+    "@koa/cors": "^5.0.0",
+    "@koa/router": "^12.0.1",
+    "axios": "^1.7.2",
+    "busboy": "^1.6.0",
+    "dotenv": "^16.4.5",
+    "koa": "^2.15.3",
+    "koa-body": "^6.0.1",
+    "node-cache": "^5.1.2",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.8.0",
+    "wav": "^1.0.2"
+  }
+}
