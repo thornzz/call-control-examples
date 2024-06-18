@@ -4,10 +4,8 @@ import { Navigate } from "react-router-dom";
 import { getStatusFunc } from "../shared";
 import { useState } from "react";
 import Error from "./error";
-
-type ConnectFormProps = {
-  appType: "ivr" | "dialer";
-};
+import { ConnectFormProps } from "../types";
+import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
 
 type Inputs = {
   pbxBase: string;
@@ -31,7 +29,11 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
   const onSubmit: SubmitHandler<Inputs> = async (submitData) => {
     setServerError(undefined);
     const enumeredType =
-      appType === "ivr" ? "0" : appType === "dialer" ? "1" : undefined;
+      appType === APP_TYPE_CUSTOM_IVR
+        ? "0"
+        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
+        ? "1"
+        : undefined;
     if (enumeredType === undefined) {
       return;
     }

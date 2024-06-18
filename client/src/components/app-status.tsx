@@ -1,11 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { getStatusFunc } from "../shared";
-import { CallParticipant } from "../types";
+import { CallParticipant, ConnectFormProps } from "../types";
 import { useNavigate } from "react-router-dom";
-
-type ConnectFormProps = {
-  appType: "ivr" | "dialer";
-};
+import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
 
 export default function AppStatus({ appType }: ConnectFormProps) {
   const navigate = useNavigate();
@@ -18,7 +15,11 @@ export default function AppStatus({ appType }: ConnectFormProps) {
 
   const onDisconnect = async () => {
     const enumeredType =
-      appType === "ivr" ? "0" : appType === "dialer" ? "1" : undefined;
+      appType === APP_TYPE_CUSTOM_IVR
+        ? "0"
+        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
+        ? "1"
+        : undefined;
     if (enumeredType === undefined) {
       return;
     }
@@ -37,7 +38,11 @@ export default function AppStatus({ appType }: ConnectFormProps) {
 
   const onDrop = async (participantId?: number) => {
     const enumeredType =
-      appType === "ivr" ? "0" : appType === "dialer" ? "1" : undefined;
+      appType === APP_TYPE_CUSTOM_IVR
+        ? "0"
+        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
+        ? "1"
+        : undefined;
     if (enumeredType === undefined || !participantId) {
       return;
     }
@@ -110,7 +115,7 @@ export default function AppStatus({ appType }: ConnectFormProps) {
 
   return (
     <div className="w-full whitespace-normal break-words rounded-lg border border-blue-gray-50 bg-white p-4 font-sans text-sm font-normal text-blue-gray-500 shadow-lg shadow-blue-gray-500/10 focus:outline-none">
-      {appType === "ivr" && (
+      {appType === APP_TYPE_CUSTOM_IVR && (
         <div className="pb-8">
           <span className="block font-sans text-base font-medium leading-relaxed tracking-normal text-blue-gray-900 antialiased transition-colors hover:text-pink-500">
             Application Config

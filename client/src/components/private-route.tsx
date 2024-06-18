@@ -3,10 +3,9 @@ import { Navigate } from "react-router-dom";
 import CustomIvr from "./custom-ivr";
 import Dialer from "./dialer";
 import { getStatusFunc } from "../shared";
+import { ConnectFormProps } from "../types";
+import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
 
-type ConnectFormProps = {
-  appType: "ivr" | "dialer";
-};
 export default function PrivateRoute({ appType }: ConnectFormProps) {
   const { data } = useQuery({
     queryFn: getStatusFunc(appType),
@@ -15,10 +14,12 @@ export default function PrivateRoute({ appType }: ConnectFormProps) {
   return (
     <>
       {data?.connected === true ? (
-        appType === "ivr" ? (
+        appType === APP_TYPE_CUSTOM_IVR ? (
           <CustomIvr />
         ) : (
-          appType === "dialer" && <Dialer appType="dialer" />
+          appType === APP_TYPE_OUTBOUND_CAMPAIGN && (
+            <Dialer appType={APP_TYPE_OUTBOUND_CAMPAIGN} />
+          )
         )
       ) : (
         <Navigate replace to={`/${appType}/connect`} />

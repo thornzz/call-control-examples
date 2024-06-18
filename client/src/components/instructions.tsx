@@ -1,12 +1,10 @@
 import { useState } from "react";
+import { ConnectFormProps } from "../types";
 
 export default function Instructions({
   text,
   appType,
-}: {
-  text: string;
-  appType: "ivr" | "dialer";
-}) {
+}: ConnectFormProps & { text: string }) {
   const [tooltipShown, toggle] = useState(false);
   return (
     <div className="w-full mx-auto bg-slate-900 shadow-lg rounded-lg">

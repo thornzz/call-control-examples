@@ -7,6 +7,7 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Nav from "./components/nav";
 import ConnectForm from "./components/connect-form";
 import PrivateRoute from "./components/private-route";
+import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "./constants";
 
 const router = createBrowserRouter([
   {
@@ -19,19 +20,19 @@ const router = createBrowserRouter([
       },
       {
         path: "/ivr",
-        element: <PrivateRoute appType="ivr" />,
+        element: <PrivateRoute appType={APP_TYPE_CUSTOM_IVR} />,
       },
       {
-        path: "/dialer",
-        element: <PrivateRoute appType="dialer" />,
+        path: "/campaign",
+        element: <PrivateRoute appType={APP_TYPE_OUTBOUND_CAMPAIGN} />,
       },
       {
         path: "/ivr/connect",
-        element: <ConnectForm appType="ivr" />,
+        element: <ConnectForm appType={APP_TYPE_CUSTOM_IVR} />,
       },
       {
-        path: "/dialer/connect",
-        element: <ConnectForm appType="dialer" />,
+        path: "/campaign/connect",
+        element: <ConnectForm appType={APP_TYPE_OUTBOUND_CAMPAIGN} />,
       },
     ],
   },

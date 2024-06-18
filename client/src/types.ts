@@ -1,3 +1,5 @@
+import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "./constants";
+
 export type AppStatus = {
   sorceDn: string | null;
   connected: boolean;
@@ -20,3 +22,7 @@ export interface CallParticipant {
   legid?: number;
   dn?: string | null;
 }
+
+export type ConnectFormProps = {
+  appType: typeof APP_TYPE_OUTBOUND_CAMPAIGN | typeof APP_TYPE_CUSTOM_IVR;
+};

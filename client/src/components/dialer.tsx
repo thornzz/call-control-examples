@@ -3,12 +3,11 @@ import AppStatus from "./app-status";
 import { useState } from "react";
 import Error from "./error";
 import Instructions from "./instructions";
+import { ConnectFormProps } from "../types";
+import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
 
 type Inputs = {
   sources: string;
-};
-type ConnectFormProps = {
-  appType: "ivr" | "dialer";
 };
 export default function Dialer({ appType }: ConnectFormProps) {
   const {
@@ -20,7 +19,11 @@ export default function Dialer({ appType }: ConnectFormProps) {
 
   const onSubmit: SubmitHandler<Inputs> = async (submitData) => {
     const enumeredType =
-      appType === "ivr" ? "0" : appType === "dialer" ? "1" : undefined;
+      appType === APP_TYPE_CUSTOM_IVR
+        ? "0"
+        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
+        ? "1"
+        : undefined;
     if (enumeredType === undefined) {
       return;
     }
@@ -50,12 +53,12 @@ export default function Dialer({ appType }: ConnectFormProps) {
   return (
     <div
       className={`bg-white ${
-        appType === "dialer" && "px-8"
+        appType === "campaign" && "px-8"
       } pt-6 pb-8 mb-4 flex flex-row gap-10 my-2`}
     >
       <form
         className={`flex flex-col gap3 ${
-          appType === "dialer" ? "w-1/2" : "w-full"
+          appType === "campaign" ? "w-1/2" : "w-full"
         }`}
         onSubmit={handleSubmit(onSubmit)}
       >
@@ -82,13 +85,13 @@ export default function Dialer({ appType }: ConnectFormProps) {
           Start Dialing
         </button>
       </form>
-      {appType === "dialer" && (
+      {appType === APP_TYPE_OUTBOUND_CAMPAIGN && (
         <div className="flex flex-col gap-5 w-1/2">
           <Instructions
-            appType="dialer"
+            appType={APP_TYPE_OUTBOUND_CAMPAIGN}
             text="This application represents simple Outbound Campaign, you may specify comma-separated phone numbers and run dialing campaign"
           />
-          <AppStatus appType="dialer" />
+          <AppStatus appType={APP_TYPE_OUTBOUND_CAMPAIGN} />
         </div>
       )}
     </div>

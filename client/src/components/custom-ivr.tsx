@@ -6,6 +6,7 @@ import AppStatus from "./app-status";
 import { getStatusFunc } from "../shared";
 import { useEffect, useState } from "react";
 import Error from "./error";
+import { APP_TYPE_CUSTOM_IVR } from "../constants";
 
 type Inputs = {
   wavSource: string;
@@ -14,8 +15,8 @@ type Inputs = {
 
 export default function CustomIvr() {
   const { data, refetch } = useQuery({
-    queryFn: getStatusFunc("ivr"),
-    queryKey: [`statusivr`],
+    queryFn: getStatusFunc(APP_TYPE_CUSTOM_IVR),
+    queryKey: [`status${APP_TYPE_CUSTOM_IVR}`],
   });
 
   const {
@@ -120,7 +121,7 @@ export default function CustomIvr() {
             Update Config
           </button>
         </form>
-        <Dialer appType="ivr" />
+        <Dialer appType={APP_TYPE_CUSTOM_IVR} />
       </div>
       <div className="flex gap-10 flex-col w-2/5">
         <Instructions
@@ -130,7 +131,7 @@ export default function CustomIvr() {
           outgoing calls from Custom IVR. You may specify comma-separated phone numbers and run dialing campaign."
           appType="ivr"
         />
-        <AppStatus appType="ivr" />
+        <AppStatus appType={APP_TYPE_CUSTOM_IVR} />
       </div>
     </section>
   );

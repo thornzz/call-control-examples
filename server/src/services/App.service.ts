@@ -22,7 +22,7 @@ export class AppService {
   ): Promise<void> {
     if (intId === AppType.CustomIvr) {
       await this.customIvrSvc.connect(body, intId);
-    } else if (intId === AppType.Dialer) {
+    } else if (intId === AppType.Campaign) {
       await this.dialerAppSvc.connect(body, intId);
     } else {
       throw new Error("Unknown application type");
@@ -32,7 +32,7 @@ export class AppService {
   public async disconnectApplication(intId: AppType): Promise<void> {
     if (intId === AppType.CustomIvr) {
       await this.customIvrSvc.disconenct();
-    } else if (intId === AppType.Dialer) {
+    } else if (intId === AppType.Campaign) {
       await this.dialerAppSvc.disconenct();
     } else {
       throw new Error("Unknown application type");
@@ -79,7 +79,7 @@ export class AppService {
   }
 
   public async dropCall(body: DropRequest, intId: AppType): Promise<void> {
-    if (intId === AppType.Dialer) {
+    if (intId === AppType.Campaign) {
       this.dialerAppSvc.dropCall(body.participantId);
     } else if (intId === AppType.CustomIvr) {
       this.customIvrSvc.dropCall(body.participantId);
@@ -92,7 +92,7 @@ export class AppService {
     dialingSetup: DialingSetup,
     intId: AppType
   ): Promise<void> {
-    if (intId === AppType.Dialer) {
+    if (intId === AppType.Campaign) {
       this.dialerAppSvc.startDialing(dialingSetup);
     } else if (intId === AppType.CustomIvr) {
       this.customIvrSvc.startDialing(dialingSetup);

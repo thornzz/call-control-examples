@@ -53,7 +53,7 @@ export default function init(koa: Koa) {
     await next();
   });
 
-  router.post("/api/webhook/dialer", async (ctx, next) => {
+  router.post("/api/webhook/campaign", async (ctx, next) => {
     app.dialerAppSvc.webHookEventHandler(ctx.request.body);
     ctx.res.statusCode = 202;
     ctx.body = {
@@ -85,14 +85,14 @@ export default function init(koa: Koa) {
     await next();
   });
 
-  router.get("/api/dialer/status", async (ctx, next) => {
+  router.get("/api/campaign/status", async (ctx, next) => {
     const status = app.dialerAppSvc.status();
     ctx.res.statusCode = 200;
     ctx.body = status;
     await next();
   });
 
-  router.get("/api/dialer/status", async (ctx, next) => {
+  router.get("/api/campaign/status", async (ctx, next) => {
     const status = app.dialerAppSvc.status();
     ctx.res.statusCode = 200;
     ctx.body = status;
