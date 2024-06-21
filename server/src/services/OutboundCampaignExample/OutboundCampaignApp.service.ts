@@ -84,7 +84,7 @@ export class OutboundCampaignService {
   /**
    * App disconect from pbx method
    */
-  async disconenct() {
+  async disconnect() {
     this.externalApiSvc.disconnect();
     this.sourceDn = null;
     this.incomingCallsParticipants.clear();

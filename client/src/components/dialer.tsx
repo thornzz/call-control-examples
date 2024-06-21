@@ -1,4 +1,5 @@
 import { APP_TYPE_DIALER } from "../constants";
+import AppStatus from "./app-status";
 import Dialpad from "./dialpad";
 import Instructions from "./instructions";
 
@@ -13,6 +14,7 @@ export default function Dialer() {
           appType={APP_TYPE_DIALER}
           text="This application represents simple Dialer, you may use it like physical phone device. You also free to choose which device from list you will select for call handling"
         />
+        <AppStatus appType={APP_TYPE_DIALER} />
       </div>
     </div>
   );

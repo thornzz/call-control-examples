@@ -13,12 +13,7 @@ import {
   WebhookEvent,
 } from "../../types";
 import { ExternalApiService } from "../ExternalApi.service";
-import {
-  AppType,
-  PARTICIPANT_CONTROL_DROP,
-  PARTICIPANT_STATUS_CONNECTED,
-  PARTICIPANT_TYPE_UPDATE,
-} from "../../constants";
+import { AppType, PARTICIPANT_TYPE_UPDATE } from "../../constants";
 import { determineOperation, fullInfoToObject, set } from "../../utils";
 
 @injectable()
@@ -86,6 +81,17 @@ export class dialerAppService {
       this.externalApiSvc.disconnect();
       throw e;
     }
+  }
+  /**
+   * App disconect from pbx method
+   */
+  async disconnect() {
+    this.externalApiSvc.disconnect();
+    this.sourceDn = null;
+    this.fullInfo?.callcontrol.clear();
+    this.deviceMap.clear();
+    this.activeDeviceId = null;
+    this.connected = false;
   }
 
   public status(): AppStatus {

@@ -49,7 +49,9 @@ export class AppService {
     if (intId === AppType.CustomIvr) {
       await this.customIvrSvc.disconenct();
     } else if (intId === AppType.Campaign) {
-      await this.outboundCampaignSvc.disconenct();
+      await this.outboundCampaignSvc.disconnect();
+    } else if (intId === AppType.Dialer) {
+      await this.dialerAppSvc.disconnect();
     } else {
       throw new Error("Unknown application type");
     }

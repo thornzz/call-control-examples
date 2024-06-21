@@ -82,7 +82,6 @@ export default function initMainRouting(koa: Koa) {
     try {
       const intId = parseFloat(queryParam as string);
       const resp = await app.controlParticipant(ctx.request.body, intId);
-      console.log(resp);
       ctx.res.statusCode = 204;
       await next();
     } catch (err: any) {
