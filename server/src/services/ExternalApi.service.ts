@@ -14,7 +14,13 @@ export class ExternalApiService {
   controller: AbortController | null = null;
 
   constructor(@inject(CacheService) private cacheService: CacheService) {}
-
+  /**
+   * Setup service for particular application
+   * Each application has its own API service, credentials, token ,etc
+   * So this service has per-instance lifecycle
+   * @param connetConfig
+   * @param appType
+   */
   public setup(connetConfig: ConnectAppRequest, appType: AppType) {
     this.appType = appType;
 
@@ -39,7 +45,10 @@ export class ExternalApiService {
       this.cacheService.clearCache(this.appType);
     }
   }
-
+  /**
+   * API connect for recieve or refresh (if cash or token expired) access_token
+   * @returns
+   */
   private async receiveToken() {
     if (this.appType === null) {
       throw Error("App not configured");
@@ -82,7 +91,9 @@ export class ExternalApiService {
     }
     return token;
   }
-
+  /**
+   * Abort request with node Abort Controller. It's needed for streams shutdown
+   */
   public abortRequest() {
     this.controller?.abort();
     console.log("REQUEST ABORTED");
@@ -91,7 +102,13 @@ export class ExternalApiService {
   public getFullInfo() {
     return this.fetch!.get("/callcontrol");
   }
-
+  /**
+   * API POST Audio stream (made with native node http/https clients because of complexity)
+   * @param source
+   * @param participantId
+   * @param body
+   * @returns
+   */
   public async postAudioStream(
     source: string,
     participantId: number,
@@ -154,7 +171,12 @@ export class ExternalApiService {
     }
     return request;
   }
-
+  /**
+   * API get audio stream
+   * @param source
+   * @param participantId
+   * @returns
+   */
   public getAudioStream(source: string, participantId: number) {
     return this.fetch!.get(
       "/callcontrol" +
@@ -167,7 +189,12 @@ export class ExternalApiService {
       }
     );
   }
-
+  /**
+   *
+   * @param source API makes call from DN without device specifying
+   * @param dest
+   * @returns
+   */
   public makeCall(source: string, dest: string) {
     const url = "/callcontrol" + `/${source}` + "/makecall";
     return this.fetch!.post(
@@ -182,7 +209,13 @@ export class ExternalApiService {
       }
     );
   }
-
+  /**
+   * API Makes call from device
+   * @param source
+   * @param deviceId
+   * @param dest
+   * @returns
+   */
   public makeCallFromDevice(source: string, deviceId: string, dest: string) {
     const url =
       "/callcontrol" + `/${source}` + "/devices" + `/${deviceId}` + "/makecall";
@@ -199,7 +232,14 @@ export class ExternalApiService {
       }
     );
   }
-
+  /**
+   * API Control Participant
+   * @param source
+   * @param participantId
+   * @param method
+   * @param destination
+   * @returns
+   */
   public controlParticipant(
     source: string,
     participantId: number,
@@ -213,7 +253,7 @@ export class ExternalApiService {
       `/${participantId}` +
       `/${method}`;
 
-    const body = destination ? { destination } : {};
+    const body = destination ? { destination, reason: "ForwardAll" } : {};
     return this.fetch!.post(url, body, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -221,6 +261,11 @@ export class ExternalApiService {
     });
   }
 
+  /**
+   * request for incremental update of full info entity
+   * @param webhook
+   * @returns
+   */
   public requestUpdatedEntityFromWebhookEvent(webhook: WebhookEvent) {
     return this.fetch!.get(webhook.event.entity);
   }

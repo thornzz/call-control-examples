@@ -1,12 +1,13 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
-import Dialer from "./dialer";
+import OutboundCampaign from "./outbound-campaign";
 import Instructions from "./instructions";
 import AppStatus from "./app-status";
 import { getStatusFunc } from "../shared";
 import { useEffect, useState } from "react";
 import Error from "./error";
 import { APP_TYPE_CUSTOM_IVR } from "../constants";
+import ButtonForms from "./common/button-forms";
 
 type Inputs = {
   wavSource: string;
@@ -16,7 +17,7 @@ type Inputs = {
 export default function CustomIvr() {
   const { data, refetch } = useQuery({
     queryFn: getStatusFunc(APP_TYPE_CUSTOM_IVR),
-    queryKey: [`status${APP_TYPE_CUSTOM_IVR}`],
+    queryKey: ["status", APP_TYPE_CUSTOM_IVR],
   });
 
   const {
@@ -113,15 +114,14 @@ export default function CustomIvr() {
           <div className="-mx-3 md:flex mb-2 py-5 flex-wrap gap-2 w-full">
             {renderFunction()}
           </div>
-          <button
-            disabled={isSubmitting}
-            className="cursor-pointer rounded w-[150px] h-[36px] mt-3 bg-gray-800 hover:bg-gray-700 text-white transform active:scale-95 transition-transform"
+          <ButtonForms
             type="submit"
-          >
-            Update Config
-          </button>
+            disabled={isSubmitting}
+            isLoading={isSubmitting}
+            label="Update Config"
+          />
         </form>
-        <Dialer appType={APP_TYPE_CUSTOM_IVR} />
+        <OutboundCampaign appType={APP_TYPE_CUSTOM_IVR} />
       </div>
       <div className="flex gap-10 flex-col w-2/5">
         <Instructions

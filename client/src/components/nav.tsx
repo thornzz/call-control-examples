@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { getStatusFunc } from "../shared";
-import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
+import {
+  APP_TYPE_CUSTOM_IVR,
+  APP_TYPE_DIALER,
+  APP_TYPE_OUTBOUND_CAMPAIGN,
+} from "../constants";
 
 export default function Nav() {
   const navigate = useNavigate();
@@ -10,11 +14,15 @@ export default function Nav() {
   };
   const ivr = useQuery({
     queryFn: getStatusFunc(APP_TYPE_CUSTOM_IVR),
-    queryKey: [`status${APP_TYPE_CUSTOM_IVR}`],
+    queryKey: ["status", APP_TYPE_CUSTOM_IVR],
   });
   const campaign = useQuery({
     queryFn: getStatusFunc(APP_TYPE_OUTBOUND_CAMPAIGN),
-    queryKey: [`status${APP_TYPE_OUTBOUND_CAMPAIGN}`],
+    queryKey: ["status", APP_TYPE_OUTBOUND_CAMPAIGN],
+  });
+  const dialer = useQuery({
+    queryFn: getStatusFunc(APP_TYPE_DIALER),
+    queryKey: ["status", APP_TYPE_DIALER],
   });
 
   function renderStatus(connected?: boolean) {
@@ -110,7 +118,7 @@ export default function Nav() {
               Automated dialing of the participant list
             </td>
           </tr>
-          {/* <tr
+          <tr
             className="border-b border-dashed last:border-b-0 cursor-pointer"
             onClick={() => handleRowClick("/dialer")}
           >
@@ -136,12 +144,12 @@ export default function Nav() {
               </div>
             </td>
             <td className="p-3 pl-0 text-start font-semibold">
-              {renderStatus(campaign.data?.connected)}
+              {renderStatus(dialer.data?.connected)}
             </td>
             <td className="p-3 pl-0 text-start font-semibold">
               Simple Dialing console
             </td>
-          </tr> */}
+          </tr>
         </tbody>
       </table>
     </div>

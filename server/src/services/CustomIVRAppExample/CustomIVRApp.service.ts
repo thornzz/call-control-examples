@@ -1,6 +1,7 @@
 import {
   AppStatus,
   CallControl,
+  CallControlParticipantAction,
   CallParticipant,
   ConnectAppRequest,
   DNDevice,
@@ -57,10 +58,11 @@ export class CustomIVRAppService {
 
   constructor(
     @inject(CacheService) private cacheSvc: CacheService,
-    // @inject(ApiService) private apiSvc: ApiService
     @inject(ExternalApiService) private externalApiSvc: ExternalApiService
   ) {}
-
+  /**
+   * Disconnect application
+   */
   async disconenct() {
     for (const [key, val] of this.streamEstablishedCallsParticipants) {
       this.gratefulShutDownStream(key);
@@ -85,7 +87,7 @@ export class CustomIVRAppService {
         connectConfig.appId === undefined ||
         connectConfig.appSecret === undefined ||
         connectConfig.pbxBase === undefined ||
-        appType === undefined
+        appType !== AppType.CustomIvr
       ) {
         throw new Error("Configuration is broken");
       }
@@ -115,10 +117,18 @@ export class CustomIVRAppService {
     }
   }
 
+  /**
+   * Ivr config update
+   * prompt, dtmf values
+   * @param config
+   */
   public setup(config: Record<string, any>) {
     this.config = config as TCustomIVRConfig;
   }
-
+  /**
+   * App status
+   * @returns
+   */
   public status(): AppStatus {
     const callQueue = [];
     for (const item of this.callQueue.items) {
@@ -139,18 +149,11 @@ export class CustomIVRAppService {
         : [],
     };
   }
-
-  public async start() {
-    if (!this.config) {
-      throw new Error("Config is missing");
-    }
-
-    const fullInfo = await this.externalApiSvc.getFullInfo();
-    this.fullInfo = fullInfoToObject(fullInfo.data);
-
-    this.connected = true;
-  }
-
+  /**
+   * event handler for incoming webhooks from PBX
+   * @param webhook
+   * @returns
+   */
   public async webHookEventHandler(webhook: WebhookEvent) {
     if (!this.connected || !webhook?.event?.entity) {
       return;
@@ -244,6 +247,12 @@ export class CustomIVRAppService {
     return dn ? this.fullInfo?.callcontrol.get(dn)?.participants : undefined;
   }
 
+  /**
+   * Starts handling stream for participant
+   * getting audio stream from participant + post stream from file
+   * @param participant
+   * @returns
+   */
   public async handleParticipantPromptStream(participant: CallParticipant) {
     if (!this.config) {
       throw new Error("Invalid Config");
@@ -283,7 +292,13 @@ export class CustomIVRAppService {
       }
     }
   }
-
+  /**
+   * Writing from file to writeable stream
+   * @param wavPath
+   * @param participantId
+   * @param needRefrsh
+   * @param isLoop
+   */
   private startStreamFromFile(
     wavPath: string,
     participantId: number,
@@ -326,7 +341,10 @@ export class CustomIVRAppService {
       });
     }
   }
-
+  /**
+   * Stop writing to writeable stream and Shutdown all streams for participant
+   * @param participantId
+   */
   private gratefulShutDownStream(participantId: number) {
     const stream = this.streamEstablishedCallsParticipants.get(participantId);
     if (stream) {
@@ -340,7 +358,11 @@ export class CustomIVRAppService {
         });
     }
   }
-
+  /**
+   * handles incoming dtmfs from participant
+   * @param participant
+   * @param dtmfCode
+   */
   public async handleDTMFInput(participant: CallParticipant, dtmfCode: string) {
     if (!this.config || !this.sourceDn) {
       throw new Error("Config is missing");
@@ -385,17 +407,26 @@ export class CustomIVRAppService {
       console.log("REDIRECTION NUMBER IS NOT DEFINED");
     }
   }
-
+  /**
+   * push number to call queue for campaign
+   * @param str
+   */
   pushNumbersToQueue(str: string) {
     this.callQueue.push(str);
   }
-
+  /**
+   *  start prepare queue and start makeCalls
+   * @param dialingSetup
+   */
   public startDialing(dialingSetup: DialingSetup) {
     const arr = dialingSetup.sources.split(",");
     arr.forEach((destNumber) => this.pushNumbersToQueue(destNumber));
     this.makeCallsToDst(); // TODO LET IT BE WITHOUT AWAITING PROMISE TO NOT BLOCK
   }
-
+  /**
+   * makes calls from call queue
+   * @returns
+   */
   public async makeCallsToDst() {
     if (!this.sourceDn || !this.connected) {
       throw Error("Source Dn is not defined or application is not connected");
@@ -435,8 +466,16 @@ export class CustomIVRAppService {
       // queue is empty
     }
   }
-
-  public async dropCall(participantId: number) {
+  /**
+   * drop call
+   * @param participantId
+   * @returns
+   */
+  public controlParticipant(
+    participantId: number,
+    action: CallControlParticipantAction,
+    destination?: string
+  ) {
     if (!this.sourceDn) {
       throw Error("Source Dn is not defined or application is not connected");
     }
@@ -448,15 +487,12 @@ export class CustomIVRAppService {
     if (!participant) {
       return;
     }
-    try {
-      await this.externalApiSvc.controlParticipant(
-        this.sourceDn,
-        participant.id!,
-        PARTICIPANT_CONTROL_DROP
-      );
-    } catch (e) {
-      // no need to return error if unsuccesful drop
-      console.log(e);
-    }
+    return this.externalApiSvc.controlParticipant(
+      this.sourceDn,
+      participant.id!,
+      action,
+      destination
+    );
+    // no need to return error if unsuccesful drop
   }
 }

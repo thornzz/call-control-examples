@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Navigate } from "react-router-dom";
-import { getStatusFunc } from "../shared";
+import { getEnumeredType, getStatusFunc } from "../shared";
 import { useState } from "react";
 import Error from "./error";
 import { ConnectFormProps } from "../types";
-import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
+import ButtonForms from "./common/button-forms";
 
 type Inputs = {
   pbxBase: string;
@@ -23,17 +23,12 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
 
   const { data, refetch } = useQuery({
     queryFn: getStatusFunc(appType),
-    queryKey: [`status${appType}`],
+    queryKey: ["status", appType],
   });
 
   const onSubmit: SubmitHandler<Inputs> = async (submitData) => {
     setServerError(undefined);
-    const enumeredType =
-      appType === APP_TYPE_CUSTOM_IVR
-        ? "0"
-        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
-        ? "1"
-        : undefined;
+    const enumeredType = getEnumeredType(appType);
     if (enumeredType === undefined) {
       return;
     }
@@ -96,7 +91,7 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
             )}
             <label htmlFor="appSecret">APP Secret</label>
             <input
-              className="w-full h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
+              className="w-full h-[36px] mb-2 rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
               placeholder="APPSEC3123klJKSADjasdk"
               id="appSecret"
               {...register("appSecret", { required: "Required" })}
@@ -104,13 +99,12 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
             {errors.appSecret && (
               <p className="text-red-500 text-sm">{errors.appSecret.message}</p>
             )}
-            <button
-              disabled={isSubmitting}
+            <ButtonForms
               type="submit"
-              className="rounded w-1/4 h-[45px] mt-3 bg-gray-800 hover:bg-gray-700 text-white disabled:bg-gray-200 disabled:text-gray-500"
-            >
-              Connect
-            </button>
+              disabled={isSubmitting}
+              isLoading={isSubmitting}
+              label="Connect"
+            />
           </form>
         </div>
       )}

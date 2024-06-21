@@ -2,6 +2,7 @@ import { Queue, determineOperation, fullInfoToObject, set } from "../../utils";
 import {
   AppStatus,
   CallControl,
+  CallControlParticipantAction,
   CallParticipant,
   ConnectAppRequest,
   DNDevice,
@@ -22,7 +23,7 @@ import axios from "axios";
 
 @injectable()
 @singleton()
-export class DialerAppService {
+export class OutboundCampaignService {
   private fullInfo?: CallControl;
   private sourceDn: string | null = null;
 
@@ -45,7 +46,7 @@ export class DialerAppService {
       !connectConfig.appId ||
       !connectConfig.appSecret ||
       !connectConfig.pbxBase ||
-      appType === undefined
+      appType !== AppType.Campaign
     ) {
       throw new Error("Configuration is broken");
     }
@@ -136,15 +137,9 @@ export class DialerAppService {
             set(this.fullInfo!, webhook.event.entity, data);
             if (dn === this.sourceDn) {
               if (type === PARTICIPANT_TYPE_UPDATE) {
-                const participant = this.getParticipantOfDnById(dn, id);
-                if (!participant || !this.connected) {
-                  return;
-                }
-                if (participant.status === PARTICIPANT_STATUS_CONNECTED) {
-                  /**
-                   * handle here connected participants
-                   */
-                }
+                /**
+                 * handle here update of participants
+                 */
               }
             }
           } catch (err: unknown) {
@@ -189,13 +184,20 @@ export class DialerAppService {
   private getParticipantsOfDn(dn?: string | null) {
     return dn ? this.fullInfo?.callcontrol.get(dn)?.participants : undefined;
   }
-
+  /**
+   * start prepare queue and start makeCalls
+   * @param dialingSetup
+   */
   public startDialing(dialingSetup: DialingSetup) {
     const arr = dialingSetup.sources.split(",");
     arr.forEach((destNumber) => this.pushNumbersToQueue(destNumber));
     this.makeCallsToDst();
   }
 
+  /**
+   * makes calls from call queue
+   * @returns
+   */
   public async makeCallsToDst() {
     if (!this.sourceDn || !this.connected) {
       throw Error("Source Dn is not defined or application is not connected");
@@ -235,7 +237,17 @@ export class DialerAppService {
       // queue is empty
     }
   }
-  public async dropCall(participantId: number) {
+
+  /**
+   * drop call
+   * @param participantId
+   * @returns
+   */
+  public controlParticipant(
+    participantId: number,
+    action: CallControlParticipantAction,
+    destination?: string
+  ) {
     if (!this.sourceDn) {
       throw Error("Source Dn is not defined or application is not connected");
     }
@@ -247,15 +259,12 @@ export class DialerAppService {
     if (!participant) {
       return;
     }
-    try {
-      await this.externalApiSvc.controlParticipant(
-        this.sourceDn,
-        participant.id!,
-        PARTICIPANT_CONTROL_DROP
-      );
-    } catch (e) {
-      // no need to return error if unsuccesful drop
-      console.log(e);
-    }
+
+    return this.externalApiSvc.controlParticipant(
+      this.sourceDn,
+      participant.id!,
+      action,
+      destination
+    );
   }
 }

@@ -12,15 +12,27 @@ export class CacheService {
   public cache = new NodeCache();
   private TTL_ACCESS_TOKEN = 1800;
 
+  /**
+   * Clear cache for particular application
+   * @param appType
+   */
   clearCache(appType: AppType) {
     this.cache.del(appType); // remove credentials
     this.cache.del(appType + "Token"); // remove token
   }
-
+  /**
+   * set credentials for particular application
+   * @param config
+   * @param key
+   */
   setAppCredentials(config: ConnectAppRequest, key: AppType) {
     this.cache.set(key, config);
   }
-
+  /**
+   * get base pbx url for particular application
+   * @param appType
+   * @returns
+   */
   getAppBaseUrl(appType: AppType) {
     const appSett = this.cache.get<ConnectAppRequest>(appType);
     if (!appSett?.pbxBase) {
@@ -28,16 +40,28 @@ export class CacheService {
     }
     return appSett.pbxBase;
   }
-
+  /**
+   * get PBX access_token for particular application
+   * @param appType
+   * @returns
+   */
   getAppAccessToken(appType: AppType) {
     const token = this.cache.get<string>(appType + "Token");
     return token;
   }
-
+  /**
+   * Set PBX access_token for particular application
+   * @param appType
+   * @param token
+   */
   setAppAccessToken(appType: AppType, token: string) {
     this.cache.set(appType + "Token", "Bearer " + token, this.TTL_ACCESS_TOKEN);
   }
-
+  /**
+   * get APPID of particuar application
+   * @param appType
+   * @returns
+   */
   getAppId(appType: AppType) {
     const appSett = this.cache.get<ConnectAppRequest>(appType);
     if (!appSett?.appId) {
@@ -45,7 +69,11 @@ export class CacheService {
     }
     return appSett.appId;
   }
-
+  /**
+   * get APPSECRET for particular application
+   * @param appType
+   * @returns
+   */
   getAppSecret(appType: AppType) {
     const appSett = this.cache.get<ConnectAppRequest>(appType);
     if (!appSett?.appSecret) {

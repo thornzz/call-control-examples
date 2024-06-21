@@ -1,4 +1,11 @@
-import { AppType } from "./constants";
+import {
+  PARTICIPANT_CONTROL_ANSWER,
+  PARTICIPANT_CONTROL_ATTACH_DATA,
+  PARTICIPANT_CONTROL_DIVERT,
+  PARTICIPANT_CONTROL_DROP,
+  PARTICIPANT_CONTROL_ROUTE_TO,
+  PARTICIPANT_CONTROL_TRANSFER_TO,
+} from "./constants";
 
 export type ConnectAppRequest = {
   appId: string;
@@ -6,8 +13,10 @@ export type ConnectAppRequest = {
   pbxBase: string;
 };
 
-export type DropRequest = {
+export type ControlParticipantRequest = {
   participantId: number;
+  action: CallControlParticipantAction;
+  destination?: string;
 };
 
 export type DialingSetup = {
@@ -18,10 +27,13 @@ export type AppStatus = {
   sorceDn: string | null;
   connected: boolean;
   keymap?: string[];
-  callQueue: string[];
-  currentParticipants: CallParticipant[];
+  callQueue?: string[];
+  currentParticipants?: CallParticipant[];
   wavSource?: string;
   failedCalls?: string;
+  devices?: DNDevice[];
+  activeDeviceId?: string;
+  currentCalls?: CurrentCall[];
 };
 
 export type TCustomIVRConfig = {
@@ -33,6 +45,29 @@ export enum CallRequestStatus {
   Failed = -1,
   Rejected = 0,
   Success = 1,
+}
+
+export type CallControlParticipantAction =
+  | typeof PARTICIPANT_CONTROL_DROP
+  | typeof PARTICIPANT_CONTROL_ANSWER
+  | typeof PARTICIPANT_CONTROL_DIVERT
+  | typeof PARTICIPANT_CONTROL_ROUTE_TO
+  | typeof PARTICIPANT_CONTROL_TRANSFER_TO
+  | typeof PARTICIPANT_CONTROL_ATTACH_DATA;
+
+export interface DeviceModel extends DNDevice {
+  currentCalls: Map<number, CurrentCall>;
+}
+
+export interface CurrentCall {
+  participantId: CallParticipant["id"];
+  callid: CallParticipant["callid"];
+  legid: CallParticipant["legid"];
+  party: CallParticipant["party_caller_id"];
+  status: CallParticipant["status"];
+  name: CallParticipant["party_caller_name"];
+  directControll: CallParticipant["direct_control"];
+  isIncoming: boolean;
 }
 
 export interface DNInfo {

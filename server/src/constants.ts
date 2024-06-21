@@ -3,6 +3,7 @@ export const PARTICIPANT_TYPE_UPDATE = "participants";
 export enum AppType {
   CustomIvr,
   Campaign,
+  Dialer,
 }
 
 export const PARTICIPANT_STATUS_CONNECTED = "Connected";

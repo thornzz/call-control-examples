@@ -1,25 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
-import { getStatusFunc } from "../shared";
+import {
+  controlParticipantRequest,
+  getEnumeredType,
+  getStatusFunc,
+} from "../shared";
 import { CallParticipant, ConnectFormProps } from "../types";
 import { useNavigate } from "react-router-dom";
-import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
+import { APP_TYPE_CUSTOM_IVR, PARTICIPANT_CONTROL_DROP } from "../constants";
+import ButtonForms from "./common/button-forms";
 
 export default function AppStatus({ appType }: ConnectFormProps) {
   const navigate = useNavigate();
 
   const { data } = useQuery({
     queryFn: getStatusFunc(appType),
-    queryKey: [`status${appType}`],
+    queryKey: ["status", appType],
     refetchInterval: 3000,
   });
 
   const onDisconnect = async () => {
-    const enumeredType =
-      appType === APP_TYPE_CUSTOM_IVR
-        ? "0"
-        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
-        ? "1"
-        : undefined;
+    const enumeredType = getEnumeredType(appType);
     if (enumeredType === undefined) {
       return;
     }
@@ -37,27 +37,11 @@ export default function AppStatus({ appType }: ConnectFormProps) {
   };
 
   const onDrop = async (participantId?: number) => {
-    const enumeredType =
-      appType === APP_TYPE_CUSTOM_IVR
-        ? "0"
-        : appType === APP_TYPE_OUTBOUND_CAMPAIGN
-        ? "1"
-        : undefined;
-    if (enumeredType === undefined || !participantId) {
-      return;
-    }
     try {
-      await fetch(
-        `${process.env.REACT_APP_SERVER_BASE}/api/dropcall?appId=${enumeredType}`,
-        {
-          method: "POST",
-          body: JSON.stringify({
-            participantId: participantId,
-          }),
-          headers: {
-            "Content-type": "application/json",
-          },
-        }
+      await controlParticipantRequest(
+        appType,
+        PARTICIPANT_CONTROL_DROP,
+        participantId
       );
     } catch (err) {
       console.log(err);
@@ -105,7 +89,7 @@ export default function AppStatus({ appType }: ConnectFormProps) {
         <button
           type="button"
           onClick={() => onDrop(part?.id)}
-          className="h-full rounded-e-lg p-1 font-sans text-xs font medium bg-red-500 text-white font-bold"
+          className="h-full rounded-e-lg p-1 font-sans text-xs font medium bg-red-500 text-white font-bold active:scale-95"
         >
           Drop
         </button>

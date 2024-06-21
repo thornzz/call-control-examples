@@ -1,26 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
 import { Navigate } from "react-router-dom";
 import CustomIvr from "./custom-ivr";
-import Dialer from "./dialer";
+import OutboundCampaign from "./outbound-campaign";
 import { getStatusFunc } from "../shared";
 import { ConnectFormProps } from "../types";
-import { APP_TYPE_CUSTOM_IVR, APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
+import {
+  APP_TYPE_CUSTOM_IVR,
+  APP_TYPE_DIALER,
+  APP_TYPE_OUTBOUND_CAMPAIGN,
+} from "../constants";
+import Dialer from "./dialer";
 
 export default function PrivateRoute({ appType }: ConnectFormProps) {
   const { data } = useQuery({
     queryFn: getStatusFunc(appType),
-    queryKey: [`status${appType}`],
+    queryKey: ["status", appType],
   });
+
+  function renderFunction(appType: ConnectFormProps["appType"]) {
+    switch (appType) {
+      case APP_TYPE_CUSTOM_IVR:
+        return <CustomIvr />;
+      case APP_TYPE_OUTBOUND_CAMPAIGN:
+        return <OutboundCampaign appType={APP_TYPE_OUTBOUND_CAMPAIGN} />;
+      case APP_TYPE_DIALER:
+        return <Dialer />;
+    }
+  }
+
   return (
     <>
       {data?.connected === true ? (
-        appType === APP_TYPE_CUSTOM_IVR ? (
-          <CustomIvr />
-        ) : (
-          appType === APP_TYPE_OUTBOUND_CAMPAIGN && (
-            <Dialer appType={APP_TYPE_OUTBOUND_CAMPAIGN} />
-          )
-        )
+        renderFunction(appType)
       ) : (
         <Navigate replace to={`/${appType}/connect`} />
       )}
