@@ -6,7 +6,6 @@ import {
   CallControlResultResponse,
   CallParticipant,
   ConnectAppRequest,
-  DNDevice,
   DeviceModel,
   DnInfoModel,
   EventType,
@@ -270,9 +269,6 @@ export class dialerAppService {
       : [];
   }
 
-  private getParticipantsOfDn(dn?: string | null) {
-    return dn ? this.fullInfo?.callcontrol.get(dn)?.participants : undefined;
-  }
   private getParticipantOfDnById(dn: string, id: string) {
     return this.fullInfo?.callcontrol.get(dn)?.participants.get(id);
   }

@@ -8,7 +8,7 @@ import { CallControlParticipantAction } from "../types";
 type CallActionsProps = {
   state: DialerState;
   onCallAction: (action: CallControlParticipantAction) => void;
-  initializing?: boolean; //TODO
+  initializing: boolean;
 };
 
 export default function CallActions({
@@ -20,7 +20,7 @@ export default function CallActions({
     <div className="h-3/5 border-t-2 border-b-2 border-darklight grid grid-cols-3 text-white text-center font-bold text-lg">
       <button
         className="btn-dialer"
-        disabled={state !== DialerState.Ringing}
+        disabled={state !== DialerState.Ringing || initializing}
         onClick={() => onCallAction(PARTICIPANT_CONTROL_DIVERT)}
       >
         <svg
@@ -38,7 +38,7 @@ export default function CallActions({
       <button
         onClick={() => onCallAction(PARTICIPANT_CONTROL_TRANSFER_TO)}
         className="btn-dialer"
-        disabled={state !== DialerState.Connected}
+        disabled={state !== DialerState.Connected || initializing}
       >
         <svg
           className="h-[35px] w-[35px]"

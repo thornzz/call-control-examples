@@ -321,7 +321,11 @@ export default function Dialpad() {
           {renderButtons()}
         </div>
       ) : (
-        <CallActions onCallAction={onCallControlAction} state={dialerState} />
+        <CallActions
+          onCallAction={onCallControlAction}
+          state={dialerState}
+          initializing={!focusedCall}
+        />
       )}
       <div className="h-1/6 flex flex-row">
         {(dialerState === DialerState.Idle ||
