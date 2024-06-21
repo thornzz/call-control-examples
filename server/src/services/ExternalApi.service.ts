@@ -253,7 +253,7 @@ export class ExternalApiService {
       `/${participantId}` +
       `/${method}`;
 
-    const body = destination ? { destination, reason: "ForwardAll" } : {};
+    const body = destination ? { destination } : {};
     return this.fetch!.post(url, body, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
