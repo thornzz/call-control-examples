@@ -15,7 +15,7 @@ export default function AppStatus({ appType }: ConnectFormProps) {
   const { data } = useQuery({
     queryFn: getStatusFunc(appType),
     queryKey: ["status", appType],
-    refetchInterval: 3000,
+    refetchInterval: 5000,
   });
 
   const onDisconnect = async () => {

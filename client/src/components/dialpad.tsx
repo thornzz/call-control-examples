@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import {
   APP_TYPE_DIALER,
   PARTICIPANT_CONTROL_ANSWER,
@@ -16,7 +16,7 @@ import {
   makeCallRequest,
 } from "../shared";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
-import { AppStatus, CallControlParticipantAction, CurrentCall } from "../types";
+import { CallControlParticipantAction, CurrentCall } from "../types";
 import CallActions from "./call-actions";
 import BackSpaceBtn from "./common/bacspace-btn";
 import Spinner from "./common/spinner";
