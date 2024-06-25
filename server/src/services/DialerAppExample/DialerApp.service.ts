@@ -14,21 +14,25 @@ import {
 import { ExternalApiService } from "../ExternalApi.service";
 import { AppType, PARTICIPANT_TYPE_UPDATE } from "../../constants";
 import { determineOperation, fullInfoToObject, set } from "../../utils";
+import * as EventEmitter from "events";
 
 @injectable()
 @singleton()
-export class dialerAppService {
+export class DialerAppService {
   private fullInfo?: CallControl;
   private sourceDn: string | null = null;
   private activeDeviceId: string | null = null;
 
+  public sseEventEmitter = new EventEmitter();
   public connected = false;
 
   private deviceMap: Map<string, DeviceModel> = new Map();
 
   constructor(
     @inject(ExternalApiService) private externalApiSvc: ExternalApiService
-  ) {}
+  ) {
+    this.sseEventEmitter.setMaxListeners(0);
+  }
 
   public async connect(conenctConfig: ConnectAppRequest, appType: AppType) {
     try {
@@ -76,6 +80,9 @@ export class dialerAppService {
         throw new Error("Source DN is missing");
       }
       this.connected = true;
+      this.sseEventEmitter.emit("data", {
+        currentCalls: this.status()?.currentCalls,
+      });
     } catch (e) {
       this.externalApiSvc.disconnect();
       throw e;
@@ -91,6 +98,9 @@ export class dialerAppService {
     this.deviceMap.clear();
     this.activeDeviceId = null;
     this.connected = false;
+    this.sseEventEmitter.emit("data", {
+      currentCalls: this.status()?.currentCalls,
+    });
   }
 
   public status(): AppStatus {
@@ -114,6 +124,10 @@ export class dialerAppService {
       throw Error("Unknown device");
     }
     this.activeDeviceId = id;
+
+    this.sseEventEmitter.emit("data", {
+      currentCalls: this.status()?.currentCalls,
+    });
     return this.activeDeviceId;
   }
   /**
@@ -158,6 +172,9 @@ export class dialerAppService {
                   legid: participant?.legid,
                   directControll: participant?.direct_control,
                 });
+                this.sseEventEmitter?.emit("data", {
+                  currentCalls: this.status()?.currentCalls,
+                });
               }
             }
           }
@@ -183,6 +200,10 @@ export class dialerAppService {
                 this.deviceMap
                   .get(removed.device_id)
                   ?.currentCalls.delete(removed.id);
+
+                this.sseEventEmitter?.emit("data", {
+                  currentCalls: this.status()?.currentCalls,
+                });
               }
             }
           }
@@ -220,6 +241,9 @@ export class dialerAppService {
           callid: data.result.callid,
           legid: data.result.legid,
           directControll: data.result.direct_control,
+        });
+        this.sseEventEmitter.emit("data", {
+          currentCalls: this.status()?.currentCalls,
         });
       }
     } catch (err) {

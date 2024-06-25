@@ -1,5 +1,5 @@
 /* tslint:disable:max-classes-per-file */
-import { EventEmitter } from "stream";
+import { EventEmitter, Transform, TransformCallback } from "stream";
 import {
   CallControl,
   CallParticipant,
@@ -307,4 +307,17 @@ export function writeSlicedAudioStream(
       cancelationToken.off("cancel", () => {});
     }
   });
+}
+
+export class SSEStream extends Transform {
+  constructor() {
+    super({
+      writableObjectMode: true,
+    });
+  }
+
+  _transform(data: any, _encoding: BufferEncoding, done: TransformCallback) {
+    this.push(`data: ${JSON.stringify(data)}\n\n`);
+    done();
+  }
 }

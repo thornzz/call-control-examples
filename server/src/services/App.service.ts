@@ -11,7 +11,7 @@ import Koa, { ExtendableContext } from "koa";
 import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service";
 import { OutboundCampaignService } from "./OutboundCampaignExample/OutboundCampaignApp.service";
 import * as path from "path";
-import { dialerAppService } from "./DialerAppExample/DialerApp.service";
+import { DialerAppService } from "./DialerAppExample/DialerApp.service";
 
 @injectable()
 @singleton()
@@ -20,7 +20,7 @@ export class AppService {
     @inject(CustomIVRAppService) public customIvrSvc: CustomIVRAppService,
     @inject(OutboundCampaignService)
     public outboundCampaignSvc: OutboundCampaignService,
-    @inject(dialerAppService) public dialerAppSvc: dialerAppService
+    @inject(DialerAppService) public dialerAppSvc: DialerAppService
   ) {}
   /**
    * entire method to connect specified application

@@ -1,4 +1,4 @@
-import { QueryObserver, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   APP_TYPE_DIALER,
   PARTICIPANT_CONTROL_ANSWER,
@@ -23,9 +23,9 @@ import Spinner from "./common/spinner";
 import TransferComponent from "./common/transfer-component";
 
 export default function Dialpad() {
-  const queryClient = useQueryClient();
   const [dialedNumber, setDialed] = useState("");
   const [dialerState, setDialerState] = useState(DialerState.Idle);
+  const [currentCalls, setCurrentCalls] = useState<CurrentCall[]>([]);
   const [focusedCall, setFocused] = useState<CurrentCall | undefined>(
     undefined
   );
@@ -42,58 +42,67 @@ export default function Dialpad() {
   const { data, refetch } = useQuery({
     queryFn: getStatusFunc(APP_TYPE_DIALER),
     queryKey: ["status", APP_TYPE_DIALER],
-    refetchInterval: 4000,
   });
 
   useEffect(() => {
-    const observer = new QueryObserver<AppStatus>(queryClient, {
-      queryKey: ["status", APP_TYPE_DIALER],
-    });
-    inputRef.current?.focus();
-
-    const unsubscribe = observer.subscribe((res) => {
-      const currentCalls = res.data?.currentCalls;
-      const connectedCall = currentCalls?.find(
-        (call) => call.status === PARTICIPANT_STATUS_CONNECTED
-      );
-      const incomingCall = currentCalls?.find(
-        (call) => call.status === PARTICIPANT_STATUS_RINGING
-      );
-      const outgoingCall = currentCalls?.find(
-        (call) => call.status === PARTICIPANT_STATUS_DIALING
-      );
-
-      if (connectedCall && dialerState !== DialerState.Connected) {
-        setDialerState(DialerState.Connected);
-        setFocused(connectedCall);
+    const source = new EventSource(process.env.REACT_APP_SERVER_BASE + "/sse");
+    source.onopen = () => console.log("EventSource Connected");
+    source.onerror = console.error;
+    source.onmessage = function (e) {
+      try {
+        const data = JSON.parse(e.data);
+        setCurrentCalls(data.currentCalls);
+      } catch (e) {
+        console.log("Failed to parse json");
       }
-
-      if (outgoingCall && !focusedCall) {
-        setFocused(outgoingCall);
-        if (dialerState !== DialerState.Dialing) {
-          setDialerState(DialerState.Dialing);
-        }
-      }
-
-      if (incomingCall && !focusedCall && dialerState === DialerState.Idle) {
-        setDialerState(DialerState.Ringing);
-        setFocused(incomingCall);
-      }
-
-      if (
-        currentCalls?.length === 0 &&
-        focusedCall !== undefined &&
-        dialerState !== DialerState.Idle
-      ) {
-        setDialerState(DialerState.Idle);
-        setFocused(undefined);
-      }
-    });
-
-    return () => {
-      unsubscribe();
     };
-  }, [dialerState, setDialerState, focusedCall, setFocused, queryClient]);
+    return () => source.close();
+  }, []);
+
+  useEffect(() => {
+    const connectedCall = currentCalls?.find(
+      (call) => call.status === PARTICIPANT_STATUS_CONNECTED
+    );
+    const incomingCall = currentCalls?.find(
+      (call) => call.status === PARTICIPANT_STATUS_RINGING
+    );
+    const outgoingCall = currentCalls?.find(
+      (call) => call.status === PARTICIPANT_STATUS_DIALING
+    );
+
+    if (connectedCall && dialerState !== DialerState.Connected) {
+      setDialerState(DialerState.Connected);
+      setFocused(connectedCall);
+    }
+
+    if (outgoingCall && !focusedCall) {
+      setFocused(outgoingCall);
+      if (dialerState !== DialerState.Dialing) {
+        setDialerState(DialerState.Dialing);
+      }
+    }
+
+    if (incomingCall && !focusedCall && dialerState === DialerState.Idle) {
+      setDialerState(DialerState.Ringing);
+      setFocused(incomingCall);
+    }
+
+    if (
+      currentCalls?.length === 0 &&
+      focusedCall !== undefined &&
+      dialerState !== DialerState.Idle
+    ) {
+      setDialerState(DialerState.Idle);
+      setFocused(undefined);
+    }
+  }, [
+    dialerState,
+    setDialerState,
+    focusedCall,
+    setFocused,
+    currentCalls,
+    setCurrentCalls,
+  ]);
 
   function renderButtons() {
     const content: ReactNode[] = [];
@@ -199,7 +208,6 @@ export default function Dialpad() {
           "Content-type": "application/json",
         },
       });
-      console.log("setted");
     } catch (err) {
       console.log(err);
     } finally {

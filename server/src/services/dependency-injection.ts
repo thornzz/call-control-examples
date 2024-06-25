@@ -5,6 +5,7 @@ import { CacheService } from "./Cache.service";
 import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service";
 import { ExternalApiService } from "./ExternalApi.service";
 import { OutboundCampaignService } from "./OutboundCampaignExample/OutboundCampaignApp.service";
+import { DialerAppService } from "./DialerAppExample/DialerApp.service";
 
 container.register(
   "AppService",
@@ -17,8 +18,13 @@ container.register(
   { lifecycle: Lifecycle.Singleton }
 );
 container.register(
-  "DialerAppService",
+  "OutboundCampaignService",
   { useClass: OutboundCampaignService },
+  { lifecycle: Lifecycle.Singleton }
+);
+container.register(
+  "DialerAppService",
+  { useClass: DialerAppService },
   { lifecycle: Lifecycle.Singleton }
 );
 container.register(

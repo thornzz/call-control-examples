@@ -4,6 +4,8 @@ import { bodyParser } from "@koa/bodyparser";
 import * as cors from "@koa/cors";
 import initMainRouter from "./main.routing";
 import initWebhookRouter from "./webhook.routing";
+import { PassThrough } from "stream";
+import sseMiddleware from "./sse.middleware";
 require("dotenv").config();
 
 const app = new Koa();
@@ -18,7 +20,8 @@ app
   .use(mainRouter.allowedMethods())
   .use(mainRouter.routes())
   .use(webhookRouter.allowedMethods())
-  .use(webhookRouter.routes());
+  .use(webhookRouter.routes())
+  .use(sseMiddleware);
 
 const server = app.listen(Number(port), host, undefined, async () => {
   console.log(server.address());
