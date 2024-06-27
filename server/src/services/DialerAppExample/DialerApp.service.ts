@@ -12,9 +12,14 @@ import {
   WebhookEvent,
 } from "../../types";
 import { ExternalApiService } from "../ExternalApi.service";
-import { AppType, PARTICIPANT_TYPE_UPDATE } from "../../constants";
+import {
+  AppType,
+  PARTICIPANT_TYPE_UPDATE,
+  UNREGISTERED_DEVICE_ID,
+} from "../../constants";
 import { determineOperation, fullInfoToObject, set } from "../../utils";
 import * as EventEmitter from "events";
+import { isAxiosError } from "axios";
 
 @injectable()
 @singleton()
@@ -75,6 +80,12 @@ export class DialerAppService {
           }
         }
       }
+      this.deviceMap.set(UNREGISTERED_DEVICE_ID, {
+        dn: thesource.dn,
+        device_id: UNREGISTERED_DEVICE_ID,
+        user_agent: "Unrgistered Devices",
+        currentCalls: new Map(),
+      });
       this.sourceDn = thesource.dn ?? null;
       if (!this.sourceDn) {
         throw new Error("Source DN is missing");
@@ -111,7 +122,7 @@ export class DialerAppService {
     return {
       connected: this.connected,
       sorceDn: this.sourceDn,
-      devices: this.getDnDevices(this.sourceDn),
+      devices: Array.from(this.deviceMap.values()),
       activeDeviceId: this.activeDeviceId ?? undefined,
       currentCalls: activeDevice?.currentCalls
         ? Array.from(activeDevice.currentCalls.values())
@@ -153,25 +164,23 @@ export class DialerAppService {
           if (dn === this.sourceDn) {
             if (type === PARTICIPANT_TYPE_UPDATE) {
               const participant = this.getParticipantOfDnById(dn, id);
-              if (participant?.id && participant.device_id) {
-                const existing = this.deviceMap
-                  .get(participant.device_id)
-                  ?.currentCalls.get(participant.id);
-
-                const device = this.deviceMap.get(participant.device_id);
+              if (participant?.id) {
+                let device = participant?.device_id
+                  ? this.deviceMap.get(participant.device_id)
+                  : undefined;
+                if (!device) {
+                  device = this.deviceMap.get(UNREGISTERED_DEVICE_ID);
+                }
                 device?.currentCalls.set(participant.id, {
                   participantId: participant?.id,
                   party: participant?.party_caller_id,
                   status: participant?.status,
                   name: participant?.party_caller_name,
-                  isIncoming:
-                    existing?.isIncoming !== undefined
-                      ? existing.isIncoming
-                      : true,
                   callid: participant?.callid,
                   legid: participant?.legid,
                   directControll: participant?.direct_control,
                 });
+
                 this.sseEventEmitter?.emit("data", {
                   currentCalls: this.status()?.currentCalls,
                 });
@@ -195,16 +204,28 @@ export class DialerAppService {
               /**
                * handle here removed participants
                */
-              //console.log(removed?.id, this.deviceMap);
-              if (removed?.id && removed?.device_id) {
-                this.deviceMap
-                  .get(removed.device_id)
-                  ?.currentCalls.delete(removed.id);
-
-                this.sseEventEmitter?.emit("data", {
-                  currentCalls: this.status()?.currentCalls,
-                });
+              const numId = parseFloat(id);
+              if (removed?.id) {
+                // standart case with registered device
+                let device = removed.device_id
+                  ? this.deviceMap.get(removed.device_id)
+                  : undefined;
+                if (!device) {
+                  device = this.deviceMap.get(UNREGISTERED_DEVICE_ID);
+                }
+                device?.currentCalls.delete(removed.id);
+              } else if (numId) {
+                //participant already removed from fullInfo for any race conditions
+                const deletedCallDevice = Array.from(
+                  this.deviceMap.values()
+                ).find((dev) => dev.currentCalls.has(numId));
+                if (deletedCallDevice) {
+                  deletedCallDevice.currentCalls.delete(numId);
+                }
               }
+              this.sseEventEmitter?.emit("data", {
+                currentCalls: this.status()?.currentCalls,
+              });
             }
           }
         }
@@ -224,30 +245,24 @@ export class DialerAppService {
     }
 
     try {
-      const response = await this.externalApiSvc.makeCallFromDevice(
-        this.sourceDn,
-        encodeURIComponent(selectedDevice.device_id),
-        dest
-      );
-      const data: CallControlResultResponse = response.data;
-      if (data.result?.id) {
-        const device = this.deviceMap.get(selectedDevice.device_id);
-        device?.currentCalls.set(data.result.id, {
-          participantId: data.result.id,
-          party: data.result.party_caller_id,
-          status: data.result.status,
-          name: data.result.party_caller_name,
-          isIncoming: false,
-          callid: data.result.callid,
-          legid: data.result.legid,
-          directControll: data.result.direct_control,
-        });
-        this.sseEventEmitter.emit("data", {
-          currentCalls: this.status()?.currentCalls,
-        });
+      if (selectedDevice.device_id !== UNREGISTERED_DEVICE_ID) {
+        const response = await this.externalApiSvc.makeCallFromDevice(
+          this.sourceDn,
+          encodeURIComponent(selectedDevice.device_id),
+          dest
+        );
+      } else {
+        const resposne = await this.externalApiSvc.makeCall(
+          this.sourceDn,
+          dest
+        );
       }
     } catch (err) {
-      console.log(err);
+      if (isAxiosError(err)) {
+        console.log(err.code, err.message);
+      } else {
+        console.log(err);
+      }
     }
   }
 
@@ -284,13 +299,7 @@ export class DialerAppService {
     if (!this.sourceDn) {
       throw Error("Source DN is not defined");
     }
-    return this.fullInfo?.callcontrol.get(this.sourceDn)?.devices.get(id);
-  }
-
-  private getDnDevices(dn?: string | null) {
-    return dn
-      ? Array.from(this.fullInfo?.callcontrol.get(dn)?.devices?.values() ?? [])
-      : [];
+    return this.deviceMap.get(id);
   }
 
   private getParticipantOfDnById(dn: string, id: string) {

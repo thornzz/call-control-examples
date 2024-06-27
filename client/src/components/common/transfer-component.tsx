@@ -1,4 +1,3 @@
-import { useRef, useState } from "react";
 import BackSpaceBtn from "./bacspace-btn";
 import Spinner from "./spinner";
 

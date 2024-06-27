@@ -67,7 +67,6 @@ export interface CurrentCall {
   status: CallParticipant["status"];
   name: CallParticipant["party_caller_name"];
   directControll: CallParticipant["direct_control"];
-  isIncoming: boolean;
 }
 
 export interface DNInfo {

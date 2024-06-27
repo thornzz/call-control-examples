@@ -131,7 +131,7 @@ export default function Dialpad() {
   }
 
   const onCallAnswerBtn = async () => {
-    const isIncoming = focusedCall?.isIncoming === true;
+    const isIncoming = focusedCall?.status === PARTICIPANT_STATUS_RINGING;
     if (isIncoming && focusedCall.directControll) {
       setPerformingAnswer(true);
       try {

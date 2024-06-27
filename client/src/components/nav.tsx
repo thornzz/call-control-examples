@@ -1,6 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { getStatusFunc } from "../shared";
 import {
   APP_TYPE_CUSTOM_IVR,
   APP_TYPE_DIALER,
@@ -9,40 +6,6 @@ import {
 import NavItem from "./common/nav-item";
 
 export default function Nav() {
-  const navigate = useNavigate();
-  const handleRowClick = (url: string) => {
-    navigate(url);
-  };
-  const ivr = useQuery({
-    queryFn: getStatusFunc(APP_TYPE_CUSTOM_IVR),
-    queryKey: ["status", APP_TYPE_CUSTOM_IVR],
-  });
-  const campaign = useQuery({
-    queryFn: getStatusFunc(APP_TYPE_OUTBOUND_CAMPAIGN),
-    queryKey: ["status", APP_TYPE_OUTBOUND_CAMPAIGN],
-  });
-  const dialer = useQuery({
-    queryFn: getStatusFunc(APP_TYPE_DIALER),
-    queryKey: ["status", APP_TYPE_DIALER],
-  });
-
-  function renderStatus(connected?: boolean) {
-    return (
-      <>
-        {connected === true ? (
-          <span className="relative flex h-4 w-4 ml-4">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-green-500"></span>
-          </span>
-        ) : (
-          <span className="relative flex h-4 w-4 ml-4">
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-red-500"></span>
-          </span>
-        )}
-      </>
-    );
-  }
-
   return (
     <div className="overflow-x-auto">
       <table className="w-full my-0 align-middle text-dark border-neutral-200">

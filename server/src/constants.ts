@@ -16,3 +16,5 @@ export const PARTICIPANT_CONTROL_DIVERT = "divert";
 export const PARTICIPANT_CONTROL_ROUTE_TO = "routeto";
 export const PARTICIPANT_CONTROL_TRANSFER_TO = "transferto";
 export const PARTICIPANT_CONTROL_ATTACH_DATA = "attach_participant_data";
+
+export const UNREGISTERED_DEVICE_ID = "not_registered_dev";

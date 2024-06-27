@@ -7,7 +7,6 @@ import {
 import { CallParticipant, ConnectFormProps } from "../types";
 import { useNavigate } from "react-router-dom";
 import { APP_TYPE_CUSTOM_IVR, PARTICIPANT_CONTROL_DROP } from "../constants";
-import ButtonForms from "./common/button-forms";
 
 export default function AppStatus({ appType }: ConnectFormProps) {
   const navigate = useNavigate();
