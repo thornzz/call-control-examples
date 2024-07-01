@@ -48,7 +48,7 @@ export default function Instructions({
                     onMouseLeave={() => toggle(false)}
                     onClick={() => {
                       navigator.clipboard.writeText(
-                        process.env.REACT_APP_SERVER_BASE +
+                        import.meta.env.VITE_SERVER_BASE +
                           "/api" +
                           "/webhook" +
                           `/${appType}`
@@ -56,7 +56,7 @@ export default function Instructions({
                       toggle(true);
                     }}
                   >
-                    {process.env.REACT_APP_SERVER_BASE +
+                    {import.meta.env.VITE_SERVER_BASE +
                       "/api" +
                       "/webhook" +
                       `/${appType}`}

@@ -16,7 +16,7 @@ export const getStatusFunc = (appType: ConnectFormProps["appType"]) => {
       return;
     }
     const response: Promise<AppStatus> = fetch(
-      `${process.env.REACT_APP_SERVER_BASE}/api/status?appId=${enumered}`,
+      `${import.meta.env.VITE_SERVER_BASE}/api/status?appId=${enumered}`,
       {
         method: "GET",
       }
@@ -53,7 +53,7 @@ export function controlParticipantRequest(
     return;
   }
   return fetch(
-    `${process.env.REACT_APP_SERVER_BASE}/api/controlcall?appId=${enumeredType}`,
+    `${import.meta.env.VITE_SERVER_BASE}/api/controlcall?appId=${enumeredType}`,
     {
       method: "POST",
       body: JSON.stringify({
@@ -78,7 +78,7 @@ export function makeCallRequest(
   }
 
   return fetch(
-    `${process.env.REACT_APP_SERVER_BASE}/api/dialing?appId=${enumeredType}`,
+    `${import.meta.env.VITE_SERVER_BASE}/api/dialing?appId=${enumeredType}`,
     {
       method: "POST",
       body: JSON.stringify({

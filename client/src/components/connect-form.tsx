@@ -34,7 +34,7 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
     }
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_SERVER_BASE}/api/connect?appId=${enumeredType}`,
+        `${import.meta.env.VITE_SERVER_BASE}/api/connect?appId=${enumeredType}`,
         {
           method: "POST",
           body: JSON.stringify({

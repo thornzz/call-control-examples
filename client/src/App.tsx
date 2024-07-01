@@ -1,5 +1,5 @@
 import { Link, Outlet } from "react-router-dom";
-import logo from "./img/logo.png";
+import logo from "./assets/logo.png";
 import ReactQueryProvider from "./react-query-provider";
 
 function App() {

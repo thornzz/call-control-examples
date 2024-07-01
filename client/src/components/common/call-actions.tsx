@@ -1,9 +1,9 @@
 import {
   PARTICIPANT_CONTROL_DIVERT,
   PARTICIPANT_CONTROL_TRANSFER_TO,
-} from "../constants";
-import { DialerState } from "../shared";
-import { CallControlParticipantAction } from "../types";
+} from "../../constants";
+import { DialerState } from "../../shared";
+import { CallControlParticipantAction } from "../../types";
 
 type CallActionsProps = {
   state: DialerState;

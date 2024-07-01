@@ -42,7 +42,7 @@ export default function CustomIvr() {
     formData.append("keyCommands", JSON.stringify(submitData.keyCommands));
     try {
       const response = await fetch(
-        `${process.env.REACT_APP_SERVER_BASE}/api/setup/ivr`,
+        `${import.meta.env.VITE_SERVER_BASE}/api/setup/ivr`,
         {
           method: "POST",
           body: formData,

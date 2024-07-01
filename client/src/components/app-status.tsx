@@ -24,7 +24,9 @@ export default function AppStatus({ appType }: ConnectFormProps) {
     }
     try {
       await fetch(
-        `${process.env.REACT_APP_SERVER_BASE}/api/disconnect?appId=${enumeredType}`,
+        `${
+          import.meta.env.VITE_SERVER_BASE
+        }/api/disconnect?appId=${enumeredType}`,
         {
           method: "POST",
         }

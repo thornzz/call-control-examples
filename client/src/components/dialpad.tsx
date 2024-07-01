@@ -17,7 +17,7 @@ import {
 } from "../shared";
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { CallControlParticipantAction, CurrentCall } from "../types";
-import CallActions from "./call-actions";
+import CallActions from "./common/call-actions";
 import BackSpaceBtn from "./common/bacspace-btn";
 import Spinner from "./common/spinner";
 import TransferComponent from "./common/transfer-component";
@@ -45,7 +45,7 @@ export default function Dialpad() {
   });
 
   useEffect(() => {
-    const source = new EventSource(process.env.REACT_APP_SERVER_BASE + "/sse");
+    const source = new EventSource(import.meta.env.VITE_SERVER_BASE + "/sse");
     source.onopen = () => console.log("EventSource Connected");
     source.onerror = console.error;
     source.onmessage = function (e) {
@@ -135,18 +135,15 @@ export default function Dialpad() {
     if (isIncoming && focusedCall.directControll) {
       setPerformingAnswer(true);
       try {
-        const response = await controlParticipantRequest(
+        await controlParticipantRequest(
           APP_TYPE_DIALER,
           PARTICIPANT_CONTROL_ANSWER,
           focusedCall.participantId
         );
-        const json = await response?.json();
-        console.log(json);
       } catch (e) {
         console.log(e);
       } finally {
         setPerformingAnswer(false);
-        refetch();
       }
     } else {
       try {
@@ -171,15 +168,13 @@ export default function Dialpad() {
       );
     } catch (err) {
       console.log(err);
-    } finally {
-      refetch();
     }
   };
   const onCallControlParticipant = async () => {
-    setIsOperationInProccess(true);
     if (!ccOpertation) {
       return;
     }
+    setIsOperationInProccess(true);
     try {
       await controlParticipantRequest(
         APP_TYPE_DIALER,
@@ -192,14 +187,13 @@ export default function Dialpad() {
     } finally {
       setCCOperation(undefined);
       setIsOperationInProccess(false);
-      refetch();
     }
   };
 
   const setActiveDevice = async (id: string) => {
     setSwitchingDevice(true);
     try {
-      await fetch(`${process.env.REACT_APP_SERVER_BASE}/api/dialer/setdevice`, {
+      await fetch(`${import.meta.env.VITE_SERVER_BASE}/api/dialer/setdevice`, {
         method: "POST",
         body: JSON.stringify({
           activeDeviceId: id,
