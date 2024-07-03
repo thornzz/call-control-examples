@@ -21,7 +21,7 @@ shared components)
 yarn install
 ```
 
-> **Please Note:** You will be asked to download corepack, press yes to proceed
+> **Please Note:** You may be asked to download corepack, press yes to proceed
 
 ## Running
 
@@ -44,6 +44,8 @@ Run following command from terminal:
 ```
 yarn start-hubspot
 ```
+
+> **Please Note:** the npm start command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
 
 ## Binding IVR external application to dummy route point on PBX
 
