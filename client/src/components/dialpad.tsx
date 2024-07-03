@@ -343,7 +343,7 @@ export default function Dialpad() {
                   : false)
               }
               onClick={() => onCallAnswerBtn()}
-              className="flex justify-center items-center w-full h-full bg-green-500 hover:bg-green-700 active:scale-105 disabled:bg-gray-400 disabled:active:scale-100"
+              className="flex justify-center items-center w-full h-full bg-green-500 hover:bg-green-700 disabled:bg-gray-400 disabled:active:scale-100 btn-animated-click"
             >
               <svg
                 fill="white"

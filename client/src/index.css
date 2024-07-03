@@ -21,4 +21,8 @@ code {
   .btn-dialer {
     @apply flex flex-col justify-center items-center disabled:opacity-15 enabled:hover:bg-darklight; 
   }
+  
+  .btn-animated-click {
+    @apply active:shadow-inner shadow-green-300
+  }
 }

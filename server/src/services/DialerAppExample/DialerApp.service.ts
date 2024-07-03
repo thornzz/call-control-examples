@@ -246,6 +246,7 @@ export class DialerAppService {
 
     try {
       if (selectedDevice.device_id !== UNREGISTERED_DEVICE_ID) {
+        console.log(this.sourceDn, selectedDevice.device_id, dest);
         const response = await this.externalApiSvc.makeCallFromDevice(
           this.sourceDn,
           encodeURIComponent(selectedDevice.device_id),

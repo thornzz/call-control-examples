@@ -1,5 +1,5 @@
 {
-  "name": "outbound-caller-demo",
+  "name": "server",
   "version": "1.0.0",
   "main": "dist/server.js",
   "author": "kka@3cx.com",
@@ -17,6 +17,7 @@
     "@types/koa__router": "^12.0.4",
     "@types/node": "^20.14.2",
     "@types/wav": "^1.0.4",
+    "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
     "typescript": "^5.4.5"

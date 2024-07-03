@@ -12,38 +12,38 @@ To run the Application please follow the instructions below:
 
 3. Open a command prompt and go to that directory
 
-The Directory contains two separate folders: client and server. For both of them you need
-to install dependencies. So, you need to go to each folder and run following command:
+The Directory contains following folders: server (main backend), client (examples UI), calling-integration-sdk-demo-react-ts (hubSpot integration example widget), cc-component-lib(for
+shared components)
+
+4. Run packages installation
 
 ```
-npm install
+yarn install
 ```
+
+You will be asked to download corepack, press yes to proceed
 
 ## Running
 
 After you installed dependencies, you can proceed with testing or building the Application.
 
-To Run Application in Development environment you need to run both client and server application:
+### To run basic example
 
-1. To run server:
-
-Got to the `server` folder and run following command:
+Run following command from terminal:
 
 ```
-npm start
-```
-
-If you are succeeded, you will see `SERVER STARTED` message in the console
-
-2. To run Client:
-
-Open a separate command prompt instance and go to the `client` folder, then run the following command again:
-
-```
-npm start
+yarn start
 ```
 
 If you are succeeded, your browser will be opened automatically.
+
+### To run HubSpot example
+
+Run following command from terminal:
+
+```
+yarn start-hubspot
+```
 
 ## Binding IVR external application to dummy route point on PBX
 
@@ -86,3 +86,25 @@ If destination does not answer, prompt will be repeated, and you can retry with 
 
 You can enter comma separated list of number at the bottom of the page and then press Start Dialing.
 The IVR application will make sequence of the calls to each number specified in the list (one by one)
+
+## HubSpot Integration Setup
+
+HubSpot Calling SDK Integration provides live example in development local environment
+
+> **Please note**: This is not real live ready to deploy HubSpot Application
+
+First, look at provided by HubSpot guide [Calling Extensions SDK](https://developers.hubspot.com/docs/api/crm/extensions/calling-sdk).
+
+1. Create HubSpot [App Developer account](https://app.hubspot.com/signup/developers)
+2. Within your App Developer account create [Developer test account](https://developers.hubspot.com/docs/api/account-types#developer-test-accounts)
+3. Within Developer Test Account, navigate to your records:
+
+<ul>
+    <li> Contacts: In your HubSpot account, navigate to Contacts > Contacts.</li>
+    <li> Company: In your HubSpot account, navigate to Contacts > Companies.</li>
+</ul>
+
+4. Open your browser's developer console, and run the following command:
+   `localStorage.setItem("LocalSettings:Calling:installDemoWidget", "local");`
+
+5. Make sure you have run a [HubSpot example](#running)

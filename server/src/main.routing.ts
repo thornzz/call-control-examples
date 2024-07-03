@@ -83,9 +83,11 @@ export default function initMainRouting(koa: Koa) {
       const intId = parseFloat(queryParam as string);
       const resp = await app.controlParticipant(ctx.request.body, intId);
       ctx.res.statusCode = 204;
+      ctx.body = {
+        data: resp?.data,
+      };
       await next();
     } catch (err: any) {
-      console.log(err);
       if (err?.message === "Bad Request") {
         ctx.status = 400;
       } else {
