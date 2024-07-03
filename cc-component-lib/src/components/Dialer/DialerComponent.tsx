@@ -98,7 +98,6 @@ export const Dialer: React.FC<DialerProps> = ({
   engagementId,
 }) => {
   const [dialedNumber, setDialed] = useState(phoneNumber ?? "");
-
   const [dialerState, setDialerState] = useState(DialerState.Idle);
   const [currentCalls, setCurrentCalls] = useState<CurrentCall[]>([]);
   const [callState, dispatchCallState] = useReducer(
@@ -114,6 +113,7 @@ export const Dialer: React.FC<DialerProps> = ({
   const [isOperationInProcess, setIsOperationInProccess] = useState(false);
   const [performingAnswer, setPerformingAnswer] = useState(false);
   const [switchingDevice, setSwitchingDevice] = useState(false);
+  const [isForceDropEnabled, setEnableForceDrop] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -305,16 +305,20 @@ export const Dialer: React.FC<DialerProps> = ({
   );
 
   const handleOnDrop = async () => {
+    setEnableForceDrop(false);
     try {
       await onCallControlParticipant(
         PARTICIPANT_CONTROL_DROP,
         callState?.participantId
       );
-    } catch (e) {}
+    } catch (e) {
+      setDialerState(DialerState.Idle);
+    }
   };
 
   const handleCallAnswer = async (phoneNumber?: string) => {
     const isIncoming = callState?.status === PARTICIPANT_STATUS_RINGING;
+    let timeout: number | null = null;
     if (isIncoming && callState.directControll) {
       setPerformingAnswer(true);
       try {
@@ -332,9 +336,15 @@ export const Dialer: React.FC<DialerProps> = ({
         setDialed("");
         if (dialerState !== DialerState.Dialing) {
           setDialerState(DialerState.Dialing);
+          timeout = setTimeout(() => {
+            setEnableForceDrop(true);
+          }, 5000);
         }
       } catch (e) {
         setDialerState(DialerState.Idle);
+        if (timeout) {
+          clearTimeout(timeout);
+        }
       }
     }
   };
@@ -480,8 +490,10 @@ export const Dialer: React.FC<DialerProps> = ({
           <div className="flex justify-center items-center w-full">
             <button
               disabled={
-                switchingDevice ||
-                (dialerState === DialerState.Dialing && callState === undefined)
+                (switchingDevice ||
+                  (dialerState === DialerState.Dialing &&
+                    callState === undefined)) &&
+                !isForceDropEnabled
               }
               onClick={() => handleOnDrop()}
               className="flex justify-center items-center w-full h-full bg-red-500 hover:bg-red-700 disabled:bg-gray-400"

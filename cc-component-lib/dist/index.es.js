@@ -1,12 +1,12 @@
 (function(){"use strict";try{if(typeof document<"u"){var t=document.createElement("style");t.appendChild(document.createTextNode('*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}html,:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.btn-dialer{display:flex;flex-direction:column;align-items:center;justify-content:center}.btn-dialer:hover:enabled{--tw-bg-opacity: 1;background-color:rgb(64 63 63 / var(--tw-bg-opacity))}.btn-dialer:disabled{opacity:.15}.absolute{position:absolute}.relative{position:relative}.left-0{left:0}.mx-auto{margin-left:auto;margin-right:auto}.my-4{margin-top:1rem;margin-bottom:1rem}.-mr-1{margin-right:-.25rem}.ml-2{margin-left:.5rem}.mr-3{margin-right:.75rem}.mr-4{margin-right:1rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.h-1\\/6{height:16.666667%}.h-2\\/5{height:40%}.h-3\\/5{height:60%}.h-4{height:1rem}.h-5{height:1.25rem}.h-\\[12px\\]{height:12px}.h-\\[25px\\]{height:25px}.h-\\[30px\\]{height:30px}.h-\\[34px\\]{height:34px}.h-\\[35px\\]{height:35px}.h-\\[45px\\]{height:45px}.h-\\[600px\\]{height:600px}.h-full{height:100%}.w-4{width:1rem}.w-5{width:1.25rem}.w-\\[12px\\]{width:12px}.w-\\[150px\\]{width:150px}.w-\\[25px\\]{width:25px}.w-\\[30px\\]{width:30px}.w-\\[35px\\]{width:35px}.w-\\[400px\\]{width:400px}.w-full{width:100%}.max-w-lg{max-width:32rem}.origin-top-left{transform-origin:top left}.rotate-\\[133deg\\]{--tw-rotate: 133deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-rows-2{grid-template-rows:repeat(2,minmax(0,1fr))}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(.5rem * var(--tw-space-x-reverse));margin-left:calc(.5rem * calc(1 - var(--tw-space-x-reverse)))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-gray-100>:not([hidden])~:not([hidden]){--tw-divide-opacity: 1;border-color:rgb(243 244 246 / var(--tw-divide-opacity))}.rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-t-2{border-top-width:2px}.border-none{border-style:none}.border-darklight{--tw-border-opacity: 1;border-color:rgb(64 63 63 / var(--tw-border-opacity))}.bg-darkBg{--tw-bg-opacity: 1;background-color:rgb(33 33 33 / var(--tw-bg-opacity))}.bg-darklight{--tw-bg-opacity: 1;background-color:rgb(64 63 63 / var(--tw-bg-opacity))}.bg-gray-800{--tw-bg-opacity: 1;background-color:rgb(31 41 55 / var(--tw-bg-opacity))}.bg-green-500{--tw-bg-opacity: 1;background-color:rgb(34 197 94 / var(--tw-bg-opacity))}.bg-red-200{--tw-bg-opacity: 1;background-color:rgb(254 202 202 / var(--tw-bg-opacity))}.bg-red-500{--tw-bg-opacity: 1;background-color:rgb(239 68 68 / var(--tw-bg-opacity))}.bg-transparent{background-color:transparent}.fill-green-500{fill:#22c55e}.fill-white{fill:#fff}.fill-yellow-400{fill:#facc15}.stroke-gray-500{stroke:#6b7280}.p-2{padding:.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.text-green-500{--tw-text-opacity: 1;color:rgb(34 197 94 / var(--tw-text-opacity))}.text-red-600{--tw-text-opacity: 1;color:rgb(220 38 38 / var(--tw-text-opacity))}.text-red-800{--tw-text-opacity: 1;color:rgb(153 27 27 / var(--tw-text-opacity))}.text-white{--tw-text-opacity: 1;color:rgb(255 255 255 / var(--tw-text-opacity))}.text-yellow-400{--tw-text-opacity: 1;color:rgb(250 204 21 / var(--tw-text-opacity))}.shadow-lg{--tw-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);--tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.hover\\:bg-bghover:hover{--tw-bg-opacity: 1;background-color:rgb(102 101 101 / var(--tw-bg-opacity))}.hover\\:bg-gray-700:hover{--tw-bg-opacity: 1;background-color:rgb(55 65 81 / var(--tw-bg-opacity))}.hover\\:bg-green-700:hover{--tw-bg-opacity: 1;background-color:rgb(21 128 61 / var(--tw-bg-opacity))}.hover\\:bg-red-700:hover{--tw-bg-opacity: 1;background-color:rgb(185 28 28 / var(--tw-bg-opacity))}.hover\\:fill-gray-400:hover{fill:#9ca3af}.focus\\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\\:scale-105:active{--tw-scale-x: 1.05;--tw-scale-y: 1.05;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.disabled\\:bg-gray-400:disabled{--tw-bg-opacity: 1;background-color:rgb(156 163 175 / var(--tw-bg-opacity))}.disabled\\:text-gray-600:disabled{--tw-text-opacity: 1;color:rgb(75 85 99 / var(--tw-text-opacity))}@media (min-width: 640px){.sm\\:h-5{height:1.25rem}.sm\\:w-5{width:1.25rem}}')),document.head.appendChild(t)}}catch(e){console.error("vite-plugin-css-injected-by-js",e)}})();
 import { jsx as e, jsxs as h } from "react/jsx-runtime";
-import { useEffect as N, useState as v, useRef as F, useReducer as Q, useCallback as D } from "react";
-function X(t, n) {
+import { useEffect as N, useState as p, useRef as V, useReducer as Y, useCallback as D } from "react";
+function ee(t, n) {
   n === void 0 && (n = {}), n.insertAt;
 }
-var Y = "";
-X(Y, { insertAt: "top" });
-const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connected", ie = "Dialing", W = "Ringing", le = ({ ref: t, handler: n }) => {
+var te = "";
+ee(te, { insertAt: "top" });
+const ne = "drop", ie = "answer", le = "divert", G = "transferto", W = "Connected", re = "Dialing", F = "Ringing", ce = ({ ref: t, handler: n }) => {
   N(() => {
     const s = (u) => {
       t.current && !t.current.contains(u.target) && n();
@@ -15,18 +15,18 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
       document.removeEventListener("mousedown", s);
     };
   }, [t, n]);
-}, re = ({
+}, se = ({
   title: t = "Select",
   data: n,
   selectedId: s,
   onSelect: u
 }) => {
-  const [f, y] = v(!1), p = F(null);
-  le({
-    ref: p,
+  const [f, y] = p(!1), m = V(null);
+  ce({
+    ref: m,
     handler: () => y(!1)
   });
-  const [r, k] = v(
+  const [r, k] = p(
     s ? n.find((a) => a.device_id === s) : void 0
   ), L = (a) => {
     k(a), u && u(a.device_id), y(!1);
@@ -40,7 +40,7 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
   }, [s, n]), /* @__PURE__ */ e(
     "div",
     {
-      ref: p,
+      ref: m,
       className: "w-full relative inline-block text-left bg-darklight",
       children: /* @__PURE__ */ h("div", { className: "group", children: [
         /* @__PURE__ */ h(
@@ -76,7 +76,7 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
       ] })
     }
   );
-}, ce = ({
+}, ae = ({
   onCallAction: t,
   state: n,
   initializing: s
@@ -85,8 +85,8 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
     "button",
     {
       className: "btn-dialer",
-      disabled: n !== j.Ringing || s,
-      onClick: () => t(ne),
+      disabled: n !== E.Ringing || s,
+      onClick: () => t(le),
       children: [
         /* @__PURE__ */ e(
           "svg",
@@ -110,9 +110,9 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
   /* @__PURE__ */ h(
     "button",
     {
-      onClick: () => t(V),
+      onClick: () => t(G),
       className: "btn-dialer",
-      disabled: n !== j.Connected || s,
+      disabled: n !== E.Connected || s,
       children: [
         /* @__PURE__ */ e(
           "svg",
@@ -140,7 +140,7 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
   /* @__PURE__ */ e("div", {}),
   /* @__PURE__ */ e("div", {}),
   /* @__PURE__ */ e("div", {})
-] }), G = ({ onClickBS: t }) => /* @__PURE__ */ e(
+] }), H = ({ onClickBS: t }) => /* @__PURE__ */ e(
   "button",
   {
     type: "button",
@@ -156,7 +156,7 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
       }
     )
   }
-), P = ({ color: t }) => /* @__PURE__ */ e(
+), j = ({ color: t }) => /* @__PURE__ */ e(
   "div",
   {
     "aria-label": "Loading...",
@@ -268,7 +268,7 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
       }
     )
   }
-), se = ({
+), oe = ({
   onPerformingOperation: t,
   onOperation: n,
   inputRef: s,
@@ -284,11 +284,11 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
       ref: s,
       className: "focus:outline-none text-center h-[34px] bg-transparent border-b border-darklight",
       value: u,
-      onChange: (p) => f(p.target.value)
+      onChange: (m) => f(m.target.value)
     }
   ),
   /* @__PURE__ */ e(
-    G,
+    H,
     {
       onClickBS: () => f(
         u.substring(0, u.length - 1)
@@ -301,12 +301,12 @@ const ee = "drop", te = "answer", ne = "divert", V = "transferto", z = "Connecte
       disabled: u.length < 1 || t,
       className: "bg-green-500 p-2 rounded-md disabled:bg-gray-400",
       onClick: () => n(),
-      children: t ? /* @__PURE__ */ e(P, {}) : "Proceed"
+      children: t ? /* @__PURE__ */ e(j, {}) : "Proceed"
     }
   )
 ] });
-var j = /* @__PURE__ */ ((t) => (t[t.Idle = 0] = "Idle", t[t.Dialing = 1] = "Dialing", t[t.Ringing = 2] = "Ringing", t[t.Connected = 3] = "Connected", t))(j || {});
-function ae(t, n) {
+var E = /* @__PURE__ */ ((t) => (t[t.Idle = 0] = "Idle", t[t.Dialing = 1] = "Dialing", t[t.Ringing = 2] = "Ringing", t[t.Connected = 3] = "Connected", t))(E || {});
+function de(t, n) {
   switch (n.type) {
     case "full_update":
       return n.newState !== void 0 ? {
@@ -324,25 +324,25 @@ function ae(t, n) {
       } : t;
   }
 }
-const ue = ({
+const fe = ({
   eventSourceUrl: t,
   onDeviceSelect: n,
   devices: s,
   onMakeCall: u,
   onCallControlParticipant: f,
   activeDeviceId: y,
-  phoneNumber: p,
+  phoneNumber: m,
   extensions: r,
   sourceCallerId: k,
   engagementId: L
 }) => {
-  const [a, C] = v(p ?? ""), [c, w] = v(
+  const [a, C] = p(m ?? ""), [c, v] = p(
     0
     /* Idle */
-  ), [g, S] = v([]), [i, x] = Q(
-    ae,
+  ), [g, P] = p([]), [i, x] = Y(
+    de,
     void 0
-  ), [b, A] = v(void 0), [_, T] = v(""), [H, I] = v(!1), [U, E] = v(!1), [B, O] = v(!1), R = F(null);
+  ), [b, A] = p(void 0), [_, T] = p(""), [U, I] = p(!1), [Z, S] = p(!1), [B, O] = p(!1), [$, M] = p(!1), R = V(null);
   N(() => {
     const l = new EventSource(t);
     return l.onopen = () => {
@@ -354,7 +354,7 @@ const ue = ({
     }, l.onerror = console.error, l.onmessage = function(o) {
       try {
         const d = JSON.parse(o.data);
-        S(d.currentCalls);
+        P(d.currentCalls);
       } catch {
         r == null || r.sendError({
           message: "Failed to parse JSON from EventSource"
@@ -362,24 +362,24 @@ const ue = ({
       }
     }, () => l.close();
   }, []), N(() => {
-    c === 0 && p && p.length > 0 && M(p);
-  }, [p]), N(() => {
+    c === 0 && m && m.length > 0 && z(m);
+  }, [m]), N(() => {
     x({
       type: "attach_data",
       attachedData: { engagementId: L }
     });
   }, [L]), N(() => {
     const l = g == null ? void 0 : g.find(
-      (m) => m.status === z
+      (w) => w.status === W
     ), o = g == null ? void 0 : g.find(
-      (m) => m.status === W
+      (w) => w.status === F
     ), d = g == null ? void 0 : g.find(
-      (m) => m.status === ie
+      (w) => w.status === re
     );
-    if (l && c !== 3 && (c === 1 && (r == null || r.callAnswered()), w(
+    if (l && c !== 3 && (c === 1 && (r == null || r.callAnswered()), v(
       3
       /* Connected */
-    ), x({ type: "full_update", newState: l })), d && !i && (x({ type: "full_update", newState: d }), c !== 1 && w(
+    ), x({ type: "full_update", newState: l })), d && !i && (x({ type: "full_update", newState: d }), c !== 1 && v(
       1
       /* Dialing */
     ), r == null || r.outgoingCall({
@@ -387,33 +387,33 @@ const ue = ({
       toNumber: d.party || "",
       createEngagement: !0,
       fromNumber: k
-    })), o && !i && c === 0 && (w(
+    })), o && !i && c === 0 && (v(
       2
       /* Ringing */
     ), x({ type: "full_update", newState: o })), (g == null ? void 0 : g.length) === 0 && i !== void 0 && c !== 0) {
-      const m = i.status === z ? "COMPLETED" : "CANCELED";
+      const w = i.status === W ? "COMPLETED" : "CANCELED";
       r == null || r.callEnded({
-        callEndStatus: m
+        callEndStatus: w
       }), r == null || r.callCompleted({
         engagementId: i.attachedData.engagementId,
         engagementProperties: {
-          hs_call_status: m
+          hs_call_status: w
         }
-      }), w(
+      }), v(
         0
         /* Idle */
       ), x({ type: "full_update", newState: void 0 });
     }
   }, [
     c,
-    w,
+    v,
     x,
     i,
     g,
-    S,
+    P,
     r
   ]);
-  const Z = () => {
+  const J = () => {
     const l = [];
     for (let o = 1; o <= 12; o++) {
       let d = "";
@@ -421,7 +421,7 @@ const ue = ({
         /* @__PURE__ */ e(
           "button",
           {
-            onClick: () => C((m) => m + d),
+            onClick: () => C((w) => w + d),
             className: "btn-dialer",
             children: d
           },
@@ -430,12 +430,12 @@ const ue = ({
       );
     }
     return l;
-  }, $ = D(
+  }, q = D(
     (l) => {
       T(""), A(b ? void 0 : l);
     },
     [T, b, A]
-  ), J = D(async () => {
+  ), K = D(async () => {
     if (b) {
       I(!0);
       try {
@@ -456,48 +456,55 @@ const ue = ({
     _,
     f,
     i
-  ]), q = D(
+  ]), Q = D(
     async (l) => {
       O(!0);
       try {
         await n(l);
       } catch {
       } finally {
-        O(!1), w(
+        O(!1), v(
           0
           /* Idle */
         ), x({ type: "full_update", newState: void 0 });
       }
     },
-    [O, n, w, x]
-  ), K = async () => {
+    [O, n, v, x]
+  ), X = async () => {
+    M(!1);
     try {
       await f(
-        ee,
+        ne,
         i == null ? void 0 : i.participantId
       );
     } catch {
+      v(
+        0
+        /* Idle */
+      );
     }
-  }, M = async (l) => {
-    if ((i == null ? void 0 : i.status) === W && i.directControll) {
-      E(!0);
+  }, z = async (l) => {
+    if ((i == null ? void 0 : i.status) === F && i.directControll) {
+      S(!0);
       try {
         await f(
-          te,
+          ie,
           i.participantId
         );
       } catch {
       } finally {
-        E(!1);
+        S(!1);
       }
     } else if (l != null && l.length || a.length)
       try {
-        await u(l || a), C(""), c !== 1 && w(
+        await u(l || a), C(""), c !== 1 && (v(
           1
           /* Dialing */
-        );
+        ), setTimeout(() => {
+          M(!0);
+        }, 5e3));
       } catch {
-        w(
+        v(
           0
           /* Idle */
         );
@@ -505,11 +512,11 @@ const ue = ({
   };
   return /* @__PURE__ */ h("div", { className: "w-[400px] h-[600px] bg-darkBg flex flex-col", children: [
     /* @__PURE__ */ e("div", { children: s && /* @__PURE__ */ e(
-      re,
+      se,
       {
         data: s,
         selectedId: y,
-        onSelect: q
+        onSelect: Q
       }
     ) }),
     /* @__PURE__ */ h(
@@ -559,36 +566,36 @@ const ue = ({
                     )
                   ] }) : /* @__PURE__ */ h("div", { className: "flex flex-col gap-2", children: [
                     /* @__PURE__ */ e("span", { className: "animate-pulse font-bold text-sm text-white" }),
-                    /* @__PURE__ */ e(P, {})
+                    /* @__PURE__ */ e(j, {})
                   ] }) }),
                   (i == null ? void 0 : i.name) && /* @__PURE__ */ e("span", { children: i.name })
                 ] });
             }
           })(),
           c === 0 && /* @__PURE__ */ e("div", { className: "flex justify-end items-center", children: /* @__PURE__ */ e(
-            G,
+            H,
             {
               onClickBS: () => C(a.substring(0, a.length - 1))
             }
           ) }),
           c !== 0 && b !== void 0 && /* @__PURE__ */ e(
-            se,
+            oe,
             {
               inputRef: R,
-              onOperation: J,
-              onPerformingOperation: H,
+              onOperation: K,
+              onPerformingOperation: U,
               destinationNumber: _,
               setDestinationNumber: T,
-              label: b === V ? "Transfer to:" : "Divert to:"
+              label: b === G ? "Transfer to:" : "Divert to:"
             }
           )
         ]
       }
     ),
-    c === 0 ? /* @__PURE__ */ e("div", { className: "h-3/5 border-t-2 border-b-2 border-darklight grid grid-cols-3 text-white text-center font-bold text-lg", children: Z() }) : /* @__PURE__ */ e(
-      ce,
+    c === 0 ? /* @__PURE__ */ e("div", { className: "h-3/5 border-t-2 border-b-2 border-darklight grid grid-cols-3 text-white text-center font-bold text-lg", children: J() }) : /* @__PURE__ */ e(
+      ae,
       {
-        onCallAction: $,
+        onCallAction: q,
         state: c,
         initializing: !i
       }
@@ -598,8 +605,8 @@ const ue = ({
         "button",
         {
           type: "button",
-          disabled: B || U || (i !== void 0 ? i.directControll !== !0 : !1),
-          onClick: () => M(),
+          disabled: B || Z || (i !== void 0 ? i.directControll !== !0 : !1),
+          onClick: () => z(),
           className: "flex justify-center items-center w-full h-full bg-green-500 hover:bg-green-700 disabled:bg-gray-400",
           children: /* @__PURE__ */ e(
             "svg",
@@ -616,8 +623,8 @@ const ue = ({
       c !== 0 && /* @__PURE__ */ e("div", { className: "flex justify-center items-center w-full", children: /* @__PURE__ */ e(
         "button",
         {
-          disabled: B || c === 1 && i === void 0,
-          onClick: () => K(),
+          disabled: (B || c === 1 && i === void 0) && !$,
+          onClick: () => X(),
           className: "flex justify-center items-center w-full h-full bg-red-500 hover:bg-red-700 disabled:bg-gray-400",
           children: /* @__PURE__ */ e(
             "svg",
@@ -633,7 +640,7 @@ const ue = ({
       ) })
     ] })
   ] });
-}, ge = ({
+}, pe = ({
   type: t,
   disabled: n,
   label: s,
@@ -646,9 +653,9 @@ const ue = ({
     onClick: f,
     type: t,
     className: "flex justify-center items-center rounded w-[150px] h-[45px] bg-gray-800 hover:bg-gray-700 text-white disabled:bg-gray-400 disabled:text-gray-600",
-    children: u ? /* @__PURE__ */ e(P, {}) : s
+    children: u ? /* @__PURE__ */ e(j, {}) : s
   }
-), fe = ({ message: t }) => /* @__PURE__ */ h("div", { className: "bg-red-200 px-6 py-4 my-4 rounded-md flex items-center mx-auto max-w-lg", children: [
+), me = ({ message: t }) => /* @__PURE__ */ h("div", { className: "bg-red-200 px-6 py-4 my-4 rounded-md flex items-center mx-auto max-w-lg", children: [
   /* @__PURE__ */ e(
     "svg",
     {
@@ -666,13 +673,13 @@ const ue = ({
   /* @__PURE__ */ e("span", { className: "text-red-800", children: t })
 ] });
 export {
-  G as BackSpaceBtn,
-  ge as ButtonForms,
-  ce as CallActions,
-  ue as Dialer,
-  fe as Error,
-  re as Select,
-  P as Spinner,
-  se as TransferComponent
+  H as BackSpaceBtn,
+  pe as ButtonForms,
+  ae as CallActions,
+  fe as Dialer,
+  me as Error,
+  se as Select,
+  j as Spinner,
+  oe as TransferComponent
 };
 //# sourceMappingURL=index.es.js.map
