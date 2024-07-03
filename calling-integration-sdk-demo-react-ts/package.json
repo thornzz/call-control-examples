@@ -20,7 +20,7 @@
   "dependencies": {
     "@hubspot/calling-extensions-sdk": "^0.5.0",
     "@tanstack/react-query": "^5.48.0",
-    "cc-component-lib": "1.0.0",
+    "cc-component-lib": "workspace:^",
     "react": "^18.3.1",
     "react-aria": "^3.22.0",
     "react-dom": "^18.3.1",

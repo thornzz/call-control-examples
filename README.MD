@@ -21,7 +21,7 @@ shared components)
 yarn install
 ```
 
-You will be asked to download corepack, press yes to proceed
+> **Please Note:** You will be asked to download corepack, press yes to proceed
 
 ## Running
 

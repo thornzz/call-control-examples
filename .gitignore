@@ -1,7 +1,7 @@
 node_modules
 .idea
 .vscode
-dist
 .eslintcache
 index.json
 output.wav
+yarn-error.log
