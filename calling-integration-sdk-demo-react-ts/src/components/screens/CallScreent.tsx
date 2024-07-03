@@ -81,7 +81,7 @@ export const CallScreen: React.FC<CallScreenProps> = ({
     <Dialer
       eventSourceUrl={`${process.env.REACT_APP_SERVER_BASE}/sse`}
       devices={data?.devices ?? []}
-      activeDeviceId={data?.activeDeviceId!}
+      activeDeviceId={data?.activeDeviceId}
       phoneNumber={phoneNumber}
       sourceCallerId={data?.sorceDn!}
       onMakeCall={onMakeCall}

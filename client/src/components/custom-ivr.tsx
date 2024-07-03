@@ -5,9 +5,8 @@ import Instructions from "./instructions";
 import AppStatus from "./app-status";
 import { getStatusFunc } from "../shared";
 import { useEffect, useState } from "react";
-import Error from "./error";
 import { APP_TYPE_CUSTOM_IVR } from "../constants";
-import ButtonForms from "./common/button-forms";
+import { Error, ButtonForms } from "cc-component-lib";
 
 type Inputs = {
   wavSource: string;

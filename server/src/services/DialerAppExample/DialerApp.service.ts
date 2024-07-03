@@ -69,10 +69,6 @@ export class DialerAppService {
       if (thesource.devices.size > 0) {
         for (const device of thesource.devices.values()) {
           if (device.device_id) {
-            if (!this.activeDeviceId) {
-              this.activeDeviceId = device.device_id;
-            }
-
             this.deviceMap.set(device.device_id, {
               ...device,
               currentCalls: new Map(),
@@ -86,6 +82,11 @@ export class DialerAppService {
         user_agent: "Unrgistered Devices",
         currentCalls: new Map(),
       });
+
+      if (!this.activeDeviceId) {
+        const firstDevice: DeviceModel = this.deviceMap.values().next()?.value;
+        this.activeDeviceId = firstDevice.device_id!;
+      }
       this.sourceDn = thesource.dn ?? null;
       if (!this.sourceDn) {
         throw new Error("Source DN is missing");
@@ -246,7 +247,6 @@ export class DialerAppService {
 
     try {
       if (selectedDevice.device_id !== UNREGISTERED_DEVICE_ID) {
-        console.log(this.sourceDn, selectedDevice.device_id, dest);
         const response = await this.externalApiSvc.makeCallFromDevice(
           this.sourceDn,
           encodeURIComponent(selectedDevice.device_id),

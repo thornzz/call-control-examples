@@ -3,9 +3,8 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import { Navigate } from "react-router-dom";
 import { getEnumeredType, getStatusFunc } from "../shared";
 import { useState } from "react";
-import Error from "./error";
 import { ConnectFormProps } from "../types";
-import ButtonForms from "./common/button-forms";
+import { ButtonForms, Error } from "cc-component-lib";
 
 type Inputs = {
   pbxBase: string;

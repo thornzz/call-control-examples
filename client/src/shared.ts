@@ -13,7 +13,7 @@ export const getStatusFunc = (appType: ConnectFormProps["appType"]) => {
   const getStatus = async () => {
     const enumered = getEnumeredType(appType);
     if (enumered === undefined) {
-      return;
+      return Promise.reject();
     }
     const response: Promise<AppStatus> = fetch(
       `${import.meta.env.VITE_SERVER_BASE}/api/status?appId=${enumered}`,
@@ -47,10 +47,10 @@ export function controlParticipantRequest(
   action: CallControlParticipantAction,
   participantId?: number,
   destination?: string
-): Promise<Response> | undefined {
+): Promise<Response> {
   const enumeredType = getEnumeredType(appType);
   if (enumeredType === undefined || !participantId) {
-    return;
+    return Promise.reject();
   }
   return fetch(
     `${import.meta.env.VITE_SERVER_BASE}/api/controlcall?appId=${enumeredType}`,
@@ -71,10 +71,10 @@ export function controlParticipantRequest(
 export function makeCallRequest(
   appType: ConnectFormProps["appType"],
   sources?: string
-): Promise<Response> | undefined {
+): Promise<Response> {
   const enumeredType = getEnumeredType(appType);
   if (enumeredType === undefined || !sources) {
-    throw Error("source is empty or request addresed to nowhere");
+    return Promise.reject();
   }
 
   return fetch(
@@ -89,6 +89,21 @@ export function makeCallRequest(
       },
     }
   );
+}
+
+export function selectDevice(id: string) {
+  if (id === undefined) {
+    return Promise.reject();
+  }
+  return fetch(`${import.meta.env.VITE_SERVER_BASE}/api/dialer/setdevice`, {
+    method: "POST",
+    body: JSON.stringify({
+      activeDeviceId: id,
+    }),
+    headers: {
+      "Content-type": "application/json",
+    },
+  });
 }
 
 export enum DialerState {

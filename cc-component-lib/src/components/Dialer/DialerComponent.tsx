@@ -11,7 +11,6 @@ import {
   ReactNode,
   useCallback,
   useEffect,
-  useMemo,
   useReducer,
   useRef,
   useState,
@@ -30,8 +29,8 @@ import { Spinner } from "../Spinner/SpinnerComponent";
 export interface DialerProps {
   eventSourceUrl: string;
   devices: DNDevice[];
-  activeDeviceId: string;
-  phoneNumber: string;
+  activeDeviceId?: string;
+  phoneNumber?: string;
   sourceCallerId: string;
   onMakeCall: (dest?: string) => Promise<Response>;
   onDeviceSelect: (id: string) => Promise<Response>;
@@ -98,7 +97,7 @@ export const Dialer: React.FC<DialerProps> = ({
   sourceCallerId,
   engagementId,
 }) => {
-  const [dialedNumber, setDialed] = useState(phoneNumber);
+  const [dialedNumber, setDialed] = useState(phoneNumber ?? "");
 
   const [dialerState, setDialerState] = useState(DialerState.Idle);
   const [currentCalls, setCurrentCalls] = useState<CurrentCall[]>([]);
@@ -144,7 +143,7 @@ export const Dialer: React.FC<DialerProps> = ({
 
   useEffect(() => {
     if (dialerState === DialerState.Idle) {
-      if (phoneNumber.length > 0) {
+      if (phoneNumber && phoneNumber.length > 0) {
         handleCallAnswer(phoneNumber);
       }
     }
@@ -227,7 +226,7 @@ export const Dialer: React.FC<DialerProps> = ({
     extensions,
   ]);
 
-  const renderButtons = useMemo(() => {
+  const renderButtons = () => {
     const content: ReactNode[] = [];
     for (let i = 1; i <= 12; i++) {
       let symbol: string | number = "";
@@ -251,7 +250,7 @@ export const Dialer: React.FC<DialerProps> = ({
       );
     }
     return content;
-  }, []);
+  };
 
   const onCallControlAction = useCallback(
     (action: CallControlParticipantAction) => {
@@ -285,7 +284,9 @@ export const Dialer: React.FC<DialerProps> = ({
     ccOpertation,
     setCCOperation,
     setIsOperationInProccess,
+    operationDestination,
     onCallControlParticipant,
+    callState,
   ]);
 
   const handleActiveDevice = useCallback(
@@ -312,44 +313,33 @@ export const Dialer: React.FC<DialerProps> = ({
     } catch (e) {}
   };
 
-  const handleCallAnswer = useCallback(
-    async (phoneNumber?: string) => {
-      const isIncoming = callState?.status === PARTICIPANT_STATUS_RINGING;
-      if (isIncoming && callState.directControll) {
-        setPerformingAnswer(true);
-        try {
-          await onCallControlParticipant(
-            PARTICIPANT_CONTROL_ANSWER,
-            callState.participantId
-          );
-        } catch (e) {
-        } finally {
-          setPerformingAnswer(false);
-        }
-      } else if (phoneNumber?.length || dialedNumber.length) {
-        try {
-          await onMakeCall(phoneNumber || dialedNumber);
-          setDialed("");
-          if (dialerState !== DialerState.Dialing) {
-            setDialerState(DialerState.Dialing);
-          }
-        } catch (e) {
-          setDialerState(DialerState.Idle);
-        }
+  const handleCallAnswer = async (phoneNumber?: string) => {
+    const isIncoming = callState?.status === PARTICIPANT_STATUS_RINGING;
+    if (isIncoming && callState.directControll) {
+      setPerformingAnswer(true);
+      try {
+        await onCallControlParticipant(
+          PARTICIPANT_CONTROL_ANSWER,
+          callState.participantId
+        );
+      } catch (e) {
+      } finally {
+        setPerformingAnswer(false);
       }
-    },
-    [
-      dialedNumber,
-      setDialed,
-      callState,
-      dialerState,
-      setDialerState,
-      setPerformingAnswer,
-      onCallControlParticipant,
-    ]
-  );
+    } else if (phoneNumber?.length || dialedNumber.length) {
+      try {
+        await onMakeCall(phoneNumber || dialedNumber);
+        setDialed("");
+        if (dialerState !== DialerState.Dialing) {
+          setDialerState(DialerState.Dialing);
+        }
+      } catch (e) {
+        setDialerState(DialerState.Idle);
+      }
+    }
+  };
 
-  const renderStateNumber = useMemo(() => {
+  const renderStateNumber = () => {
     switch (dialerState) {
       case DialerState.Idle:
         return (
@@ -406,7 +396,7 @@ export const Dialer: React.FC<DialerProps> = ({
         );
       }
     }
-  }, [dialerState, inputRef, dialedNumber, setDialed, callState]);
+  };
 
   return (
     <div className="w-[400px] h-[600px] bg-darkBg flex flex-col">
@@ -423,7 +413,7 @@ export const Dialer: React.FC<DialerProps> = ({
         className="h-2/5 text-white font-bold text-xl grid grid-rows-2"
         onClick={() => inputRef.current?.focus()}
       >
-        {renderStateNumber}
+        {renderStateNumber()}
         {dialerState === DialerState.Idle && (
           <div className="flex justify-end items-center">
             <BackSpaceBtn
@@ -450,7 +440,7 @@ export const Dialer: React.FC<DialerProps> = ({
       </div>
       {dialerState === DialerState.Idle ? (
         <div className="h-3/5 border-t-2 border-b-2 border-darklight grid grid-cols-3 text-white text-center font-bold text-lg">
-          {renderButtons}
+          {renderButtons()}
         </div>
       ) : (
         <CallActions

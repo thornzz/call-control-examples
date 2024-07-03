@@ -61,14 +61,12 @@ export default function Instructions({
                       "/webhook" +
                       `/${appType}`}
                   </button>
-                  <div
-                    className={`absolute right-0 flex items-center ${
-                      !tooltipShown ? "hidden" : ""
-                    } group-hover:flex`}
-                  >
-                    <span className="relative z-10 p-2 text-xs leading-none whitespace-no-wrap bg-slate-600 shadow-lg">
-                      Copied to clipboard!
-                    </span>
+                  <div className={`${!tooltipShown ? "hidden" : ""}`}>
+                    <div className="absolute right-4 bottom-1 flex items-center  group-hover:flex">
+                      <span className="relative z-10 p-2 text-xs leading-none whitespace-no-wrap bg-slate-600 shadow-lg">
+                        Copied to clipboard!
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <p className="mb-2">{text}</p>

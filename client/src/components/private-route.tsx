@@ -9,7 +9,7 @@ import {
   APP_TYPE_DIALER,
   APP_TYPE_OUTBOUND_CAMPAIGN,
 } from "../constants";
-import Dialer from "./dialer";
+import DialerApp from "./dialer";
 
 export default function PrivateRoute({ appType }: ConnectFormProps) {
   const { data } = useQuery({
@@ -24,7 +24,7 @@ export default function PrivateRoute({ appType }: ConnectFormProps) {
       case APP_TYPE_OUTBOUND_CAMPAIGN:
         return <OutboundCampaign appType={APP_TYPE_OUTBOUND_CAMPAIGN} />;
       case APP_TYPE_DIALER:
-        return <Dialer />;
+        return <DialerApp />;
     }
   }
 

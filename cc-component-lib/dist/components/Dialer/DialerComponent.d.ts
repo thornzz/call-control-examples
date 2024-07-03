@@ -3,8 +3,8 @@ import { CallControlParticipantAction, CallingExtensionsContract, DNDevice } fro
 export interface DialerProps {
     eventSourceUrl: string;
     devices: DNDevice[];
-    activeDeviceId: string;
-    phoneNumber: string;
+    activeDeviceId?: string;
+    phoneNumber?: string;
     sourceCallerId: string;
     onMakeCall: (dest?: string) => Promise<Response>;
     onDeviceSelect: (id: string) => Promise<Response>;

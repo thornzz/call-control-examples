@@ -1,12 +1,11 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import AppStatus from "./app-status";
 import { useState } from "react";
-import Error from "./error";
+import { Error, ButtonForms } from "cc-component-lib";
 import Instructions from "./instructions";
 import { ConnectFormProps } from "../types";
 import { APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
 import { makeCallRequest } from "../shared";
-import ButtonForms from "./common/button-forms";
 
 type Inputs = {
   sources: string;
