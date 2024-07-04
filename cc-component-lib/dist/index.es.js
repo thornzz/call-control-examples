@@ -1,6 +1,6 @@
 (function(){"use strict";try{if(typeof document<"u"){var t=document.createElement("style");t.appendChild(document.createTextNode('*,:before,:after{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}:before,:after{--tw-content: ""}html,:host{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,"Apple Color Emoji","Segoe UI Emoji",Segoe UI Symbol,"Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,samp,pre{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dl,dd,h1,h2,h3,h4,h5,h6,hr,figure,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}ol,ul,menu{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}button,[role=button]{cursor:pointer}:disabled{cursor:default}img,svg,video,canvas,audio,iframe,embed,object{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]{display:none}*,:before,:after{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x: 0;--tw-border-spacing-y: 0;--tw-translate-x: 0;--tw-translate-y: 0;--tw-rotate: 0;--tw-skew-x: 0;--tw-skew-y: 0;--tw-scale-x: 1;--tw-scale-y: 1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness: proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width: 0px;--tw-ring-offset-color: #fff;--tw-ring-color: rgb(59 130 246 / .5);--tw-ring-offset-shadow: 0 0 #0000;--tw-ring-shadow: 0 0 #0000;--tw-shadow: 0 0 #0000;--tw-shadow-colored: 0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }.btn-dialer{display:flex;flex-direction:column;align-items:center;justify-content:center}.btn-dialer:hover:enabled{--tw-bg-opacity: 1;background-color:rgb(64 63 63 / var(--tw-bg-opacity))}.btn-dialer:disabled{opacity:.15}.absolute{position:absolute}.relative{position:relative}.left-0{left:0}.mx-auto{margin-left:auto;margin-right:auto}.my-4{margin-top:1rem;margin-bottom:1rem}.-mr-1{margin-right:-.25rem}.ml-2{margin-left:.5rem}.mr-3{margin-right:.75rem}.mr-4{margin-right:1rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.h-1\\/6{height:16.666667%}.h-2\\/5{height:40%}.h-3\\/5{height:60%}.h-4{height:1rem}.h-5{height:1.25rem}.h-\\[12px\\]{height:12px}.h-\\[25px\\]{height:25px}.h-\\[30px\\]{height:30px}.h-\\[34px\\]{height:34px}.h-\\[35px\\]{height:35px}.h-\\[45px\\]{height:45px}.h-\\[600px\\]{height:600px}.h-full{height:100%}.w-4{width:1rem}.w-5{width:1.25rem}.w-\\[12px\\]{width:12px}.w-\\[150px\\]{width:150px}.w-\\[25px\\]{width:25px}.w-\\[30px\\]{width:30px}.w-\\[35px\\]{width:35px}.w-\\[400px\\]{width:400px}.w-full{width:100%}.max-w-lg{max-width:32rem}.origin-top-left{transform-origin:top left}.rotate-\\[133deg\\]{--tw-rotate: 133deg;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.grid-rows-2{grid-template-rows:repeat(2,minmax(0,1fr))}.flex-row{flex-direction:row}.flex-col{flex-direction:column}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-2{gap:.5rem}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse: 0;margin-right:calc(.5rem * var(--tw-space-x-reverse));margin-left:calc(.5rem * calc(1 - var(--tw-space-x-reverse)))}.divide-y>:not([hidden])~:not([hidden]){--tw-divide-y-reverse: 0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-gray-100>:not([hidden])~:not([hidden]){--tw-divide-opacity: 1;border-color:rgb(243 244 246 / var(--tw-divide-opacity))}.rounded{border-radius:.25rem}.rounded-md{border-radius:.375rem}.border-b{border-bottom-width:1px}.border-b-2{border-bottom-width:2px}.border-t-2{border-top-width:2px}.border-none{border-style:none}.border-darklight{--tw-border-opacity: 1;border-color:rgb(64 63 63 / var(--tw-border-opacity))}.bg-darkBg{--tw-bg-opacity: 1;background-color:rgb(33 33 33 / var(--tw-bg-opacity))}.bg-darklight{--tw-bg-opacity: 1;background-color:rgb(64 63 63 / var(--tw-bg-opacity))}.bg-gray-800{--tw-bg-opacity: 1;background-color:rgb(31 41 55 / var(--tw-bg-opacity))}.bg-green-500{--tw-bg-opacity: 1;background-color:rgb(34 197 94 / var(--tw-bg-opacity))}.bg-red-200{--tw-bg-opacity: 1;background-color:rgb(254 202 202 / var(--tw-bg-opacity))}.bg-red-500{--tw-bg-opacity: 1;background-color:rgb(239 68 68 / var(--tw-bg-opacity))}.bg-transparent{background-color:transparent}.fill-green-500{fill:#22c55e}.fill-white{fill:#fff}.fill-yellow-400{fill:#facc15}.stroke-gray-500{stroke:#6b7280}.p-2{padding:.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-5{padding-top:1.25rem;padding-bottom:1.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.text-green-500{--tw-text-opacity: 1;color:rgb(34 197 94 / var(--tw-text-opacity))}.text-red-600{--tw-text-opacity: 1;color:rgb(220 38 38 / var(--tw-text-opacity))}.text-red-800{--tw-text-opacity: 1;color:rgb(153 27 27 / var(--tw-text-opacity))}.text-white{--tw-text-opacity: 1;color:rgb(255 255 255 / var(--tw-text-opacity))}.text-yellow-400{--tw-text-opacity: 1;color:rgb(250 204 21 / var(--tw-text-opacity))}.shadow-lg{--tw-shadow: 0 10px 15px -3px rgb(0 0 0 / .1), 0 4px 6px -4px rgb(0 0 0 / .1);--tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow)}.hover\\:bg-bghover:hover{--tw-bg-opacity: 1;background-color:rgb(102 101 101 / var(--tw-bg-opacity))}.hover\\:bg-gray-700:hover{--tw-bg-opacity: 1;background-color:rgb(55 65 81 / var(--tw-bg-opacity))}.hover\\:bg-green-700:hover{--tw-bg-opacity: 1;background-color:rgb(21 128 61 / var(--tw-bg-opacity))}.hover\\:bg-red-700:hover{--tw-bg-opacity: 1;background-color:rgb(185 28 28 / var(--tw-bg-opacity))}.hover\\:fill-gray-400:hover{fill:#9ca3af}.focus\\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.active\\:scale-105:active{--tw-scale-x: 1.05;--tw-scale-y: 1.05;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skew(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.disabled\\:bg-gray-400:disabled{--tw-bg-opacity: 1;background-color:rgb(156 163 175 / var(--tw-bg-opacity))}.disabled\\:text-gray-600:disabled{--tw-text-opacity: 1;color:rgb(75 85 99 / var(--tw-text-opacity))}@media (min-width: 640px){.sm\\:h-5{height:1.25rem}.sm\\:w-5{width:1.25rem}}')),document.head.appendChild(t)}}catch(e){console.error("vite-plugin-css-injected-by-js",e)}})();
 import { jsx as e, jsxs as h } from "react/jsx-runtime";
-import { useEffect as k, useState as m, useRef as G, useReducer as Y, useCallback as D } from "react";
+import { useEffect as k, useState as m, useRef as G, useReducer as Y, useCallback as R } from "react";
 function ee(t, n) {
   n === void 0 && (n = {}), n.insertAt;
 }
@@ -21,15 +21,15 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
   selectedId: s,
   onSelect: u
 }) => {
-  const [g, y] = m(!1), v = G(null);
+  const [g, x] = m(!1), v = G(null);
   ce({
     ref: v,
-    handler: () => y(!1)
+    handler: () => x(!1)
   });
   const [r, L] = m(
     s ? n.find((a) => a.device_id === s) : void 0
   ), A = (a) => {
-    L(a), u && u(a.device_id), y(!1);
+    L(a), u && u(a.device_id), x(!1);
   };
   return k(() => {
     if (s && n) {
@@ -48,7 +48,7 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
           {
             type: "button",
             className: "inline-flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-white",
-            onClick: () => y(!g),
+            onClick: () => x(!g),
             children: [
               /* @__PURE__ */ e("span", { children: (r == null ? void 0 : r.user_agent) || t }),
               /* @__PURE__ */ e(
@@ -85,7 +85,7 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
     "button",
     {
       className: "btn-dialer",
-      disabled: n !== E.Ringing || s,
+      disabled: n !== D.Ringing || s,
       onClick: () => t(ie),
       children: [
         /* @__PURE__ */ e(
@@ -112,7 +112,7 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
     {
       onClick: () => t(H),
       className: "btn-dialer",
-      disabled: n !== E.Connected || s,
+      disabled: n !== D.Connected || s,
       children: [
         /* @__PURE__ */ e(
           "svg",
@@ -156,7 +156,7 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
       }
     )
   }
-), j = ({ color: t }) => /* @__PURE__ */ e(
+), E = ({ color: t }) => /* @__PURE__ */ e(
   "div",
   {
     "aria-label": "Loading...",
@@ -274,9 +274,9 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
   inputRef: s,
   destinationNumber: u,
   setDestinationNumber: g,
-  label: y
+  label: x
 }) => /* @__PURE__ */ h("div", { className: "flex gap-2 items-center justify-center text-sm py-5", children: [
-  /* @__PURE__ */ e("label", { htmlFor: "tranferField", className: "text-sm", children: y }),
+  /* @__PURE__ */ e("label", { htmlFor: "tranferField", className: "text-sm", children: x }),
   /* @__PURE__ */ e(
     "input",
     {
@@ -301,11 +301,11 @@ const ne = "drop", le = "answer", ie = "divert", H = "transferto", F = "Connecte
       disabled: u.length < 1 || t,
       className: "bg-green-500 p-2 rounded-md disabled:bg-gray-400",
       onClick: () => n(),
-      children: t ? /* @__PURE__ */ e(j, {}) : "Proceed"
+      children: t ? /* @__PURE__ */ e(E, {}) : "Proceed"
     }
   )
 ] });
-var E = /* @__PURE__ */ ((t) => (t[t.Idle = 0] = "Idle", t[t.Dialing = 1] = "Dialing", t[t.Ringing = 2] = "Ringing", t[t.Connected = 3] = "Connected", t))(E || {});
+var D = /* @__PURE__ */ ((t) => (t[t.Idle = 0] = "Idle", t[t.Dialing = 1] = "Dialing", t[t.Ringing = 2] = "Ringing", t[t.Connected = 3] = "Connected", t))(D || {});
 function de(t, n) {
   switch (n.type) {
     case "full_update":
@@ -330,7 +330,7 @@ const ge = ({
   devices: s,
   onMakeCall: u,
   onCallControlParticipant: g,
-  activeDeviceId: y,
+  activeDeviceId: x,
   phoneNumber: v,
   extensions: r,
   sourceCallerId: L,
@@ -339,10 +339,10 @@ const ge = ({
   const [a, C] = m(v ?? ""), [c, w] = m(
     0
     /* Idle */
-  ), [f, P] = m([]), [l, x] = Y(
+  ), [f, j] = m([]), [l, y] = Y(
     de,
     void 0
-  ), [b, N] = m(void 0), [I, T] = m(""), [S, _] = m(!1), [Z, B] = m(!1), [M, O] = m(!1), [$, z] = m(!1), R = G(null);
+  ), [b, N] = m(void 0), [I, T] = m(""), [P, _] = m(!1), [Z, S] = m(!1), [B, M] = m(!1), [$, z] = m(!1), O = G(null);
   k(() => {
     const i = new EventSource(t);
     return i.onopen = () => {
@@ -354,7 +354,7 @@ const ge = ({
     }, i.onerror = console.error, i.onmessage = function(d) {
       try {
         const o = JSON.parse(d.data);
-        P(o.currentCalls);
+        j(o.currentCalls);
       } catch {
         r == null || r.sendError({
           message: "Failed to parse JSON from EventSource"
@@ -364,7 +364,7 @@ const ge = ({
   }, []), k(() => {
     c === 0 && v && v.length > 0 && W(v);
   }, [v]), k(() => {
-    x({
+    y({
       type: "attach_data",
       attachedData: { engagementId: A }
     });
@@ -379,7 +379,7 @@ const ge = ({
     if (i && c !== 3 && (c === 1 && (r == null || r.callAnswered()), w(
       3
       /* Connected */
-    ), x({ type: "full_update", newState: i })), o && !l && (x({ type: "full_update", newState: o }), c !== 1 && w(
+    ), y({ type: "full_update", newState: i })), o && !l && (y({ type: "full_update", newState: o }), c !== 1 && w(
       1
       /* Dialing */
     ), r == null || r.outgoingCall({
@@ -390,7 +390,7 @@ const ge = ({
     })), d && !l && c === 0 && (w(
       2
       /* Ringing */
-    ), x({ type: "full_update", newState: d })), (f == null ? void 0 : f.length) === 0 && l !== void 0 && c !== 0) {
+    ), y({ type: "full_update", newState: d })), (f == null ? void 0 : f.length) === 0 && l !== void 0 && c !== 0) {
       const p = l.status === F ? "COMPLETED" : "CANCELED";
       r == null || r.callEnded({
         callEndStatus: p
@@ -402,15 +402,15 @@ const ge = ({
       }), w(
         0
         /* Idle */
-      ), x({ type: "full_update", newState: void 0 });
+      ), y({ type: "full_update", newState: void 0 });
     }
   }, [
     c,
     w,
-    x,
+    y,
     l,
     f,
-    P,
+    j,
     r
   ]);
   const J = () => {
@@ -430,12 +430,12 @@ const ge = ({
       );
     }
     return i;
-  }, q = D(
+  }, q = R(
     (i) => {
       T(""), N(b ? void 0 : i);
     },
     [T, b, N]
-  ), K = D(async () => {
+  ), K = R(async () => {
     if (b) {
       _(!0);
       try {
@@ -456,20 +456,20 @@ const ge = ({
     I,
     g,
     l
-  ]), Q = D(
+  ]), Q = R(
     async (i) => {
-      O(!0);
+      M(!0);
       try {
         await n(i);
       } catch {
       } finally {
-        O(!1), w(
+        M(!1), w(
           0
           /* Idle */
-        ), x({ type: "full_update", newState: void 0 });
+        ), y({ type: "full_update", newState: void 0 });
       }
     },
-    [O, n, w, x]
+    [n]
   ), X = async () => {
     z(!1);
     try {
@@ -483,13 +483,13 @@ const ge = ({
         /* Idle */
       );
     } finally {
-      S && (T(""), _(!1), N(void 0));
+      P && (T(""), _(!1), N(void 0));
     }
   }, W = async (i) => {
     const d = (l == null ? void 0 : l.status) === V;
     let o = null;
     if (d && l.directControll) {
-      B(!0);
+      S(!0);
       try {
         await g(
           le,
@@ -497,7 +497,7 @@ const ge = ({
         );
       } catch {
       } finally {
-        B(!1);
+        S(!1);
       }
     } else if (i != null && i.length || a.length)
       try {
@@ -519,7 +519,7 @@ const ge = ({
       se,
       {
         data: s,
-        selectedId: y,
+        selectedId: x,
         onSelect: Q
       }
     ) }),
@@ -529,7 +529,7 @@ const ge = ({
         className: "h-2/5 text-white font-bold text-xl grid grid-rows-2",
         onClick: () => {
           var i;
-          return (i = R.current) == null ? void 0 : i.focus();
+          return (i = O.current) == null ? void 0 : i.focus();
         },
         children: [
           (() => {
@@ -538,7 +538,7 @@ const ge = ({
                 return /* @__PURE__ */ e("div", { className: "flex justify-center items-end", children: /* @__PURE__ */ e(
                   "input",
                   {
-                    ref: R,
+                    ref: O,
                     className: "bg-transparent focus:outline-none text-center",
                     value: a,
                     onChange: (i) => C(i.target.value)
@@ -570,7 +570,7 @@ const ge = ({
                     )
                   ] }) : /* @__PURE__ */ h("div", { className: "flex flex-col gap-2", children: [
                     /* @__PURE__ */ e("span", { className: "animate-pulse font-bold text-sm text-white" }),
-                    /* @__PURE__ */ e(j, {})
+                    /* @__PURE__ */ e(E, {})
                   ] }) }),
                   (l == null ? void 0 : l.name) && /* @__PURE__ */ e("span", { children: l.name })
                 ] });
@@ -585,9 +585,9 @@ const ge = ({
           c !== 0 && b !== void 0 && /* @__PURE__ */ e(
             oe,
             {
-              inputRef: R,
+              inputRef: O,
               onOperation: K,
-              onPerformingOperation: S,
+              onPerformingOperation: P,
               destinationNumber: I,
               setDestinationNumber: T,
               label: b === H ? "Transfer to:" : "Divert to:"
@@ -609,7 +609,7 @@ const ge = ({
         "button",
         {
           type: "button",
-          disabled: M || Z || (l !== void 0 ? l.directControll !== !0 : !1),
+          disabled: B || Z || (l !== void 0 ? l.directControll !== !0 : !1),
           onClick: () => W(),
           className: "flex justify-center items-center w-full h-full bg-green-500 hover:bg-green-700 disabled:bg-gray-400",
           children: /* @__PURE__ */ e(
@@ -627,7 +627,7 @@ const ge = ({
       c !== 0 && /* @__PURE__ */ e("div", { className: "flex justify-center items-center w-full", children: /* @__PURE__ */ e(
         "button",
         {
-          disabled: (M || c === 1 && l === void 0) && !$,
+          disabled: (B || c === 1 && l === void 0) && !$,
           onClick: () => X(),
           className: "flex justify-center items-center w-full h-full bg-red-500 hover:bg-red-700 disabled:bg-gray-400",
           children: /* @__PURE__ */ e(
@@ -657,7 +657,7 @@ const ge = ({
     onClick: g,
     type: t,
     className: "flex justify-center items-center rounded w-[150px] h-[45px] bg-gray-800 hover:bg-gray-700 text-white disabled:bg-gray-400 disabled:text-gray-600",
-    children: u ? /* @__PURE__ */ e(j, {}) : s
+    children: u ? /* @__PURE__ */ e(E, {}) : s
   }
 ), me = ({ message: t }) => /* @__PURE__ */ h("div", { className: "bg-red-200 px-6 py-4 my-4 rounded-md flex items-center mx-auto max-w-lg", children: [
   /* @__PURE__ */ e(
@@ -683,7 +683,7 @@ export {
   ge as Dialer,
   me as Error,
   se as Select,
-  j as Spinner,
+  E as Spinner,
   oe as TransferComponent
 };
 //# sourceMappingURL=index.es.js.map

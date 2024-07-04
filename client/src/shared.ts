@@ -49,7 +49,6 @@ export function controlParticipantRequest(
   destination?: string
 ): Promise<Response> {
   const enumeredType = getEnumeredType(appType);
-  console.log(enumeredType, participantId, destination);
   if (enumeredType === undefined || !participantId) {
     return Promise.reject();
   }

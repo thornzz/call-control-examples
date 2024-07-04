@@ -301,7 +301,7 @@ export const Dialer: React.FC<DialerProps> = ({
         dispatchCallState({ type: "full_update", newState: undefined });
       }
     },
-    [setSwitchingDevice, onDeviceSelect, setDialerState, dispatchCallState]
+    [onDeviceSelect]
   );
 
   const handleOnDrop = async () => {
