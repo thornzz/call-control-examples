@@ -2,6 +2,7 @@ import * as NodeCache from "node-cache";
 import { autoInjectable, injectable, singleton } from "tsyringe";
 import { ConnectAppRequest } from "../types";
 import { AppType } from "../constants";
+import { BadRequest } from "../Error";
 
 /**
  * Responsible for storing data in cache, like access_token
@@ -36,7 +37,7 @@ export class CacheService {
   getAppBaseUrl(appType: AppType) {
     const appSett = this.cache.get<ConnectAppRequest>(appType);
     if (!appSett?.pbxBase) {
-      throw Error(`BASE URL OF ${appType.toString()} is not defined`);
+      throw new BadRequest(`BASE URL OF ${appType.toString()} is not defined`);
     }
     return appSett.pbxBase;
   }
@@ -65,7 +66,7 @@ export class CacheService {
   getAppId(appType: AppType) {
     const appSett = this.cache.get<ConnectAppRequest>(appType);
     if (!appSett?.appId) {
-      throw Error(`APP_ID OF ${appType.toString()} is not defined`);
+      throw new BadRequest(`APP_ID OF ${appType.toString()} is not defined`);
     }
     return appSett.appId;
   }
@@ -77,7 +78,9 @@ export class CacheService {
   getAppSecret(appType: AppType) {
     const appSett = this.cache.get<ConnectAppRequest>(appType);
     if (!appSett?.appSecret) {
-      throw Error(`APP_SECRET OF ${appType.toString()} is not defined`);
+      throw new BadRequest(
+        `APP_SECRET OF ${appType.toString()} is not defined`
+      );
     }
     return appSett.appSecret;
   }

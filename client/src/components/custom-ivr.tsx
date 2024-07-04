@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import OutboundCampaign from "./outbound-campaign";
 import Instructions from "./instructions";
 import AppStatus from "./app-status";
-import { getStatusFunc } from "../shared";
+import { getStatusFunc, stringifyError } from "../shared";
 import { useEffect, useState } from "react";
 import { APP_TYPE_CUSTOM_IVR } from "../constants";
 import { Error, ButtonForms } from "cc-component-lib";
@@ -48,8 +48,8 @@ export default function CustomIvr() {
         }
       );
       const json = await response.json();
-      if (json?.errorMessage) {
-        setServerError(json.errorMessage);
+      if (json?.errorCode) {
+        setServerError(stringifyError(json));
         return;
       }
       await refetch();

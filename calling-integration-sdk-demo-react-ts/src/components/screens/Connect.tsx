@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Error, ButtonForms } from "cc-component-lib";
 import { useQuery } from "@tanstack/react-query";
-import { getStatusFunc } from "../../utils";
+import { getStatusFunc, stringifyError } from "../../utils";
 
 type Inputs = {
   pbxBase: string;
@@ -38,8 +38,8 @@ export const Connect: React.FC = () => {
         }
       );
       const json = await response.json();
-      if (json?.errorMessage) {
-        setServerError(json.errorMessage);
+      if (json?.errorCode) {
+        setServerError(stringifyError(json));
         return;
       }
       refetch();

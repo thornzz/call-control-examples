@@ -7,11 +7,12 @@ import { AppType } from "../constants";
 import * as busboy from "busboy";
 import { inject, injectable, singleton } from "tsyringe";
 import * as wav from "wav";
-import Koa, { ExtendableContext } from "koa";
+import { ExtendableContext } from "koa";
 import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service";
 import { OutboundCampaignService } from "./OutboundCampaignExample/OutboundCampaignApp.service";
 import * as path from "path";
 import { DialerAppService } from "./DialerAppExample/DialerApp.service";
+import { BadRequest, InternalServerError } from "../Error";
 
 @injectable()
 @singleton()
@@ -38,7 +39,7 @@ export class AppService {
     } else if (intId === AppType.Dialer) {
       await this.dialerAppSvc.connect(body, intId);
     } else {
-      throw new Error("Unknown application type");
+      throw new BadRequest("Unknown application type");
     }
   }
   /**
@@ -53,7 +54,7 @@ export class AppService {
     } else if (intId === AppType.Dialer) {
       await this.dialerAppSvc.disconnect();
     } else {
-      throw new Error("Unknown application type");
+      throw new BadRequest("Unknown application type");
     }
   }
 
@@ -65,7 +66,7 @@ export class AppService {
     } else if (intId === AppType.Dialer) {
       return this.dialerAppSvc.status();
     } else {
-      throw new Error("Unknown application type");
+      throw new BadRequest("Unknown application type");
     }
   }
   /**
@@ -104,10 +105,10 @@ export class AppService {
           this.customIvrSvc.setup(config);
           res();
         } catch (err) {
-          rej(new Error("Failed to parse Config"));
+          rej(new BadRequest("Configuration contains errors"));
         }
       });
-      bb.on("error", () => rej(new Error("Form upload failed")));
+      bb.on("error", () => rej(new InternalServerError("Form upload failed")));
       req.pipe(bb);
     });
   }
@@ -122,7 +123,11 @@ export class AppService {
    */
   public controlParticipant(body: ControlParticipantRequest, intId: AppType) {
     if (body.participantId === undefined || body.action === undefined) {
-      throw Error("Bad Request");
+      throw new BadRequest(
+        `${body.participantId === undefined ? "participantID" : ""}${
+          body.action === undefined ? "action" : ""
+        } is not specified`
+      );
     }
 
     if (intId === AppType.Campaign) {
@@ -144,7 +149,7 @@ export class AppService {
         body.destination
       );
     } else {
-      throw new Error("Failed to drop call: Unknown Application Type");
+      throw new BadRequest("Failed to drop call: Unknown Application Type");
     }
   }
 
@@ -164,7 +169,7 @@ export class AppService {
     } else if (intId === AppType.Dialer) {
       this.dialerAppSvc.makeCall(dialingSetup.sources);
     } else {
-      throw new Error("Failed to start Dialing: Unknown Application Type");
+      throw new BadRequest("Failed to start Dialing: Unknown Application Type");
     }
   }
 }

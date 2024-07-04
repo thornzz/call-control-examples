@@ -49,6 +49,7 @@ export function controlParticipantRequest(
   destination?: string
 ): Promise<Response> {
   const enumeredType = getEnumeredType(appType);
+  console.log(enumeredType, participantId, destination);
   if (enumeredType === undefined || !participantId) {
     return Promise.reject();
   }
@@ -104,6 +105,12 @@ export function selectDevice(id: string) {
       "Content-type": "application/json",
     },
   });
+}
+
+export function stringifyError(error: any) {
+  return `[${error.errorCode + " "}${error.name ?? "Unknown Error"}]: ${
+    error.message || ""
+  }`;
 }
 
 export enum DialerState {

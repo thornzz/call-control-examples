@@ -313,6 +313,12 @@ export const Dialer: React.FC<DialerProps> = ({
       );
     } catch (e) {
       setDialerState(DialerState.Idle);
+    } finally {
+      if (isOperationInProcess) {
+        setOperationDestination("");
+        setIsOperationInProccess(false);
+        setCCOperation(undefined);
+      }
     }
   };
 

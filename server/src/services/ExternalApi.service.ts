@@ -6,6 +6,7 @@ import * as https from "https";
 import * as http from "http";
 import { readChunks } from "../utils";
 import { AppType } from "../constants";
+import { BadRequest, InternalServerError } from "../Error";
 
 @injectable()
 export class ExternalApiService {
@@ -51,14 +52,14 @@ export class ExternalApiService {
    */
   private async receiveToken() {
     if (this.appType === null) {
-      throw Error("App not configured");
+      throw new BadRequest("App not configured");
     }
     const token = this.cacheService.getAppAccessToken(this.appType);
     if (!token) {
       const appId = this.cacheService.getAppId(this.appType);
       const appSecret = this.cacheService.getAppSecret(this.appType);
       if (!appId || !appSecret) {
-        throw new Error("Application ID or Secret are not defined");
+        throw new BadRequest("Application ID or Secret are not defined");
       }
       try {
         const uninterceptedAxiosInstance = axios.create({
@@ -86,7 +87,7 @@ export class ExternalApiService {
         return this.cacheService.getAppAccessToken(this.appType)!;
       } catch (err) {
         console.log(err);
-        throw new Error("Unable to receive access token");
+        throw new InternalServerError("Unable to receive access token");
       }
     }
     return token;
@@ -96,7 +97,6 @@ export class ExternalApiService {
    */
   public abortRequest() {
     this.controller?.abort();
-    console.log("REQUEST ABORTED");
   }
 
   public getFullInfo() {

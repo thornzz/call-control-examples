@@ -5,7 +5,7 @@ import { Error, ButtonForms } from "cc-component-lib";
 import Instructions from "./instructions";
 import { ConnectFormProps } from "../types";
 import { APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
-import { makeCallRequest } from "../shared";
+import { makeCallRequest, stringifyError } from "../shared";
 
 type Inputs = {
   sources: string;
@@ -22,8 +22,8 @@ export default function OutboundCampaign({ appType }: ConnectFormProps) {
     try {
       const response = await makeCallRequest(appType, submitData.sources);
       const json = await response?.json();
-      if (json?.errorMessage) {
-        setServerError(json.errorMessage);
+      if (json?.errorCode) {
+        setServerError(stringifyError(json));
         return;
       }
     } catch (err) {

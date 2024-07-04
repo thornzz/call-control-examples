@@ -32,6 +32,7 @@ import * as path from "path";
 import axios from "axios";
 import { CacheService } from "../Cache.service";
 import { ExternalApiService } from "../ExternalApi.service";
+import { BadRequest, InternalServerError } from "../../Error";
 
 @injectable()
 @singleton()
@@ -61,6 +62,46 @@ export class CustomIVRAppService {
     @inject(ExternalApiService) private externalApiSvc: ExternalApiService
   ) {}
   /**
+   *  App Connect to pbx method
+   * @param connectConfig
+   */
+  public async connect(connectConfig: ConnectAppRequest, appType: AppType) {
+    try {
+      if (
+        connectConfig.appId === undefined ||
+        connectConfig.appSecret === undefined ||
+        connectConfig.pbxBase === undefined ||
+        appType !== AppType.CustomIvr
+      ) {
+        throw new BadRequest("App Connection configuration is broken");
+      }
+      this.externalApiSvc.setup(connectConfig, appType);
+      const fullInfo = await this.externalApiSvc.getFullInfo();
+      this.fullInfo = fullInfoToObject(fullInfo.data);
+      if (this.fullInfo.callcontrol.size > 1) {
+        throw new BadRequest(
+          "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
+        );
+      }
+      const next = this.fullInfo.callcontrol.values().next();
+      const thesource: DnInfoModel = next.value;
+      if (!thesource || thesource.type !== "Wroutepoint") {
+        throw new BadRequest(
+          "Application binded to the wrong dn or dn is not founed, type should be RoutePoint"
+        );
+      }
+      this.sourceDn = thesource.dn ?? null;
+      if (!this.sourceDn) {
+        throw new BadRequest("Source DN is missing");
+      }
+      this.connected = true;
+    } catch (e) {
+      this.externalApiSvc.disconnect();
+      throw e;
+    }
+  }
+
+  /**
    * Disconnect application
    */
   async disconenct() {
@@ -76,54 +117,6 @@ export class CustomIVRAppService {
     this.failedCalls = [];
     this.callQueue.clear();
     this.connected = false;
-  }
-  /**
-   *  App Connect to pbx method
-   * @param connectConfig
-   */
-  public async connect(connectConfig: ConnectAppRequest, appType: AppType) {
-    try {
-      if (
-        connectConfig.appId === undefined ||
-        connectConfig.appSecret === undefined ||
-        connectConfig.pbxBase === undefined ||
-        appType !== AppType.CustomIvr
-      ) {
-        throw new Error("Configuration is broken");
-      }
-      this.externalApiSvc.setup(connectConfig, appType);
-      const fullInfo = await this.externalApiSvc.getFullInfo();
-      this.fullInfo = fullInfoToObject(fullInfo.data);
-      if (this.fullInfo.callcontrol.size > 1) {
-        throw new Error(
-          "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
-        );
-      }
-      const next = this.fullInfo.callcontrol.values().next();
-      const thesource: DnInfoModel = next.value;
-      if (!thesource || thesource.type !== "Wroutepoint") {
-        throw new Error(
-          "Application binded to the wrong dn or dn is not founed, type should be RoutePoint"
-        );
-      }
-      this.sourceDn = thesource.dn ?? null;
-      if (!this.sourceDn) {
-        throw new Error("Source DN is missing");
-      }
-      this.connected = true;
-    } catch (e) {
-      this.externalApiSvc.disconnect();
-      throw e;
-    }
-  }
-
-  /**
-   * Ivr config update
-   * prompt, dtmf values
-   * @param config
-   */
-  public setup(config: Record<string, any>) {
-    this.config = config as TCustomIVRConfig;
   }
   /**
    * App status
@@ -148,6 +141,14 @@ export class CustomIVRAppService {
         ? Array.from(participants.values())
         : [],
     };
+  }
+  /**
+   * Ivr config update
+   * prompt, dtmf values
+   * @param config
+   */
+  public setup(config: Record<string, any>) {
+    this.config = config as TCustomIVRConfig;
   }
   /**
    * event handler for incoming webhooks from PBX
@@ -192,25 +193,32 @@ export class CustomIVRAppService {
         break;
       case EventType.DTMFstring:
         {
-          if (dn === this.sourceDn) {
-            if (type === PARTICIPANT_TYPE_UPDATE) {
-              /**
-               * handle here recieved DTMF strings
-               */
-              const participant = this.getParticipantOfDnById(dn, id);
-              if (
-                this.connected &&
-                participant &&
-                typeof webhook.event?.attached_data?.dtmf_input === "string" &&
-                this.streamEstablishedCallsParticipants.has(participant.id!) &&
-                !this.dtmfHandlingInProcessParticipants.has(participant.id!)
-              ) {
-                await this.handleDTMFInput(
-                  participant,
-                  webhook.event.attached_data.dtmf_input
-                );
+          try {
+            if (dn === this.sourceDn) {
+              if (type === PARTICIPANT_TYPE_UPDATE) {
+                /**
+                 * handle here recieved DTMF strings
+                 */
+                const participant = this.getParticipantOfDnById(dn, id);
+                if (
+                  this.connected &&
+                  participant &&
+                  typeof webhook.event?.attached_data?.dtmf_input ===
+                    "string" &&
+                  this.streamEstablishedCallsParticipants.has(
+                    participant.id!
+                  ) &&
+                  !this.dtmfHandlingInProcessParticipants.has(participant.id!)
+                ) {
+                  await this.handleDTMFInput(
+                    participant,
+                    webhook.event.attached_data.dtmf_input
+                  );
+                }
               }
             }
+          } catch (e) {
+            console.log(e);
           }
         }
         break;
@@ -255,7 +263,7 @@ export class CustomIVRAppService {
    */
   public async handleParticipantPromptStream(participant: CallParticipant) {
     if (!this.config) {
-      throw new Error("Invalid Config");
+      throw new BadRequest("Config is missing");
     }
 
     if (
@@ -365,7 +373,7 @@ export class CustomIVRAppService {
    */
   public async handleDTMFInput(participant: CallParticipant, dtmfCode: string) {
     if (!this.config || !this.sourceDn) {
-      throw new Error("Config is missing");
+      throw new BadRequest("Config is missing");
     }
     const redirectionNumber = this.config?.keyCommands[parseFloat(dtmfCode)];
     if (redirectionNumber) {
@@ -404,7 +412,7 @@ export class CustomIVRAppService {
         this.dtmfHandlingInProcessParticipants.delete(participant.id!);
       }
     } else {
-      console.log("REDIRECTION NUMBER IS NOT DEFINED");
+      throw new BadRequest("Redirection Number is not defined");
     }
   }
   /**
@@ -421,7 +429,7 @@ export class CustomIVRAppService {
   public startDialing(dialingSetup: DialingSetup) {
     const arr = dialingSetup.sources.split(",");
     arr.forEach((destNumber) => this.pushNumbersToQueue(destNumber));
-    this.makeCallsToDst(); // TODO LET IT BE WITHOUT AWAITING PROMISE TO NOT BLOCK
+    this.makeCallsToDst();
   }
   /**
    * makes calls from call queue
@@ -429,7 +437,9 @@ export class CustomIVRAppService {
    */
   public async makeCallsToDst() {
     if (!this.sourceDn || !this.connected) {
-      throw Error("Source Dn is not defined or application is not connected");
+      throw new InternalServerError(
+        "Source Dn is not defined or application is not connected"
+      );
     }
     const participants = this.getParticipantsOfDn(this.sourceDn);
     if (participants && participants.size > 0) {
@@ -441,7 +451,7 @@ export class CustomIVRAppService {
         const source = this.fullInfo?.callcontrol.get(this.sourceDn);
         const device: DNDevice = source?.devices?.values().next().value;
         if (!device?.device_id) {
-          throw new Error("Devices not found");
+          throw new BadRequest("Devices not found");
         }
         const destNumber = this.callQueue.getAndRemoveFromQueue();
         try {
@@ -477,7 +487,9 @@ export class CustomIVRAppService {
     destination?: string
   ) {
     if (!this.sourceDn) {
-      throw Error("Source Dn is not defined or application is not connected");
+      throw new InternalServerError(
+        "Source Dn is not defined or application is not connected"
+      );
     }
     const participant = this.getParticipantOfDnById(
       this.sourceDn,

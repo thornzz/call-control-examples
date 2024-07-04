@@ -20,6 +20,7 @@ import {
 import { determineOperation, fullInfoToObject, set } from "../../utils";
 import * as EventEmitter from "events";
 import { isAxiosError } from "axios";
+import { BadRequest, InternalServerError } from "../../Error";
 
 @injectable()
 @singleton()
@@ -47,7 +48,7 @@ export class DialerAppService {
         conenctConfig.pbxBase === undefined ||
         appType !== AppType.Dialer
       ) {
-        throw new Error("Configuration is broken");
+        throw new BadRequest("App Connection configuration is broken");
       }
 
       this.externalApiSvc.setup(conenctConfig, appType);
@@ -55,14 +56,14 @@ export class DialerAppService {
       this.fullInfo = fullInfoToObject(fullInfo.data);
 
       if (this.fullInfo.callcontrol.size > 1) {
-        throw new Error(
+        throw new BadRequest(
           "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
         );
       }
       const next = this.fullInfo.callcontrol.values().next();
       const thesource: DnInfoModel = next.value;
       if (!thesource || thesource.type !== "Wextension") {
-        throw new Error(
+        throw new BadRequest(
           "Application binded to the wrong dn or dn is not founed, type should be Extension"
         );
       }
@@ -89,7 +90,7 @@ export class DialerAppService {
       }
       this.sourceDn = thesource.dn ?? null;
       if (!this.sourceDn) {
-        throw new Error("Source DN is missing");
+        throw new BadRequest("Source DN is missing");
       }
       this.connected = true;
       this.sseEventEmitter.emit("data", {
@@ -133,7 +134,7 @@ export class DialerAppService {
 
   setActiveDeviceId(id: string) {
     if (!this.deviceMap.has(id)) {
-      throw Error("Unknown device");
+      throw new BadRequest("Unknown device");
     }
     this.activeDeviceId = id;
 
@@ -236,13 +237,13 @@ export class DialerAppService {
 
   public async makeCall(dest: string) {
     if (!this.sourceDn || !this.connected || !this.activeDeviceId) {
-      throw Error(
+      throw new InternalServerError(
         "Source Dn is not defined or application is not connected or device no device selected"
       );
     }
     const selectedDevice = this.getDeviceById(this.activeDeviceId);
     if (!selectedDevice?.device_id) {
-      throw Error("Device id missing");
+      throw new InternalServerError("Device id missing");
     }
 
     try {
@@ -278,7 +279,9 @@ export class DialerAppService {
     destination?: string
   ) {
     if (!this.sourceDn) {
-      throw Error("Source Dn is not defined or application is not connected");
+      throw new InternalServerError(
+        "Source Dn is not defined or application is not connected"
+      );
     }
     const participant = this.getParticipantOfDnById(
       this.sourceDn,
@@ -298,7 +301,7 @@ export class DialerAppService {
 
   private getDeviceById(id: string) {
     if (!this.sourceDn) {
-      throw Error("Source DN is not defined");
+      throw new InternalServerError("Source DN is not defined");
     }
     return this.deviceMap.get(id);
   }

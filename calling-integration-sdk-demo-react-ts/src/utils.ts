@@ -15,3 +15,9 @@ export const getStatusFunc = () => {
 
   return getStatus;
 };
+
+export function stringifyError(error: any) {
+  return `[${error.errorCode + " "}${error.name ?? "Unknown Error"}]: ${
+    error.message || ""
+  }`;
+}

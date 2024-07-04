@@ -20,6 +20,7 @@ import {
 import { inject, injectable, singleton } from "tsyringe";
 import { ExternalApiService } from "../ExternalApi.service";
 import axios from "axios";
+import { BadRequest, InternalServerError } from "../../Error";
 
 @injectable()
 @singleton()
@@ -48,7 +49,7 @@ export class OutboundCampaignService {
       !connectConfig.pbxBase ||
       appType !== AppType.Campaign
     ) {
-      throw new Error("Configuration is broken");
+      throw new BadRequest("App Connection configuration is broken");
     }
     this.externalApiSvc.setup(connectConfig, appType);
 
@@ -56,7 +57,7 @@ export class OutboundCampaignService {
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
       if (this.fullInfo.callcontrol.size > 1) {
-        throw new Error(
+        throw new BadRequest(
           "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
         );
       }
@@ -67,13 +68,13 @@ export class OutboundCampaignService {
         !thesource ||
         (thesource.type !== "Wivr" && thesource.type !== "Wqueue")
       ) {
-        throw new Error(
+        throw new BadRequest(
           "Application binded to the wrong dn or dn is not founded, type should be Queue or Ivr"
         );
       }
       this.sourceDn = thesource.dn ?? null;
       if (!this.sourceDn) {
-        throw new Error("Source DN is missing");
+        throw new BadRequest("Source DN is missing");
       }
       this.connected = true;
     } catch (err) {
@@ -200,7 +201,9 @@ export class OutboundCampaignService {
    */
   public async makeCallsToDst() {
     if (!this.sourceDn || !this.connected) {
-      throw Error("Source Dn is not defined or application is not connected");
+      throw new InternalServerError(
+        "Source Dn is not defined or application is not connected"
+      );
     }
     const participants = this.getParticipantsOfDn(this.sourceDn);
     if (participants && participants.size > 0) {
@@ -211,7 +214,7 @@ export class OutboundCampaignService {
         const source = this.fullInfo?.callcontrol.get(this.sourceDn);
         const device: DNDevice = source?.devices?.values().next().value;
         if (!device?.device_id) {
-          throw new Error("Devices not found");
+          throw new BadRequest("Devices not found");
         }
         const destNumber = this.callQueue.getAndRemoveFromQueue();
         try {
@@ -230,7 +233,7 @@ export class OutboundCampaignService {
           }
         } catch (error: any) {
           this.failedCalls.push(destNumber!);
-          throw new Error(error.message);
+          throw new BadRequest(error.message);
         }
       }
     } else {
@@ -249,7 +252,9 @@ export class OutboundCampaignService {
     destination?: string
   ) {
     if (!this.sourceDn) {
-      throw Error("Source Dn is not defined or application is not connected");
+      throw new InternalServerError(
+        "Source Dn is not defined or application is not connected"
+      );
     }
     const participant = this.getParticipantOfDnById(
       this.sourceDn,

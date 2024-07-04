@@ -4,7 +4,6 @@ import { bodyParser } from "@koa/bodyparser";
 import * as cors from "@koa/cors";
 import initMainRouter from "./main.routing";
 import initWebhookRouter from "./webhook.routing";
-import { PassThrough } from "stream";
 import sseMiddleware from "./sse.middleware";
 require("dotenv").config();
 

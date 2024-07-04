@@ -32,9 +32,7 @@ export default function AppStatus({ appType }: ConnectFormProps) {
         }
       );
       navigate(`/${appType}/connect`);
-    } catch (err) {
-      console.log(err);
-    }
+    } catch (err) {}
   };
 
   const onDrop = async (participantId?: number) => {

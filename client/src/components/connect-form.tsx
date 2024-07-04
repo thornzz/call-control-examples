@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Navigate } from "react-router-dom";
-import { getEnumeredType, getStatusFunc } from "../shared";
+import { getEnumeredType, getStatusFunc, stringifyError } from "../shared";
 import { useState } from "react";
 import { ConnectFormProps } from "../types";
 import { ButtonForms, Error } from "cc-component-lib";
@@ -47,8 +47,8 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
         }
       );
       const json = await response.json();
-      if (json?.errorMessage) {
-        setServerError(json.errorMessage);
+      if (json?.errorCode) {
+        setServerError(stringifyError(json));
         return;
       }
       await refetch();

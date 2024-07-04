@@ -2,6 +2,7 @@ import Koa from "koa";
 import * as Router from "@koa/router";
 import { container } from "tsyringe";
 import { AppService } from "./services/App.service";
+import { AppError, InternalServerError } from "./Error";
 
 export default function initMainRouting(koa: Koa) {
   const router = new Router();
@@ -21,10 +22,13 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
-      ctx.status = 500;
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
+      } else {
+        ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
+      }
     }
   });
 
@@ -39,10 +43,13 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
-      ctx.status = 500;
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
+      } else {
+        ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
+      }
     }
   });
 
@@ -55,10 +62,13 @@ export default function initMainRouting(koa: Koa) {
       ctx.body = status;
       await next();
     } catch (err: any) {
-      ctx.status = 500;
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
+      } else {
+        ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
+      }
     }
   });
 
@@ -70,10 +80,13 @@ export default function initMainRouting(koa: Koa) {
       ctx.res.statusCode = 204;
       await next();
     } catch (err: any) {
-      ctx.status = 500;
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
+      } else {
+        ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
+      }
     }
   });
 
@@ -88,14 +101,13 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
-      if (err?.message === "Bad Request") {
-        ctx.status = 400;
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
       } else {
         ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
       }
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
     }
   });
 
@@ -112,10 +124,13 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
-      ctx.status = 500;
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
+      } else {
+        ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
+      }
     }
   });
 
@@ -129,11 +144,13 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
-      console.log(err);
-      ctx.status = 500;
-      ctx.body = {
-        errorMessage: err?.message || "Internal Server Error",
-      };
+      if (err instanceof AppError) {
+        ctx.status = err.errorCode;
+        ctx.body = err;
+      } else {
+        ctx.status = 500;
+        ctx.body = new InternalServerError("Unknown Server Error");
+      }
     }
   });
 

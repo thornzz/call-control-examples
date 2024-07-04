@@ -18,3 +18,7 @@ export const PARTICIPANT_CONTROL_TRANSFER_TO = "transferto";
 export const PARTICIPANT_CONTROL_ATTACH_DATA = "attach_participant_data";
 
 export const UNREGISTERED_DEVICE_ID = "not_registered_dev";
+
+export const BAD_REQUEST = "Bad Request";
+export const INTERNAL_SERVER_ERROR = "Internal Server Error";
+export const NOT_FOUND = "Not Found";
