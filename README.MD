@@ -1,6 +1,38 @@
-# Getting Started with External Call flow Application example
+# Getting Started with Configuring of External Call flow Application
 
 This is a Full-stack Web Application for 3CX Call Control API demonstration.
+
+## Configuration steps from PBX Side
+
+1. From `Admin Menu > Advanced > Call Processing Scripts` Create new `Route Point` assigned to "dial code" and specify following processing script:
+
+```
+using CallFlow;
+namespace dummy
+{
+    public class dummy:ScriptBase<dummy>
+    {
+        public override void Start()
+        {
+        }
+    }
+}
+```
+
+2.  Provide required configuration for created Route Point from `Advanced > Parameters > DN Properties`
+    Configuration includes following required parameters
+
+    - `APPID` and `APPSECRET`: These are credentials for your external application, responsible for authorizing requests to a configurable `RoutePoint`.
+      > **_Please note:_** For now, you should define them yourself. Later, we will add an automatic procedure.
+    - `APPHOOK`: Represents Webhook URL. This field responsible for receiving messages from PBX, here you should provide endpoint URL,
+      defined on your Application Server (eg. http://localhost:8080/api/webhook/ivr). For additional Information check [Examples Webhooks](#webhooks)
+
+      > [!IMPORTANT]  
+      > All the fields mentioned above are required for the application to start working.
+
+All fields above are required to application start work
+
+## External Web Application Installation and Configuration
 
 ## Installation
 
