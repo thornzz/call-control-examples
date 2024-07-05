@@ -64,7 +64,7 @@ export class DialerAppService {
       const thesource: DnInfoModel = next.value;
       if (!thesource || thesource.type !== "Wextension") {
         throw new BadRequest(
-          "Application binded to the wrong dn or dn is not founed, type should be Extension"
+          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be RoutePoint"
         );
       }
       if (thesource.devices.size > 0) {

@@ -69,7 +69,7 @@ export class OutboundCampaignService {
         (thesource.type !== "Wivr" && thesource.type !== "Wqueue")
       ) {
         throw new BadRequest(
-          "Application binded to the wrong dn or dn is not founded, type should be Queue or Ivr"
+          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be RoutePoint"
         );
       }
       this.sourceDn = thesource.dn ?? null;

@@ -87,7 +87,7 @@ export class CustomIVRAppService {
       const thesource: DnInfoModel = next.value;
       if (!thesource || thesource.type !== "Wroutepoint") {
         throw new BadRequest(
-          "Application binded to the wrong dn or dn is not founed, type should be RoutePoint"
+          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be RoutePoint"
         );
       }
       this.sourceDn = thesource.dn ?? null;
