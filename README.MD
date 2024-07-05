@@ -19,22 +19,22 @@ namespace dummy
 }
 ```
 
-2.  Provide required configuration for created Route Point from `Advanced > Parameters > DN Properties`
+2.  Provide required configuration for created Route Point from `Advanced > Parameters > DN Properties`.
     Configuration includes following required parameters
 
     - `APPID` and `APPSECRET`: These are credentials for your external application, responsible for authorizing requests to a configurable `RoutePoint`.
       > **_Please note:_** For now, you should define them yourself. Later, we will add an automatic procedure.
     - `APPHOOK`: Represents Webhook URL. This field responsible for receiving messages from PBX, here you should provide endpoint URL,
-      defined on your Application Server (eg. http://localhost:8080/api/webhook/ivr). For additional Information check [Examples Webhooks](#webhooks)
+      defined on your Application Server (e.g. http://localhost:8080/api/webhook/ivr). For additional Information check [Examples Webhook Routing](#applications-webhook-routing)
 
-      > [!IMPORTANT]  
+      > **Important!**  
       > All the fields mentioned above are required for the application to start working.
 
-All fields above are required to application start work
+**Done!** After you complete these steps, you can start to work with particular application.
 
 ## External Web Application Installation and Configuration
 
-## Installation
+### Installation
 
 To run the Application please follow the instructions below:
 
@@ -44,7 +44,7 @@ To run the Application please follow the instructions below:
 
 3. Open a command prompt and go to that directory
 
-The Directory contains following folders: server (main backend), client (examples UI), calling-integration-sdk-demo-react-ts (hubSpot integration example widget), cc-component-lib(for
+The Directory contains following folders: server (main backend), client (examples UI), calling-integration-sdk-demo-react-ts (HubSpot integration example widget), cc-component-lib(for
 shared components)
 
 4. Run packages installation
@@ -53,23 +53,50 @@ shared components)
 yarn install
 ```
 
-> **Please Note:** You may be asked to download corepack, press yes to proceed
+**Done!** After you installed dependencies, you can proceed with running the Application.
 
-## Running
+### Running Basic Example
 
-After you installed dependencies, you can proceed with testing or building the Application.
+Basic example contains 3 different approaches of PBX Call Control API usage, for each of them you need to have [Configured from PBX side RoutePoint](#configuration-steps-from-pbx-side)
 
-### To run basic example
+- `Custom IVR implementation`: This application implements IVR functionality. After you have connected your APP,
+  you can specify configuration for your IVR. Prompt file will be streamed to each handled by IVR connection,
+  you also may specify DTMF string routes for redirection purposes. Moreover, you are able to perform
+  outgoing calls from Custom IVR. You may specify comma-separated phone numbers and run dialing campaign.
+- `Outbound Campaign implementation`: This application represents simple Outbound Campaign, you may specify comma-separated phone numbers and run dialing campaign
+- `Dialer implementation`: This application represents simple Dialer, you may use it like physical phone device. You also free to choose which device from list you will select for call handling
 
-Run following command from terminal:
+To Start the Application, please run following command from terminal:
 
 ```
 yarn start
 ```
 
-If you are succeeded, your browser will be opened automatically.
+> **Please Note:** the `yarn start` command will automatically open a new tab in your browser at https://localhost:8081 with client-side part, and concurrently
+> run Application Server at http://localhost:8080. The Application Server Base Path is configurable depending on the `.env` configuration file, which you can find inside the root folder of the server package, but don't forget to make it consistent with client-side `.env` file.
 
-### To run HubSpot example
+> **Done!** If you are succeeded, your browser will be opened automatically.
+
+### Application's Webhook Routing
+
+Webhooks are the important part of an application, they allow receiving messages from PBX. Please make sure,
+that Webhook endpoints URLs, defined on your Application Server are consistent with the URLs you provided on [PBX Configuration](#configuration-steps-from-pbx-side) for particular application inside `APPHOOK` DN Property.
+
+By default, Example applications are providing following webhook endpoints, which you can find in `webhook.routing.ts`:
+
+- `/api/webhook/ivr` - for **Custom IVR Example**
+- `/api/webhook/campaign` - for **Outbound Campaign Example**
+- `/api/webhook/dialer` - for **Dialer Example**
+
+The resulting absolute URL will look like: http://localhost:8080/api/webhook/ivr. This is an example of what your APPHOOK field should contain.
+
+## HubSpot Integration Setup
+
+HubSpot Calling SDK Integration provides live example in development local environment
+
+> **Please note**: This is not real live ready to deploy HubSpot Application
+
+### Running HubSpot example
 
 Run following command from terminal:
 
@@ -77,55 +104,9 @@ Run following command from terminal:
 yarn start-hubspot
 ```
 
-> **Please Note:** the npm start command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
+> **Please Note:** the `yarn start` command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
 
-## Binding IVR external application to dummy route point on PBX
-
-Create new processing script assigned to "dial code" and specify following implementation (script code)
-
-```
-using CallFlow;
-namespace dummy
-{
-    public class dummy:ScriptBase<dummy>
-    {
-        public override void Start()
-        {
-        }
-    }
-}
-```
-
-This script will answer the call and do nothing.
-Use Advanced/Parameters to assign the following properties:
-APPID (string)
-APPSECRET (string)
-If application is running on the PBX host (local host version)
-set APPHOOK to http://localhost:8080/api/webhook/ivr
-if application is running in PBX local network (not straight on the PBX host)
-set APPHOOK to http://<ip_of_application_server_host>:8080/api/webhook/ivr
-
-Then in the example UI (browser will be opened as specified above) click on "Custom IVR"
-enter PBX web address APPID and APPSECTRET in corresponding fields.
-Press Connect button
-If all is done correctly, configuration of external application configuration page will appear.
-Follow the instruction on the screen to configure IVR.
-It contains:
-prompt file and destinations for different DTMF digits.
-Press Update config
-Make call to RoutePoint number.
-RoutePoint will answer and you should hear the prompt.
-Press DTMF button, call should be redirected to the specified destination.
-If destination does not answer, prompt will be repeated, and you can retry with other (or same) DTMF
-
-You can enter comma separated list of number at the bottom of the page and then press Start Dialing.
-The IVR application will make sequence of the calls to each number specified in the list (one by one)
-
-## HubSpot Integration Setup
-
-HubSpot Calling SDK Integration provides live example in development local environment
-
-> **Please note**: This is not real live ready to deploy HubSpot Application
+### Configuration steps from HubSpot side
 
 First, look at provided by HubSpot guide [Calling Extensions SDK](https://developers.hubspot.com/docs/api/crm/extensions/calling-sdk).
 
