@@ -5,6 +5,12 @@ import { getEnumeredType, getStatusFunc, stringifyError } from "../shared";
 import { useState } from "react";
 import { ConnectFormProps } from "../types";
 import { ButtonForms, Error } from "cc-component-lib";
+import {
+  APP_TYPE_CUSTOM_IVR,
+  APP_TYPE_DIALER,
+  APP_TYPE_OUTBOUND_CAMPAIGN,
+} from "../constants";
+import { InfoAlert } from "./common/info-alert";
 
 type Inputs = {
   pbxBase: string;
@@ -24,6 +30,28 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
     queryFn: getStatusFunc(appType),
     queryKey: ["status", appType],
   });
+
+  function renderFormTitle() {
+    switch (appType) {
+      case APP_TYPE_CUSTOM_IVR:
+        return "Connect Custom IVR Example";
+      case APP_TYPE_DIALER:
+        return "Connect Dialer Example";
+      case APP_TYPE_OUTBOUND_CAMPAIGN:
+        return "Connect Outbound Campaign Example";
+    }
+  }
+
+  function webhookHelp() {
+    switch (appType) {
+      case APP_TYPE_CUSTOM_IVR:
+        return `Please make sure that "APPHOOK" dn property `;
+      case APP_TYPE_DIALER:
+        return "Connect Dialer Example";
+      case APP_TYPE_OUTBOUND_CAMPAIGN:
+        return "Connect Outbound Campaign Example";
+    }
+  }
 
   const onSubmit: SubmitHandler<Inputs> = async (submitData) => {
     setServerError(undefined);
@@ -64,8 +92,10 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
       ) : (
         <div className="flex flex-col gap-3 items-center">
           {serverError && <Error message={serverError} />}
+          {!serverError && <InfoAlert appType={appType} />}
+          <h1 className="font-bold text-lg">{renderFormTitle()}</h1>
           <form
-            className="flex flex-col gap-3 w-1/2"
+            className="flex flex-col w-1/2"
             onSubmit={handleSubmit(onSubmit)}
           >
             <label htmlFor="pbxBase">PBX Base URL</label>
@@ -78,26 +108,46 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
             {errors.pbxBase && (
               <p className="text-red-500 text-sm">{errors.pbxBase.message}</p>
             )}
-            <label htmlFor="appId">APP ID</label>
+            <label htmlFor="appId" className="mt-2">
+              APP ID
+            </label>
             <input
               className="w-full h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
               id="appId"
               placeholder="APP2JAdaOIWKdasG23KAL"
               {...register("appId", { required: "Required" })}
             />
+            <p
+              id="helper-text-explanation"
+              className="text-sm text-gray-500 dark:text-gray-400"
+            >
+              APPID dn property specified on PBX side
+            </p>
             {errors.appId && (
               <p className="text-red-500 text-sm">{errors.appId.message}</p>
             )}
-            <label htmlFor="appSecret">APP Secret</label>
+            <label htmlFor="appSecret" className="mt-2">
+              APP Secret
+            </label>
             <input
               className="w-full h-[36px] mb-2 rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
               placeholder="APPSEC3123klJKSADjasdk"
               id="appSecret"
               {...register("appSecret", { required: "Required" })}
-            />
-            {errors.appSecret && (
-              <p className="text-red-500 text-sm">{errors.appSecret.message}</p>
-            )}
+            ></input>
+            <div className="flex flex-col mb-4">
+              <span
+                id="helper-text-explanation"
+                className="text-sm text-gray-500 dark:text-gray-400"
+              >
+                APPSECRET dn property specified on PBX side
+              </span>
+              {errors.appSecret && (
+                <span className="text-red-500 text-sm">
+                  {errors.appSecret.message}
+                </span>
+              )}
+            </div>
             <ButtonForms
               type="submit"
               disabled={isSubmitting}
