@@ -1,4 +1,4 @@
-# Getting Started with Configuring of External Call flow Application
+# Getting Started with Configuring External Call flow Application
 
 This is a Full-stack Web Application for 3CX Call Control API demonstration.
 
@@ -24,7 +24,7 @@ namespace dummy
 
     - `APPID` and `APPSECRET`: These are credentials for your external application, responsible for authorizing requests to a configurable `RoutePoint`.
       > **_Please note:_** For now, you should define them yourself. Later, we will add an automatic procedure.
-    - `APPHOOK`: Represents Webhook URL. This field responsible for receiving messages from PBX, here you should provide endpoint URL,
+    - `APPHOOK`: Represents Webhook URL. Webhook is responsible for receiving messages from PBX, here you should provide endpoint URL,
       defined on your Application Server (e.g. http://localhost:8080/api/webhook/ivr). For additional Information check [Examples Webhook Routing](#applications-webhook-routing)
 
       > **Important!**  
