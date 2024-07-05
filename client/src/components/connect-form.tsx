@@ -91,70 +91,72 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
         <Navigate replace to={`/${appType}`} />
       ) : (
         <div className="flex flex-col gap-3 items-center">
-          {serverError && <Error message={serverError} />}
-          {!serverError && <InfoAlert appType={appType} />}
-          <h1 className="font-bold text-lg">{renderFormTitle()}</h1>
-          <form
-            className="flex flex-col w-1/2"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <label htmlFor="pbxBase">PBX Base URL</label>
-            <input
-              className="w-full h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
-              placeholder="https://pbx.3cx.com"
-              id="pbxBase"
-              {...register("pbxBase", { required: "Required" })}
-            />
-            {errors.pbxBase && (
-              <p className="text-red-500 text-sm">{errors.pbxBase.message}</p>
-            )}
-            <label htmlFor="appId" className="mt-2">
-              APP ID
-            </label>
-            <input
-              className="w-full h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
-              id="appId"
-              placeholder="APP2JAdaOIWKdasG23KAL"
-              {...register("appId", { required: "Required" })}
-            />
-            <p
-              id="helper-text-explanation"
-              className="text-sm text-gray-500 dark:text-gray-400"
+          <div className="max-w-lg">
+            {serverError && <Error message={serverError} />}
+            {!serverError && <InfoAlert appType={appType} />}
+            <h1 className="font-bold text-lg mb-5">{renderFormTitle()}</h1>
+            <form
+              className="flex flex-col w-full"
+              onSubmit={handleSubmit(onSubmit)}
             >
-              APPID dn property specified on PBX side
-            </p>
-            {errors.appId && (
-              <p className="text-red-500 text-sm">{errors.appId.message}</p>
-            )}
-            <label htmlFor="appSecret" className="mt-2">
-              APP Secret
-            </label>
-            <input
-              className="w-full h-[36px] mb-2 rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
-              placeholder="APPSEC3123klJKSADjasdk"
-              id="appSecret"
-              {...register("appSecret", { required: "Required" })}
-            ></input>
-            <div className="flex flex-col mb-4">
-              <span
+              <label htmlFor="pbxBase">PBX Base URL</label>
+              <input
+                className="w-full h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
+                placeholder="https://pbx.3cx.com"
+                id="pbxBase"
+                {...register("pbxBase", { required: "Required" })}
+              />
+              {errors.pbxBase && (
+                <p className="text-red-500 text-sm">{errors.pbxBase.message}</p>
+              )}
+              <label htmlFor="appId" className="mt-2">
+                APP ID
+              </label>
+              <input
+                className="w-full h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
+                id="appId"
+                placeholder="APP2JAdaOIWKdasG23KAL"
+                {...register("appId", { required: "Required" })}
+              />
+              <p
                 id="helper-text-explanation"
                 className="text-sm text-gray-500 dark:text-gray-400"
               >
-                APPSECRET dn property specified on PBX side
-              </span>
-              {errors.appSecret && (
-                <span className="text-red-500 text-sm">
-                  {errors.appSecret.message}
-                </span>
+                APPID dn property specified on PBX side
+              </p>
+              {errors.appId && (
+                <p className="text-red-500 text-sm">{errors.appId.message}</p>
               )}
-            </div>
-            <ButtonForms
-              type="submit"
-              disabled={isSubmitting}
-              isLoading={isSubmitting}
-              label="Connect"
-            />
-          </form>
+              <label htmlFor="appSecret" className="mt-2">
+                APP Secret
+              </label>
+              <input
+                className="w-full h-[36px] mb-2 rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
+                placeholder="APPSEC3123klJKSADjasdk"
+                id="appSecret"
+                {...register("appSecret", { required: "Required" })}
+              ></input>
+              <div className="flex flex-col mb-4">
+                <span
+                  id="helper-text-explanation"
+                  className="text-sm text-gray-500 dark:text-gray-400"
+                >
+                  APPSECRET dn property specified on PBX side
+                </span>
+                {errors.appSecret && (
+                  <span className="text-red-500 text-sm">
+                    {errors.appSecret.message}
+                  </span>
+                )}
+              </div>
+              <ButtonForms
+                type="submit"
+                disabled={isSubmitting}
+                isLoading={isSubmitting}
+                label="Connect"
+              />
+            </form>
+          </div>
         </div>
       )}
     </>
