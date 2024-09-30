@@ -1,18 +1,21 @@
 import axios, { AxiosInstance, AxiosRequestHeaders } from "axios";
 import { CacheService } from "./Cache.service";
-import { ConnectAppRequest, WebhookEvent } from "../types";
+import { ConnectAppRequest, WSEvent } from "../types";
 import { inject, injectable } from "tsyringe";
 import * as https from "https";
 import * as http from "http";
 import { readChunks } from "../utils";
 import { AppType } from "../constants";
 import { BadRequest, InternalServerError } from "../Error";
+import * as WebSocket from "ws";
+import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service";
 
 @injectable()
 export class ExternalApiService {
   private fetch: AxiosInstance | null = null;
   public appType: AppType | null = null;
   controller: AbortController | null = null;
+  public wsClient: WebSocket | null = null;
 
   constructor(@inject(CacheService) private cacheService: CacheService) {}
   /**
@@ -22,17 +25,29 @@ export class ExternalApiService {
    * @param connetConfig
    * @param appType
    */
-  public setup(connetConfig: ConnectAppRequest, appType: AppType) {
+  public async setup(connetConfig: ConnectAppRequest, appType: AppType) {
     this.appType = appType;
 
     this.cacheService.setAppCredentials(connetConfig, appType);
 
+    //todo ws
+    const token = await this.receiveToken();
+    const appBase = this.cacheService.getAppBaseUrl(appType);
+    const url = new URL(appBase);
+    const port = url.port ? `:${url.port}` : "";
+    const wssUrl = `wss://${url.hostname}${port}/callcontrol/ws`;
+
+    this.wsClient = new WebSocket(wssUrl, {
+      headers: { Authorization: token },
+    });
+
     this.fetch = axios.create({
-      baseURL: this.cacheService.getAppBaseUrl(appType), // TODO
+      baseURL: appBase,
     });
 
     this.fetch.interceptors.request.use(async (conf) => {
       const token = await this.receiveToken();
+
       conf.headers = {
         ...conf.headers,
         Authorization: token,
@@ -43,6 +58,7 @@ export class ExternalApiService {
 
   disconnect() {
     if (this.appType !== null) {
+      this.wsClient?.close();
       this.cacheService.clearCache(this.appType);
     }
   }
@@ -266,7 +282,7 @@ export class ExternalApiService {
    * @param webhook
    * @returns
    */
-  public requestUpdatedEntityFromWebhookEvent(webhook: WebhookEvent) {
+  public requestUpdatedEntityFromWebhookEvent(webhook: WSEvent) {
     return this.fetch!.get(webhook.event.entity);
   }
 }

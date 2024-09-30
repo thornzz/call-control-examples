@@ -13,6 +13,27 @@ export type ConnectAppRequest = {
   pbxBase: string;
 };
 
+export type WebSocketRequest = {
+  RequestID?: string;
+  Path?: string;
+  RequestData?: CallControlRequest;
+};
+
+export type WebSocketResponse = {
+  RequestID?: string;
+  Path?: string;
+  StatusCode: number;
+  Response?: object;
+  dtmf_input?: string;
+};
+
+export type CallControlRequest = {
+  Reason?: string;
+  Destination?: string;
+  Timeout?: number;
+  AttachedData?: any;
+};
+
 export type ControlParticipantRequest = {
   participantId: number;
   action: CallControlParticipantAction;
@@ -102,12 +123,12 @@ export interface CallControlResultResponse {
   reasontext?: string | null;
 }
 
-export type WebhookEvent = {
+export type WSEvent = {
   sequence: number;
   event: {
     event_type: EventType;
     entity: string;
-    attached_data: any;
+    attached_data: WebSocketResponse;
   };
 };
 

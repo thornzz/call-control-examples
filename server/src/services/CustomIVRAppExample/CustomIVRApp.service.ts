@@ -9,7 +9,7 @@ import {
   DnInfoModel,
   EventType,
   TCustomIVRConfig,
-  WebhookEvent,
+  WSEvent,
 } from "../../types";
 import { inject, injectable, singleton } from "tsyringe";
 import * as fs from "fs";
@@ -19,6 +19,7 @@ import {
   determineOperation,
   fullInfoToObject,
   set,
+  useWebsocketListeners,
   writeSlicedAudioStream,
 } from "../../utils";
 import {
@@ -30,7 +31,6 @@ import {
 } from "../../constants";
 import * as path from "path";
 import axios from "axios";
-import { CacheService } from "../Cache.service";
 import { ExternalApiService } from "../ExternalApi.service";
 import { BadRequest, InternalServerError } from "../../Error";
 
@@ -58,9 +58,9 @@ export class CustomIVRAppService {
   public failedCalls: string[] = [];
 
   constructor(
-    @inject(CacheService) private cacheSvc: CacheService,
     @inject(ExternalApiService) private externalApiSvc: ExternalApiService
   ) {}
+
   /**
    *  App Connect to pbx method
    * @param connectConfig
@@ -75,7 +75,13 @@ export class CustomIVRAppService {
       ) {
         throw new BadRequest("App Connection configuration is broken");
       }
-      this.externalApiSvc.setup(connectConfig, appType);
+      await this.externalApiSvc.setup(connectConfig, appType);
+      //* ws part
+      if (!this.externalApiSvc.wsClient)
+        throw new BadRequest("Websocket client is not initialized");
+
+      useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
+      //* other part
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
       if (this.fullInfo.callcontrol.size > 1) {
@@ -152,24 +158,25 @@ export class CustomIVRAppService {
   }
   /**
    * event handler for incoming webhooks from PBX
-   * @param webhook
+   * @param wsEvent
    * @returns
    */
-  public async webHookEventHandler(webhook: WebhookEvent) {
-    if (!this.connected || !webhook?.event?.entity) {
-      return;
-    }
-    const { dn, id, type } = determineOperation(webhook.event.entity);
-    switch (webhook.event.event_type) {
-      case EventType.Upset:
-        {
-          try {
+  public wsEventHandler = async (json: string) => {
+    try {
+      const wsEvent: WSEvent = JSON.parse(json);
+      if (!this.connected || !wsEvent?.event?.entity) {
+        return;
+      }
+      const { dn, id, type } = determineOperation(wsEvent.event.entity);
+      switch (wsEvent.event.event_type) {
+        case EventType.Upset:
+          {
             const request =
               await this.externalApiSvc.requestUpdatedEntityFromWebhookEvent(
-                webhook
+                wsEvent
               );
             const data = request.data;
-            set(this.fullInfo!, webhook.event.entity, data);
+            set(this.fullInfo!, wsEvent.event.entity, data);
             if (dn === this.sourceDn) {
               if (type === PARTICIPANT_TYPE_UPDATE) {
                 /**
@@ -184,16 +191,10 @@ export class CustomIVRAppService {
                 }
               }
             }
-          } catch (err: unknown) {
-            if (axios.isAxiosError(err)) {
-              console.log(`AXIOS ERROR code: ${err.response?.status}`);
-            }
           }
-        }
-        break;
-      case EventType.DTMFstring:
-        {
-          try {
+          break;
+        case EventType.DTMFstring:
+          {
             if (dn === this.sourceDn) {
               if (type === PARTICIPANT_TYPE_UPDATE) {
                 /**
@@ -203,7 +204,7 @@ export class CustomIVRAppService {
                 if (
                   this.connected &&
                   participant &&
-                  typeof webhook.event?.attached_data?.dtmf_input ===
+                  typeof wsEvent.event?.attached_data?.dtmf_input ===
                     "string" &&
                   this.streamEstablishedCallsParticipants.has(
                     participant.id!
@@ -212,40 +213,42 @@ export class CustomIVRAppService {
                 ) {
                   await this.handleDTMFInput(
                     participant,
-                    webhook.event.attached_data.dtmf_input
+                    wsEvent.event.attached_data.dtmf_input
                   );
                 }
               }
             }
-          } catch (e) {
-            console.log(e);
           }
-        }
-        break;
-      case EventType.Remove: {
-        const removed: CallParticipant = set(
-          this.fullInfo!,
-          webhook.event.entity,
-          undefined
-        );
-        if (dn === this.sourceDn) {
-          if (type === PARTICIPANT_TYPE_UPDATE) {
-            /**
-             * handle here removed participants
-             */
-            if (removed?.id) {
-              this.incomingCallsParticipants.delete(removed.id);
-              this.gratefulShutDownStream(removed.id);
-              const participants = this.getParticipantsOfDn(this.sourceDn);
-              if (!participants || participants?.size < 1) {
-                await this.makeCallsToDst();
+          break;
+        case EventType.Remove: {
+          const removed: CallParticipant = set(
+            this.fullInfo!,
+            wsEvent.event.entity,
+            undefined
+          );
+          if (dn === this.sourceDn) {
+            if (type === PARTICIPANT_TYPE_UPDATE) {
+              /**
+               * handle here removed participants
+               */
+              if (removed?.id) {
+                this.incomingCallsParticipants.delete(removed.id);
+                this.gratefulShutDownStream(removed.id);
+                const participants = this.getParticipantsOfDn(this.sourceDn);
+                if (!participants || participants?.size < 1) {
+                  await this.makeCallsToDst();
+                }
               }
             }
           }
         }
       }
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        console.log(`AXIOS ERROR code: ${err.response?.status}`);
+      } else console.log("Unknown error", err);
     }
-  }
+  };
 
   private getParticipantOfDnById(dn: string, id: string) {
     return this.fullInfo?.callcontrol.get(dn)?.participants.get(id);
@@ -331,7 +334,6 @@ export class CustomIVRAppService {
           if (isLoop) {
             // Repeat stream from audio file
             while (true) {
-              console.log("loop");
               await writeSlicedAudioStream(
                 Buffer.concat(chunks),
                 outputWriter,
@@ -375,6 +377,7 @@ export class CustomIVRAppService {
     if (!this.config || !this.sourceDn) {
       throw new BadRequest("Config is missing");
     }
+    console.log(this.config.keyCommands, dtmfCode);
     const redirectionNumber = this.config?.keyCommands[parseFloat(dtmfCode)];
     if (redirectionNumber) {
       try {

@@ -3,13 +3,12 @@ import {
   AppStatus,
   CallControl,
   CallControlParticipantAction,
-  CallControlResultResponse,
   CallParticipant,
   ConnectAppRequest,
   DeviceModel,
   DnInfoModel,
   EventType,
-  WebhookEvent,
+  WSEvent,
 } from "../../types";
 import { ExternalApiService } from "../ExternalApi.service";
 import {
@@ -17,10 +16,16 @@ import {
   PARTICIPANT_TYPE_UPDATE,
   UNREGISTERED_DEVICE_ID,
 } from "../../constants";
-import { determineOperation, fullInfoToObject, set } from "../../utils";
+import {
+  determineOperation,
+  fullInfoToObject,
+  set,
+  useWebsocketListeners,
+} from "../../utils";
 import * as EventEmitter from "events";
-import { isAxiosError } from "axios";
+import axios, { isAxiosError } from "axios";
 import { BadRequest, InternalServerError } from "../../Error";
+import { connection, Message } from "websocket";
 
 @injectable()
 @singleton()
@@ -51,22 +56,26 @@ export class DialerAppService {
         throw new BadRequest("App Connection configuration is broken");
       }
 
-      this.externalApiSvc.setup(conenctConfig, appType);
+      await this.externalApiSvc.setup(conenctConfig, appType);
+      // * ws part
+      if (!this.externalApiSvc.wsClient)
+        throw new BadRequest("Websocket client is not initialized");
+
+      useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
+      //*
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
 
-      if (this.fullInfo.callcontrol.size > 1) {
+      const thesource: DnInfoModel | undefined = Array.from(
+        this.fullInfo.callcontrol.values()
+      ).find((val) => val.type === "Wextension");
+
+      if (!thesource) {
         throw new BadRequest(
-          "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
+          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be Extension"
         );
       }
-      const next = this.fullInfo.callcontrol.values().next();
-      const thesource: DnInfoModel = next.value;
-      if (!thesource || thesource.type !== "Wextension") {
-        throw new BadRequest(
-          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be RoutePoint"
-        );
-      }
+
       if (thesource.devices.size > 0) {
         for (const device of thesource.devices.values()) {
           if (device.device_id) {
@@ -148,21 +157,21 @@ export class DialerAppService {
    * @param webhook
    * @returns
    */
-  public async webHookEventHandler(webhook: WebhookEvent) {
-    if (!this.connected || !webhook?.event?.entity || !this.activeDeviceId) {
-      return;
-    }
-
-    const { dn, id, type } = determineOperation(webhook.event.entity);
-    switch (webhook.event.event_type) {
-      case EventType.Upset: {
-        try {
+  private wsEventHandler = async (json: string) => {
+    try {
+      const wsEvent: WSEvent = JSON.parse(json);
+      if (!this.connected || !wsEvent?.event?.entity || !this.activeDeviceId) {
+        return;
+      }
+      const { dn, id, type } = determineOperation(wsEvent.event.entity);
+      switch (wsEvent.event.event_type) {
+        case EventType.Upset: {
           const request =
             await this.externalApiSvc.requestUpdatedEntityFromWebhookEvent(
-              webhook
+              wsEvent
             );
           const data = request.data;
-          set(this.fullInfo!, webhook.event.entity, data);
+          set(this.fullInfo!, wsEvent.event.entity, data);
           if (dn === this.sourceDn) {
             if (type === PARTICIPANT_TYPE_UPDATE) {
               const participant = this.getParticipantOfDnById(dn, id);
@@ -189,51 +198,53 @@ export class DialerAppService {
               }
             }
           }
-        } catch (e) {
-          console.log(e);
+          break;
         }
-        break;
-      }
-      case EventType.Remove:
-        {
-          const removed: CallParticipant = set(
-            this.fullInfo!,
-            webhook.event.entity,
-            undefined
-          );
-          if (dn === this.sourceDn) {
-            if (type === PARTICIPANT_TYPE_UPDATE) {
-              /**
-               * handle here removed participants
-               */
-              const numId = parseFloat(id);
-              if (removed?.id) {
-                // standart case with registered device
-                let device = removed.device_id
-                  ? this.deviceMap.get(removed.device_id)
-                  : undefined;
-                if (!device) {
-                  device = this.deviceMap.get(UNREGISTERED_DEVICE_ID);
+        case EventType.Remove:
+          {
+            const removed: CallParticipant = set(
+              this.fullInfo!,
+              wsEvent.event.entity,
+              undefined
+            );
+            if (dn === this.sourceDn) {
+              if (type === PARTICIPANT_TYPE_UPDATE) {
+                /**
+                 * handle here removed participants
+                 */
+                const numId = parseFloat(id);
+                if (removed?.id) {
+                  // standart case with registered device
+                  let device = removed.device_id
+                    ? this.deviceMap.get(removed.device_id)
+                    : undefined;
+                  if (!device) {
+                    device = this.deviceMap.get(UNREGISTERED_DEVICE_ID);
+                  }
+                  device?.currentCalls.delete(removed.id);
+                } else if (numId) {
+                  //participant already removed from fullInfo for any race conditions
+                  const deletedCallDevice = Array.from(
+                    this.deviceMap.values()
+                  ).find((dev) => dev.currentCalls.has(numId));
+                  if (deletedCallDevice) {
+                    deletedCallDevice.currentCalls.delete(numId);
+                  }
                 }
-                device?.currentCalls.delete(removed.id);
-              } else if (numId) {
-                //participant already removed from fullInfo for any race conditions
-                const deletedCallDevice = Array.from(
-                  this.deviceMap.values()
-                ).find((dev) => dev.currentCalls.has(numId));
-                if (deletedCallDevice) {
-                  deletedCallDevice.currentCalls.delete(numId);
-                }
+                this.sseEventEmitter?.emit("data", {
+                  currentCalls: this.status()?.currentCalls,
+                });
               }
-              this.sseEventEmitter?.emit("data", {
-                currentCalls: this.status()?.currentCalls,
-              });
             }
           }
-        }
-        break;
+          break;
+      }
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        console.log(`AXIOS ERROR code: ${err.response?.status}`);
+      } else console.log("Unknown error", err);
     }
-  }
+  };
 
   public async makeCall(dest: string) {
     if (!this.sourceDn || !this.connected || !this.activeDeviceId) {

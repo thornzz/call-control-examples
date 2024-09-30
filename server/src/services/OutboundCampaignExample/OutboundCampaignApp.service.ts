@@ -1,4 +1,10 @@
-import { Queue, determineOperation, fullInfoToObject, set } from "../../utils";
+import {
+  Queue,
+  determineOperation,
+  fullInfoToObject,
+  set,
+  useWebsocketListeners,
+} from "../../utils";
 import {
   AppStatus,
   CallControl,
@@ -9,17 +15,11 @@ import {
   DialingSetup,
   DnInfoModel,
   EventType,
-  WebhookEvent,
+  WSEvent,
 } from "../../types";
-import {
-  AppType,
-  PARTICIPANT_CONTROL_DROP,
-  PARTICIPANT_STATUS_CONNECTED,
-  PARTICIPANT_TYPE_UPDATE,
-} from "../../constants";
+import { AppType, PARTICIPANT_TYPE_UPDATE } from "../../constants";
 import { inject, injectable, singleton } from "tsyringe";
 import { ExternalApiService } from "../ExternalApi.service";
-import axios from "axios";
 import { BadRequest, InternalServerError } from "../../Error";
 
 @injectable()
@@ -43,35 +43,36 @@ export class OutboundCampaignService {
    * @param connectConfig
    */
   public async connect(connectConfig: ConnectAppRequest, appType: AppType) {
-    if (
-      !connectConfig.appId ||
-      !connectConfig.appSecret ||
-      !connectConfig.pbxBase ||
-      appType !== AppType.Campaign
-    ) {
-      throw new BadRequest("App Connection configuration is broken");
-    }
-    this.externalApiSvc.setup(connectConfig, appType);
-
     try {
-      const fullInfo = await this.externalApiSvc.getFullInfo();
-      this.fullInfo = fullInfoToObject(fullInfo.data);
-      if (this.fullInfo.callcontrol.size > 1) {
-        throw new BadRequest(
-          "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
-        );
-      }
-      const thesource: DnInfoModel = this.fullInfo.callcontrol
-        .values()
-        .next()?.value;
       if (
-        !thesource ||
-        (thesource.type !== "Wivr" && thesource.type !== "Wqueue")
+        !connectConfig.appId ||
+        !connectConfig.appSecret ||
+        !connectConfig.pbxBase ||
+        appType !== AppType.Campaign
       ) {
+        throw new BadRequest("App Connection configuration is broken");
+      }
+      await this.externalApiSvc.setup(connectConfig, appType);
+
+      //* ws part
+      if (!this.externalApiSvc.wsClient)
+        throw new BadRequest("Websocket client is not initialized");
+
+      useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
+      //* other part
+      const fullInfo = await this.externalApiSvc.getFullInfo();
+      console.log(fullInfo.data);
+      this.fullInfo = fullInfoToObject(fullInfo.data);
+
+      const thesource: DnInfoModel | undefined = Array.from(
+        this.fullInfo.callcontrol.values()
+      ).find((val) => val.type === "Wivr" || val.type === "Wqueue");
+      if (!thesource) {
         throw new BadRequest(
-          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be RoutePoint"
+          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be IVR/Queue"
         );
       }
+
       this.sourceDn = thesource.dn ?? null;
       if (!this.sourceDn) {
         throw new BadRequest("Source DN is missing");
@@ -121,21 +122,22 @@ export class OutboundCampaignService {
    * @param webhook
    * @returns
    */
-  public async webHookEventHandler(webhook: WebhookEvent) {
-    if (!this.connected || !webhook?.event?.entity) {
-      return;
-    }
-    const { dn, id, type } = determineOperation(webhook.event.entity);
-    switch (webhook.event.event_type) {
-      case EventType.Upset:
-        {
-          try {
+  private wsEventHandler = async (json: string) => {
+    try {
+      const wsEvent: WSEvent = JSON.parse(json);
+      if (!this.connected || !wsEvent?.event?.entity) {
+        return;
+      }
+      const { dn, id, type } = determineOperation(wsEvent.event.entity);
+      switch (wsEvent.event.event_type) {
+        case EventType.Upset:
+          {
             const request =
               await this.externalApiSvc.requestUpdatedEntityFromWebhookEvent(
-                webhook
+                wsEvent
               );
             const data = request.data;
-            set(this.fullInfo!, webhook.event.entity, data);
+            set(this.fullInfo!, wsEvent.event.entity, data);
             if (dn === this.sourceDn) {
               if (type === PARTICIPANT_TYPE_UPDATE) {
                 /**
@@ -143,36 +145,32 @@ export class OutboundCampaignService {
                  */
               }
             }
-          } catch (err: unknown) {
-            if (axios.isAxiosError(err)) {
-              console.log(`AXIOS ERROR code: ${err.response?.status}`);
-            }
           }
-        }
-        break;
-      case EventType.Remove: {
-        const removed: CallParticipant = set(
-          this.fullInfo!,
-          webhook.event.entity,
-          undefined
-        );
-        if (dn === this.sourceDn) {
-          if (type === PARTICIPANT_TYPE_UPDATE) {
-            /**
-             * handle here removed participants
-             */
-            if (removed.id) {
-              this.incomingCallsParticipants.delete(removed.id);
-              const participants = this.getParticipantsOfDn(this.sourceDn);
-              if (!participants || participants?.size < 1) {
-                await this.makeCallsToDst();
+          break;
+        case EventType.Remove: {
+          const removed: CallParticipant = set(
+            this.fullInfo!,
+            wsEvent.event.entity,
+            undefined
+          );
+          if (dn === this.sourceDn) {
+            if (type === PARTICIPANT_TYPE_UPDATE) {
+              /**
+               * handle here removed participants
+               */
+              if (removed.id) {
+                this.incomingCallsParticipants.delete(removed.id);
+                const participants = this.getParticipantsOfDn(this.sourceDn);
+                if (!participants || participants?.size < 1) {
+                  await this.makeCallsToDst();
+                }
               }
             }
           }
         }
       }
-    }
-  }
+    } catch (error) {}
+  };
 
   pushNumbersToQueue(str: string) {
     this.callQueue.push(str);

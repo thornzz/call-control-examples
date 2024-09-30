@@ -7,6 +7,7 @@ import {
   DNInfo,
   DnInfoModel,
 } from "./types";
+import * as WebSocket from "ws";
 
 export function readChunks(reader: ReadableStreamDefaultReader) {
   return {
@@ -320,4 +321,36 @@ export class SSEStream extends Transform {
     this.push(`data: ${JSON.stringify(data)}\n\n`);
     done();
   }
+}
+
+export function useWebsocketListeners(
+  ws: WebSocket,
+  handlerCb: (json: string) => Promise<void>
+) {
+  const decoder = new TextDecoder("utf-8");
+
+  function heartbeat() {
+    if (!ws) return;
+    if (ws.readyState !== 1) return;
+
+    ws.ping();
+    setTimeout(heartbeat, 5000);
+  }
+
+  if (!ws) throw Error("ws now initialized");
+
+  ws.on("error", (error) => {
+    console.log("websocket error", error);
+  });
+  ws.on("open", () => {
+    console.log("websocket connected");
+    heartbeat();
+    ws.on("close", (res, buffer) => {
+      console.log("websocket closed", res, decoder.decode(buffer as Buffer));
+    });
+    ws.on("message", (buffer) => {
+      const message = decoder.decode(buffer as Buffer);
+      handlerCb(message);
+    });
+  });
 }

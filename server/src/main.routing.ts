@@ -22,6 +22,7 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
+      console.log(err);
       if (err instanceof AppError) {
         ctx.status = err.errorCode;
         ctx.body = err;
