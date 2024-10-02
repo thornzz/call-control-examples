@@ -323,9 +323,13 @@ export class SSEStream extends Transform {
   }
 }
 
+export function getParticipantUpdatePath(participantId: number, dn: string) {
+  return `/callcontrol/${dn}/participants/${participantId}`;
+}
+
 export function useWebsocketListeners(
   ws: WebSocket,
-  handlerCb: (json: string) => Promise<void>
+  handlerCb: (json: string) => void
 ) {
   const decoder = new TextDecoder("utf-8");
 

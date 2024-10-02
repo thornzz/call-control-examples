@@ -4,7 +4,7 @@ import { ConnectAppRequest, WSEvent } from "../types";
 import { inject, injectable } from "tsyringe";
 import * as https from "https";
 import * as http from "http";
-import { readChunks } from "../utils";
+import { CancelationToken, readChunks } from "../utils";
 import { AppType } from "../constants";
 import { BadRequest, InternalServerError } from "../Error";
 import * as WebSocket from "ws";
@@ -14,7 +14,7 @@ import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service"
 export class ExternalApiService {
   private fetch: AxiosInstance | null = null;
   public appType: AppType | null = null;
-  controller: AbortController | null = null;
+
   public wsClient: WebSocket | null = null;
 
   constructor(@inject(CacheService) private cacheService: CacheService) {}
@@ -108,12 +108,6 @@ export class ExternalApiService {
     }
     return token;
   }
-  /**
-   * Abort request with node Abort Controller. It's needed for streams shutdown
-   */
-  public abortRequest() {
-    this.controller?.abort();
-  }
 
   public getFullInfo() {
     return this.fetch!.get("/callcontrol");
@@ -128,10 +122,11 @@ export class ExternalApiService {
   public async postAudioStream(
     source: string,
     participantId: number,
-    body: ReadableStream<any>
+    body: ReadableStream<any>,
+    cancelationToken: CancelationToken
   ) {
-    this.controller = new AbortController();
-    const signal = this.controller.signal;
+    const controller = new AbortController();
+    const signal = controller.signal;
     const url =
       "/callcontrol" +
       `/${source}` +
@@ -168,6 +163,9 @@ export class ExternalApiService {
       request = https.request(options, (res) => {});
     }
 
+    cancelationToken.on("cancel", () => {
+      controller.abort();
+    });
     request!.on("error", (err) => {
       reader.cancel().then(() => {
         console.log("READABLE STREAM CLOSED");

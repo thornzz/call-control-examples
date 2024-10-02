@@ -6,6 +6,7 @@ import {
   PARTICIPANT_CONTROL_ROUTE_TO,
   PARTICIPANT_CONTROL_TRANSFER_TO,
 } from "./constants";
+import { CancelationToken } from "./utils";
 
 export type ConnectAppRequest = {
   appId: string;
@@ -90,8 +91,6 @@ export interface CurrentCall {
   directControll: CallParticipant["direct_control"];
 }
 
-export interface ExtendedParticipant {}
-
 export interface DNInfo {
   dn?: string | null;
   type?: string | null;
@@ -118,10 +117,18 @@ export interface CallParticipant {
   legid?: number;
   dn?: string | null;
 }
+
+export interface ExtendedParticipant extends CallParticipant {
+  streamCancelationToken?: CancelationToken;
+  flushChunksToken?: CancelationToken;
+  dtmfHandlingInProcess?: boolean;
+  stream?: WritableStreamDefaultWriter<any>;
+}
+
 export interface CallControlResultResponse {
   finalstatus?: CallRequestStatus;
   reason?: string | null;
-  result?: CallParticipant;
+  result?: ExtendedParticipant;
   reasontext?: string | null;
 }
 
@@ -145,7 +152,7 @@ export type DnInfoModel = {
   dn?: string | null;
   type?: string | null;
   devices: Map<string, DNDevice>;
-  participants: Map<string, CallParticipant>;
+  participants: Map<string, ExtendedParticipant>;
 };
 
 export type CallControl = {

@@ -2,7 +2,7 @@ import {
   AppStatus,
   CallControl,
   CallControlParticipantAction,
-  CallParticipant,
+  ExtendedParticipant,
   ConnectAppRequest,
   DNDevice,
   DialingSetup,
@@ -18,6 +18,7 @@ import {
   Queue,
   determineOperation,
   fullInfoToObject,
+  getParticipantUpdatePath,
   set,
   useWebsocketListeners,
   writeSlicedAudioStream,
@@ -43,18 +44,10 @@ export class CustomIVRAppService {
   private config: TCustomIVRConfig | null = null;
   public callQueue = new Queue<string>();
 
-  /** To prevent extra stream request for participant if it already in proccess */
-  public streamEstablishedCallsParticipants = new Map<
-    number,
-    WritableStreamDefaultWriter<any>
-  >();
-  /** To prevent extra dtmf handling for participant */
-  public dtmfHandlingInProcessParticipants = new Map<number, CallParticipant>();
-
   public connected = false;
-  token: CancelationToken = new CancelationToken();
 
-  public incomingCallsParticipants: Map<number, CallParticipant> = new Map();
+  public incomingCallsParticipants: Map<number, ExtendedParticipant> =
+    new Map();
   public failedCalls: string[] = [];
 
   constructor(
@@ -76,12 +69,11 @@ export class CustomIVRAppService {
         throw new BadRequest("App Connection configuration is broken");
       }
       await this.externalApiSvc.setup(connectConfig, appType);
-      //* ws part
       if (!this.externalApiSvc.wsClient)
         throw new BadRequest("Websocket client is not initialized");
 
       useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
-      //* other part
+
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
       const thesource: DnInfoModel | undefined = Array.from(
@@ -108,14 +100,12 @@ export class CustomIVRAppService {
    * Disconnect application
    */
   async disconenct() {
-    for (const [key, val] of this.streamEstablishedCallsParticipants) {
-      this.gratefulShutDownStream(key);
-    }
+    // for (const [key, val] of this.streamEstablishedCallsParticipants) {
+    //   this.gratefulShutDownStream(key);
+    // }
     this.externalApiSvc.disconnect();
     this.config = null;
     this.sourceDn = null;
-    this.incomingCallsParticipants.clear();
-    this.dtmfHandlingInProcessParticipants.clear();
     this.fullInfo?.callcontrol.clear();
     this.failedCalls = [];
     this.callQueue.clear();
@@ -159,7 +149,7 @@ export class CustomIVRAppService {
    * @param wsEvent
    * @returns
    */
-  public wsEventHandler = async (json: string) => {
+  public wsEventHandler = (json: string) => {
     try {
       const wsEvent: WSEvent = JSON.parse(json);
       if (!this.connected || !wsEvent?.event?.entity) {
@@ -169,26 +159,33 @@ export class CustomIVRAppService {
       switch (wsEvent.event.event_type) {
         case EventType.Upset:
           {
-            const request =
-              await this.externalApiSvc.requestUpdatedEntityFromWebhookEvent(
-                wsEvent
-              );
-            const data = request.data;
-            set(this.fullInfo!, wsEvent.event.entity, data);
-            if (dn === this.sourceDn) {
-              if (type === PARTICIPANT_TYPE_UPDATE) {
-                /**
-                 * handle here updated participants
-                 */
-                const participant = this.getParticipantOfDnById(dn, id);
-                if (!participant || !this.connected) {
-                  return;
+            this.externalApiSvc
+              .requestUpdatedEntityFromWebhookEvent(wsEvent)
+              .then((res) => {
+                const data = res.data;
+                this.updateParticipant(
+                  parseFloat(id),
+                  data,
+                  wsEvent.event.entity
+                );
+                if (dn === this.sourceDn) {
+                  if (type === PARTICIPANT_TYPE_UPDATE) {
+                    /**
+                     * handle here updated participants
+                     */
+                    const participant = this.getParticipantOfDnById(
+                      dn,
+                      parseFloat(id)
+                    );
+                    if (!participant || !this.connected) {
+                      return;
+                    }
+                    if (participant.status === PARTICIPANT_STATUS_CONNECTED) {
+                      this.handleParticipantPromptStream(participant.id!);
+                    }
+                  }
                 }
-                if (participant.status === PARTICIPANT_STATUS_CONNECTED) {
-                  await this.handleParticipantPromptStream(participant);
-                }
-              }
-            }
+              });
           }
           break;
         case EventType.DTMFstring:
@@ -198,19 +195,19 @@ export class CustomIVRAppService {
                 /**
                  * handle here recieved DTMF strings
                  */
-                const participant = this.getParticipantOfDnById(dn, id);
+                const participant = this.getParticipantOfDnById(
+                  dn,
+                  parseFloat(id)
+                );
                 if (
                   this.connected &&
                   participant &&
                   typeof wsEvent.event?.attached_data?.dtmf_input ===
                     "string" &&
-                  this.streamEstablishedCallsParticipants.has(
-                    participant.id!
-                  ) &&
-                  !this.dtmfHandlingInProcessParticipants.has(participant.id!)
+                  !participant.dtmfHandlingInProcess
                 ) {
-                  await this.handleDTMFInput(
-                    participant,
+                  this.handleDTMFInput(
+                    participant.id!,
                     wsEvent.event.attached_data.dtmf_input
                   );
                 }
@@ -219,23 +216,20 @@ export class CustomIVRAppService {
           }
           break;
         case EventType.Remove: {
-          const removed: CallParticipant = set(
-            this.fullInfo!,
-            wsEvent.event.entity,
-            undefined
-          );
           if (dn === this.sourceDn) {
             if (type === PARTICIPANT_TYPE_UPDATE) {
               /**
                * handle here removed participants
                */
-              if (removed?.id) {
-                this.incomingCallsParticipants.delete(removed.id);
-                this.gratefulShutDownStream(removed.id);
-                const participants = this.getParticipantsOfDn(this.sourceDn);
-                if (!participants || participants?.size < 1) {
-                  await this.makeCallsToDst();
-                }
+              const idNumeric = parseFloat(id);
+              if (idNumeric) {
+                this.gratefulShutDownStream(idNumeric).finally(() => {
+                  set(this.fullInfo!, wsEvent.event.entity, undefined);
+                  const participants = this.getParticipantsOfDn(this.sourceDn);
+                  if (!participants || participants?.size < 1) {
+                    this.makeCallsToDst();
+                  }
+                });
               }
             }
           }
@@ -248,42 +242,72 @@ export class CustomIVRAppService {
     }
   };
 
-  private getParticipantOfDnById(dn: string, id: string) {
-    return this.fullInfo?.callcontrol.get(dn)?.participants.get(id);
+  private getParticipantOfDnById(dn: string, id: number) {
+    return this.fullInfo?.callcontrol.get(dn)?.participants.get(String(id));
+  }
+
+  private getParticipantOfTheSourceDnById(id: number) {
+    if (!this.sourceDn) throw new Error("source not defined");
+    return this.getParticipantOfDnById(this.sourceDn, id);
   }
 
   private getParticipantsOfDn(dn?: string | null) {
     return dn ? this.fullInfo?.callcontrol.get(dn)?.participants : undefined;
   }
 
+  private updateParticipant(
+    participantId: number,
+    newData: Partial<ExtendedParticipant>,
+    whookEventEntity?: string
+  ): ExtendedParticipant {
+    if (!this.fullInfo || !this.sourceDn) throw Error("Full Info is missing");
+    const exParticipant = this.getParticipantOfTheSourceDnById(participantId);
+
+    if (!exParticipant) {
+      return set(this.fullInfo, whookEventEntity!, newData);
+    } else {
+      return set(
+        this.fullInfo,
+        getParticipantUpdatePath(participantId, this.sourceDn),
+        {
+          ...exParticipant,
+          ...newData,
+        }
+      );
+    }
+  }
   /**
    * Starts handling stream for participant
    * getting audio stream from participant + post stream from file
    * @param participant
    * @returns
    */
-  public async handleParticipantPromptStream(participant: CallParticipant) {
+  public async handleParticipantPromptStream(participantId: number) {
     if (!this.config) {
       throw new BadRequest("Config is missing");
     }
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
 
     if (
+      participant !== undefined &&
       this.sourceDn &&
       participant.id &&
-      !this.streamEstablishedCallsParticipants.has(participant.id)
+      !participant.stream
     ) {
       try {
         const outputStream = new TransformStream();
         const outputWriter = outputStream.writable.getWriter();
-        this.streamEstablishedCallsParticipants.set(
-          participant.id,
-          outputWriter
-        );
+
+        const updated = this.updateParticipant(participant.id, {
+          stream: outputWriter,
+          streamCancelationToken: new CancelationToken(),
+        });
 
         const postAudio = this.externalApiSvc.postAudioStream(
           this.sourceDn,
           participant.id,
-          outputStream.readable
+          outputStream.readable,
+          updated.streamCancelationToken!
         );
         const getAudio = this.externalApiSvc
           .getAudioStream(this.sourceDn, participant.id)
@@ -314,12 +338,21 @@ export class CustomIVRAppService {
     needRefrsh = false,
     isLoop = false
   ) {
-    const outputWriter =
-      this.streamEstablishedCallsParticipants.get(participantId);
-    if (outputWriter) {
-      if (needRefrsh) {
-        this.token.emit("cancel");
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+    if (!participant) return;
+
+    if (participant.stream !== undefined) {
+      let participantUpd = participant;
+
+      if (needRefrsh || !participant.flushChunksToken) {
+        // * interrupt chunked stream
+        participant.flushChunksToken?.emit("cancel");
+
+        participantUpd = this.updateParticipant(participant.id!, {
+          flushChunksToken: new CancelationToken(),
+        });
       }
+
       const readable = fs.createReadStream(
         path.resolve(__dirname, "../../../", "public", wavPath)
       );
@@ -334,15 +367,15 @@ export class CustomIVRAppService {
             while (true) {
               await writeSlicedAudioStream(
                 Buffer.concat(chunks),
-                outputWriter,
-                this.token
+                participantUpd.stream!,
+                participantUpd.flushChunksToken!
               );
             }
           } else {
             await writeSlicedAudioStream(
               Buffer.concat(chunks),
-              outputWriter,
-              this.token
+              participantUpd.stream!,
+              participantUpd.flushChunksToken!
             );
           }
         } catch (err) {}
@@ -354,35 +387,40 @@ export class CustomIVRAppService {
    * @param participantId
    */
   private gratefulShutDownStream(participantId: number) {
-    const stream = this.streamEstablishedCallsParticipants.get(participantId);
-    if (stream) {
-      this.token.emit("cancel");
-      stream
-        .close()
-        .catch((e) => console.log(e))
-        .finally(() => {
-          this.externalApiSvc.abortRequest();
-          this.streamEstablishedCallsParticipants.delete(participantId);
-        });
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+    if (participant?.streamCancelationToken || participant?.flushChunksToken) {
+      participant.flushChunksToken?.emit("cancel"); // FLush chunk writer
+      participant.streamCancelationToken?.emit("cancel"); // Cancel Request
+      if (participant.stream) {
+        return participant.stream
+          .close()
+          .catch((e) => console.log(e))
+          .finally(() => {
+            this.updateParticipant(participant.id!, {
+              stream: undefined,
+              streamCancelationToken: undefined,
+              flushChunksToken: undefined,
+            });
+          });
+      }
     }
+    return Promise.resolve();
   }
   /**
    * handles incoming dtmfs from participant
    * @param participant
    * @param dtmfCode
    */
-  public async handleDTMFInput(participant: CallParticipant, dtmfCode: string) {
+  public async handleDTMFInput(participantId: number, dtmfCode: string) {
     if (!this.config || !this.sourceDn) {
       throw new BadRequest("Config is missing");
     }
-    console.log(this.config.keyCommands, dtmfCode);
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+    if (!participant) return;
+
     const redirectionNumber = this.config?.keyCommands[parseFloat(dtmfCode)];
     if (redirectionNumber) {
       try {
-        this.dtmfHandlingInProcessParticipants.set(
-          participant.id!,
-          participant
-        );
         // TODO -
         this.startStreamFromFile(
           "USProgresstone.wav",
@@ -404,13 +442,10 @@ export class CustomIVRAppService {
           PARTICIPANT_CONTROL_DROP
         );
       } catch (err) {
-        // CANCEL CURRENT STREAM
-        this.token.emit("cancel");
+        // CANCEL CURRENT SLICED STREAM
+        participant.flushChunksToken?.emit("cancel");
         // START AGAIN
         this.startStreamFromFile("output.wav", participant.id!, true);
-      } finally {
-        // participant dtmf operation handled with success/error, we can proceed with new dtmf
-        this.dtmfHandlingInProcessParticipants.delete(participant.id!);
       }
     } else {
       throw new BadRequest("Redirection Number is not defined");
@@ -461,12 +496,7 @@ export class CustomIVRAppService {
             encodeURIComponent(device.device_id),
             destNumber!
           );
-          if (response.data.result?.id) {
-            this.incomingCallsParticipants.set(
-              response.data.result.id,
-              response.data.result
-            );
-          } else {
+          if (!response.data.result?.id) {
             this.failedCalls.push(destNumber!);
           }
         } catch (error) {
@@ -494,7 +524,7 @@ export class CustomIVRAppService {
     }
     const participant = this.getParticipantOfDnById(
       this.sourceDn,
-      String(participantId)
+      participantId
     );
 
     if (!participant) {
