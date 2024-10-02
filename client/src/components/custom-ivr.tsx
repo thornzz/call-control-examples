@@ -30,7 +30,7 @@ export default function CustomIvr() {
     if (data?.keymap) {
       setValue("keyCommands", data.keymap);
     }
-  }, [data, setValue]);
+  }, [data]);
 
   const [serverError, setServerError] = useState<string | undefined>(undefined);
 
@@ -117,10 +117,10 @@ export default function CustomIvr() {
             type="submit"
             disabled={isSubmitting}
             isLoading={isSubmitting}
-            label="Update Config"
+            label="Load Config"
           />
         </form>
-        <OutboundCampaign appType={APP_TYPE_CUSTOM_IVR} />
+        {data?.wavSource && <OutboundCampaign appType={APP_TYPE_CUSTOM_IVR} />}
       </div>
       <div className="flex gap-10 flex-col w-2/5">
         <Instructions

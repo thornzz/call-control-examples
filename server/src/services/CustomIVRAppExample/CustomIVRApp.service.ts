@@ -72,7 +72,11 @@ export class CustomIVRAppService {
       if (!this.externalApiSvc.wsClient)
         throw new BadRequest("Websocket client is not initialized");
 
-      useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
+      useWebsocketListeners(
+        this.externalApiSvc.wsClient,
+        this.wsEventHandler,
+        this.reconnectWebsocket
+      );
 
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
@@ -96,6 +100,21 @@ export class CustomIVRAppService {
     }
   }
 
+  private reconnectWebsocket = () => {
+    if (this.connected === true && this.externalApiSvc.wsClient !== null) {
+      setTimeout(() => {
+        console.log("Trying to reconnect websocket...");
+        this.externalApiSvc.createWs().then(() => {
+          useWebsocketListeners(
+            this.externalApiSvc.wsClient!,
+            this.wsEventHandler,
+            this.reconnectWebsocket
+          );
+        });
+      }, 5000);
+    }
+  };
+
   /**
    * Disconnect application
    */
@@ -109,7 +128,7 @@ export class CustomIVRAppService {
     this.fullInfo?.callcontrol.clear();
     this.failedCalls = [];
     this.callQueue.clear();
-    this.externalApiSvc.wsClient?.close();
+    this.externalApiSvc.wsClient?.terminate();
     this.connected = false;
   }
   /**

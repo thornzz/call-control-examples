@@ -58,7 +58,11 @@ export class OutboundCampaignService {
       if (!this.externalApiSvc.wsClient)
         throw new BadRequest("Websocket client is not initialized");
 
-      useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
+      useWebsocketListeners(
+        this.externalApiSvc.wsClient,
+        this.wsEventHandler,
+        this.reconnectWebsocket
+      );
       //* other part
       const fullInfo = await this.externalApiSvc.getFullInfo();
       console.log(fullInfo.data);
@@ -93,9 +97,27 @@ export class OutboundCampaignService {
     this.fullInfo?.callcontrol.clear();
     this.failedCalls = [];
     this.callQueue.clear();
-    this.externalApiSvc.wsClient?.close();
+    this.externalApiSvc.wsClient?.terminate();
     this.connected = false;
   }
+
+  private reconnectWebsocket = () => {
+    if (this.connected === true && this.externalApiSvc.wsClient !== null) {
+      setTimeout(() => {
+        console.log("Trying to reconnect websocket...");
+        if (this.externalApiSvc.wsClient) {
+          this.externalApiSvc.wsClient.terminate();
+        }
+        this.externalApiSvc.createWs().then(() => {
+          useWebsocketListeners(
+            this.externalApiSvc.wsClient!,
+            this.wsEventHandler,
+            this.reconnectWebsocket
+          );
+        });
+      }, 5000);
+    }
+  };
   /**
    * receive app status
    * @returns

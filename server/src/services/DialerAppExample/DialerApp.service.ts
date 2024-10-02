@@ -61,7 +61,11 @@ export class DialerAppService {
       if (!this.externalApiSvc.wsClient)
         throw new BadRequest("Websocket client is not initialized");
 
-      useWebsocketListeners(this.externalApiSvc.wsClient, this.wsEventHandler);
+      useWebsocketListeners(
+        this.externalApiSvc.wsClient,
+        this.wsEventHandler,
+        this.reconnectWebsocket
+      );
       //*
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
@@ -122,9 +126,22 @@ export class DialerAppService {
     this.sseEventEmitter.emit("data", {
       currentCalls: this.status()?.currentCalls,
     });
-    this.externalApiSvc.wsClient?.close();
+    this.externalApiSvc.wsClient?.terminate();
     this.connected = false;
   }
+
+  private reconnectWebsocket = () => {
+    if (this.connected === true && this.externalApiSvc.wsClient !== null) {
+      setTimeout(() => {
+        console.log("Trying to reconnect websocket...");
+        useWebsocketListeners(
+          this.externalApiSvc.wsClient!,
+          this.wsEventHandler,
+          this.reconnectWebsocket
+        );
+      }, 5000);
+    }
+  };
 
   public status(): AppStatus {
     const activeDevice = this.activeDeviceId

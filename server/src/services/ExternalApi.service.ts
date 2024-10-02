@@ -31,16 +31,9 @@ export class ExternalApiService {
     this.cacheService.setAppCredentials(connetConfig, appType);
 
     //todo ws
-    const token = await this.receiveToken();
     const appBase = this.cacheService.getAppBaseUrl(appType);
-    const url = new URL(appBase);
-    const port = url.port ? `:${url.port}` : "";
-    const wssUrl = `wss://${url.hostname}${port}/callcontrol/ws`;
 
-    this.wsClient = new WebSocket(wssUrl, {
-      headers: { Authorization: token },
-    });
-
+    await this.createWs();
     this.fetch = axios.create({
       baseURL: appBase,
     });
@@ -53,6 +46,19 @@ export class ExternalApiService {
         Authorization: token,
       } as AxiosRequestHeaders;
       return conf;
+    });
+  }
+
+  public async createWs() {
+    if (this.appType === null) throw new Error("WS connect: unknown app type");
+    const appBase = this.cacheService.getAppBaseUrl(this.appType);
+    const url = new URL(appBase);
+    const port = url.port ? `:${url.port}` : "";
+    const token = await this.receiveToken();
+    const wssUrl = `wss://${url.hostname}${port}/callcontrol/ws`;
+
+    this.wsClient = new WebSocket(wssUrl, {
+      headers: { Authorization: token },
     });
   }
 
