@@ -1,12 +1,4 @@
-import { useState } from "react";
-import { ConnectFormProps } from "../../types";
-
-interface InfoAlertProps {
-  appType: ConnectFormProps["appType"];
-}
-
-export const InfoAlert: React.FC<InfoAlertProps> = ({ appType }) => {
-  const [tooltipShown, toggle] = useState(false);
+export const InfoAlert: React.FC = () => {
   return (
     <div
       className="flex bg-blue-100 rounded-lg p-4 mb-4 text-sm text-blue-700 max-w-lg"
@@ -26,34 +18,6 @@ export const InfoAlert: React.FC<InfoAlertProps> = ({ appType }) => {
       </svg>
       <div>
         <span className="font-medium">Please Note: </span>
-        <span>APPHOOK dn property for current application is </span>
-        <div className="relative flex items-center pb-2">
-          <button
-            className="cursor-pointer text-blue-500"
-            onMouseLeave={() => toggle(false)}
-            onClick={() => {
-              navigator.clipboard.writeText(
-                import.meta.env.VITE_SERVER_BASE +
-                  "/api" +
-                  "/webhook" +
-                  `/${appType}`
-              );
-              toggle(true);
-            }}
-          >
-            {import.meta.env.VITE_SERVER_BASE +
-              "/api" +
-              "/webhook" +
-              `/${appType}`}
-          </button>
-          <div className={`${!tooltipShown ? "hidden" : ""}`}>
-            <div className="absolute right-4 bottom-1 flex items-center group-hover:flex">
-              <span className="relative z-10 p-2 text-xs text-white leading-none whitespace-no-wrap bg-slate-600 shadow-lg">
-                Copied to clipboard!
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

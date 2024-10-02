@@ -91,9 +91,8 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
         <Navigate replace to={`/${appType}`} />
       ) : (
         <div className="flex flex-col gap-3 items-center">
-          <div className="max-w-lg">
+          <div className="max-w-lg w-3/4">
             {serverError && <Error message={serverError} />}
-            {!serverError && <InfoAlert appType={appType} />}
             <h1 className="font-bold text-lg mb-5">{renderFormTitle()}</h1>
             <form
               className="flex flex-col w-full"
@@ -122,7 +121,7 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
                 id="helper-text-explanation"
                 className="text-sm text-gray-500 dark:text-gray-400"
               >
-                APPID dn property specified on PBX side
+                Client ID of Service Principal
               </p>
               {errors.appId && (
                 <p className="text-red-500 text-sm">{errors.appId.message}</p>
@@ -141,7 +140,7 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
                   id="helper-text-explanation"
                   className="text-sm text-gray-500 dark:text-gray-400"
                 >
-                  APPSECRET dn property specified on PBX side
+                  API Key you recieved after configuring Service Principal
                 </span>
                 {errors.appSecret && (
                   <span className="text-red-500 text-sm">

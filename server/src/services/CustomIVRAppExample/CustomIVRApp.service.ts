@@ -84,16 +84,13 @@ export class CustomIVRAppService {
       //* other part
       const fullInfo = await this.externalApiSvc.getFullInfo();
       this.fullInfo = fullInfoToObject(fullInfo.data);
-      if (this.fullInfo.callcontrol.size > 1) {
+      const thesource: DnInfoModel | undefined = Array.from(
+        this.fullInfo.callcontrol.values()
+      ).find((val) => val.type === "Wroutepoint");
+
+      if (!thesource) {
         throw new BadRequest(
-          "More than 1 DN founded, please make sure you didn't specify DN_LSIT property for application"
-        );
-      }
-      const next = this.fullInfo.callcontrol.values().next();
-      const thesource: DnInfoModel = next.value;
-      if (!thesource || thesource.type !== "Wroutepoint") {
-        throw new BadRequest(
-          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be RoutePoint"
+          "Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be Extension"
         );
       }
       this.sourceDn = thesource.dn ?? null;
@@ -122,6 +119,7 @@ export class CustomIVRAppService {
     this.fullInfo?.callcontrol.clear();
     this.failedCalls = [];
     this.callQueue.clear();
+    this.externalApiSvc.wsClient?.close();
     this.connected = false;
   }
   /**
@@ -508,6 +506,5 @@ export class CustomIVRAppService {
       action,
       destination
     );
-    // no need to return error if unsuccesful drop
   }
 }

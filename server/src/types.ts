@@ -90,6 +90,8 @@ export interface CurrentCall {
   directControll: CallParticipant["direct_control"];
 }
 
+export interface ExtendedParticipant {}
+
 export interface DNInfo {
   dn?: string | null;
   type?: string | null;

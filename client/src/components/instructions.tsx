@@ -1,11 +1,8 @@
-import { useState } from "react";
 import { ConnectFormProps } from "../types";
 
 export default function Instructions({
   text,
-  appType,
 }: ConnectFormProps & { text: string }) {
-  const [tooltipShown, toggle] = useState(false);
   return (
     <div className="w-full mx-auto bg-slate-900 shadow-lg rounded-lg">
       <div className="px-6 py-5">
@@ -37,38 +34,6 @@ export default function Instructions({
             </div>
             <div className="flex items-end justify-between whitespace-normal">
               <div className="max-w-md text-indigo-100">
-                <p className="mb-2">Before you get started:</p>
-                <p className="mb-2">
-                  From 3CX PBX side, in your Application dn propertiy "APPHOOK",
-                  please specify following webhook url for current Application:
-                </p>
-                <div className="relative flex items-center pb-2">
-                  <button
-                    className="cursor-pointer text-blue-500"
-                    onMouseLeave={() => toggle(false)}
-                    onClick={() => {
-                      navigator.clipboard.writeText(
-                        import.meta.env.VITE_SERVER_BASE +
-                          "/api" +
-                          "/webhook" +
-                          `/${appType}`
-                      );
-                      toggle(true);
-                    }}
-                  >
-                    {import.meta.env.VITE_SERVER_BASE +
-                      "/api" +
-                      "/webhook" +
-                      `/${appType}`}
-                  </button>
-                  <div className={`${!tooltipShown ? "hidden" : ""}`}>
-                    <div className="absolute right-4 bottom-1 flex items-center  group-hover:flex">
-                      <span className="relative z-10 p-2 text-xs leading-none whitespace-no-wrap bg-slate-600 shadow-lg">
-                        Copied to clipboard!
-                      </span>
-                    </div>
-                  </div>
-                </div>
                 <p className="mb-2">{text}</p>
               </div>
             </div>

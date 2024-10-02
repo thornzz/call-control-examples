@@ -79,6 +79,9 @@ export default function initMainRouting(koa: Koa) {
       const intId = parseFloat(queryParam as string);
       app.startDialing(ctx.request.body, intId);
       ctx.res.statusCode = 204;
+      ctx.body = {
+        message: "Accepted",
+      };
       await next();
     } catch (err: any) {
       if (err instanceof AppError) {
@@ -102,6 +105,7 @@ export default function initMainRouting(koa: Koa) {
       };
       await next();
     } catch (err: any) {
+      console.log(err);
       if (err instanceof AppError) {
         ctx.status = err.errorCode;
         ctx.body = err;

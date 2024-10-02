@@ -93,6 +93,7 @@ export class OutboundCampaignService {
     this.fullInfo?.callcontrol.clear();
     this.failedCalls = [];
     this.callQueue.clear();
+    this.externalApiSvc.wsClient?.close();
     this.connected = false;
   }
   /**

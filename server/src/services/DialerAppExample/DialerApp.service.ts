@@ -119,10 +119,11 @@ export class DialerAppService {
     this.fullInfo?.callcontrol.clear();
     this.deviceMap.clear();
     this.activeDeviceId = null;
-    this.connected = false;
     this.sseEventEmitter.emit("data", {
       currentCalls: this.status()?.currentCalls,
     });
+    this.externalApiSvc.wsClient?.close();
+    this.connected = false;
   }
 
   public status(): AppStatus {

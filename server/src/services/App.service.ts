@@ -149,7 +149,7 @@ export class AppService {
         body.destination
       );
     } else {
-      throw new BadRequest("Failed to drop call: Unknown Application Type");
+      throw new BadRequest("Unknown Application Type");
     }
   }
 
