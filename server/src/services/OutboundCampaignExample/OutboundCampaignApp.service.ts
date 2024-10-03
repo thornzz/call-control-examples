@@ -61,11 +61,11 @@ export class OutboundCampaignService {
       useWebsocketListeners(
         this.externalApiSvc.wsClient,
         this.wsEventHandler,
-        this.reconnectWebsocket
+        this.onReconnectWs,
+        this.externalApiSvc.restoreTries
       );
       //* other part
       const fullInfo = await this.externalApiSvc.getFullInfo();
-      console.log(fullInfo.data);
       this.fullInfo = fullInfoToObject(fullInfo.data);
 
       const thesource: DnInfoModel | undefined = Array.from(
@@ -101,23 +101,24 @@ export class OutboundCampaignService {
     this.connected = false;
   }
 
-  private reconnectWebsocket = () => {
-    if (this.connected === true && this.externalApiSvc.wsClient !== null) {
-      setTimeout(() => {
-        console.log("Trying to reconnect websocket...");
-        if (this.externalApiSvc.wsClient) {
-          this.externalApiSvc.wsClient.terminate();
+  private onReconnectWs = () => {
+    this.externalApiSvc
+      .reconnectWs()
+      .then((ws) => {
+        useWebsocketListeners(
+          ws,
+          this.wsEventHandler,
+          this.onReconnectWs,
+          this.externalApiSvc.restoreTries
+        );
+      })
+      .catch((reason) => {
+        if (reason === "TERMINATE") {
+          this.disconnect();
         }
-        this.externalApiSvc.createWs().then(() => {
-          useWebsocketListeners(
-            this.externalApiSvc.wsClient!,
-            this.wsEventHandler,
-            this.reconnectWebsocket
-          );
-        });
-      }, 5000);
-    }
+      });
   };
+
   /**
    * receive app status
    * @returns

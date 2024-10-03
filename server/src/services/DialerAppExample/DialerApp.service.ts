@@ -64,7 +64,8 @@ export class DialerAppService {
       useWebsocketListeners(
         this.externalApiSvc.wsClient,
         this.wsEventHandler,
-        this.reconnectWebsocket
+        this.onReconnectWs,
+        this.externalApiSvc.restoreTries
       );
       //*
       const fullInfo = await this.externalApiSvc.getFullInfo();
@@ -130,17 +131,22 @@ export class DialerAppService {
     this.connected = false;
   }
 
-  private reconnectWebsocket = () => {
-    if (this.connected === true && this.externalApiSvc.wsClient !== null) {
-      setTimeout(() => {
-        console.log("Trying to reconnect websocket...");
+  private onReconnectWs = () => {
+    this.externalApiSvc
+      .reconnectWs()
+      .then((ws) => {
         useWebsocketListeners(
-          this.externalApiSvc.wsClient!,
+          ws,
           this.wsEventHandler,
-          this.reconnectWebsocket
+          this.onReconnectWs,
+          this.externalApiSvc.restoreTries
         );
-      }, 5000);
-    }
+      })
+      .catch((reason) => {
+        if (reason === "TERMINATE") {
+          this.disconnect();
+        }
+      });
   };
 
   public status(): AppStatus {
@@ -197,6 +203,7 @@ export class DialerAppService {
                 let device = participant?.device_id
                   ? this.deviceMap.get(participant.device_id)
                   : undefined;
+
                 if (!device) {
                   device = this.deviceMap.get(UNREGISTERED_DEVICE_ID);
                 }

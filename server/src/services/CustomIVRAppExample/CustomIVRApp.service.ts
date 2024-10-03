@@ -44,8 +44,6 @@ export class CustomIVRAppService {
   private config: TCustomIVRConfig | null = null;
   public callQueue = new Queue<string>();
 
-  public connected = false;
-
   public incomingCallsParticipants: Map<number, ExtendedParticipant> =
     new Map();
   public failedCalls: string[] = [];
@@ -75,7 +73,8 @@ export class CustomIVRAppService {
       useWebsocketListeners(
         this.externalApiSvc.wsClient,
         this.wsEventHandler,
-        this.reconnectWebsocket
+        this.onReconnectWs,
+        this.externalApiSvc.restoreTries
       );
 
       const fullInfo = await this.externalApiSvc.getFullInfo();
@@ -93,35 +92,41 @@ export class CustomIVRAppService {
       if (!this.sourceDn) {
         throw new BadRequest("Source DN is missing");
       }
-      this.connected = true;
+      this.externalApiSvc.connected = true;
     } catch (e) {
       this.externalApiSvc.disconnect();
       throw e;
     }
   }
 
-  private reconnectWebsocket = () => {
-    if (this.connected === true && this.externalApiSvc.wsClient !== null) {
-      setTimeout(() => {
-        console.log("Trying to reconnect websocket...");
-        this.externalApiSvc.createWs().then(() => {
-          useWebsocketListeners(
-            this.externalApiSvc.wsClient!,
-            this.wsEventHandler,
-            this.reconnectWebsocket
-          );
-        });
-      }, 5000);
-    }
+  private onReconnectWs = () => {
+    this.externalApiSvc
+      .reconnectWs()
+      .then((ws) => {
+        useWebsocketListeners(
+          ws,
+          this.wsEventHandler,
+          this.onReconnectWs,
+          this.externalApiSvc.restoreTries
+        );
+      })
+      .catch((reason) => {
+        if (reason === "TERMINATE") {
+          this.disconnect();
+        }
+      });
   };
 
   /**
    * Disconnect application
    */
-  async disconenct() {
-    // for (const [key, val] of this.streamEstablishedCallsParticipants) {
-    //   this.gratefulShutDownStream(key);
-    // }
+  async disconnect() {
+    for (const part of this.getParticipantsOfDn(this.sourceDn!)?.values() ??
+      []) {
+      if (part.streamCancelationToken) {
+        await this.gratefulShutDownStream(part.id!);
+      }
+    }
     this.externalApiSvc.disconnect();
     this.config = null;
     this.sourceDn = null;
@@ -129,7 +134,6 @@ export class CustomIVRAppService {
     this.failedCalls = [];
     this.callQueue.clear();
     this.externalApiSvc.wsClient?.terminate();
-    this.connected = false;
   }
   /**
    * App status
@@ -145,7 +149,7 @@ export class CustomIVRAppService {
     const participants = this.getParticipantsOfDn(this.sourceDn);
 
     return {
-      connected: this.connected,
+      connected: this.externalApiSvc.connected,
       sorceDn: this.sourceDn,
       keymap: this.config?.keyCommands,
       callQueue,
@@ -171,7 +175,7 @@ export class CustomIVRAppService {
   public wsEventHandler = (json: string) => {
     try {
       const wsEvent: WSEvent = JSON.parse(json);
-      if (!this.connected || !wsEvent?.event?.entity) {
+      if (!this.externalApiSvc.connected || !wsEvent?.event?.entity) {
         return;
       }
       const { dn, id, type } = determineOperation(wsEvent.event.entity);
@@ -196,7 +200,7 @@ export class CustomIVRAppService {
                       dn,
                       parseFloat(id)
                     );
-                    if (!participant || !this.connected) {
+                    if (!participant || !this.externalApiSvc.connected) {
                       return;
                     }
                     if (participant.status === PARTICIPANT_STATUS_CONNECTED) {
@@ -219,7 +223,7 @@ export class CustomIVRAppService {
                   parseFloat(id)
                 );
                 if (
-                  this.connected &&
+                  this.externalApiSvc.connected &&
                   participant &&
                   typeof wsEvent.event?.attached_data?.dtmf_input ===
                     "string" &&
@@ -491,7 +495,7 @@ export class CustomIVRAppService {
    * @returns
    */
   public async makeCallsToDst() {
-    if (!this.sourceDn || !this.connected) {
+    if (!this.sourceDn || !this.externalApiSvc.connected) {
       throw new InternalServerError(
         "Source Dn is not defined or application is not connected"
       );
@@ -501,7 +505,6 @@ export class CustomIVRAppService {
       return;
     }
     if (!this.callQueue.isEmpty()) {
-      this.connected = true;
       if (this.callQueue.items.head !== null) {
         const source = this.fullInfo?.callcontrol.get(this.sourceDn);
         const device: DNDevice = source?.devices?.values().next().value;

@@ -330,7 +330,8 @@ export function getParticipantUpdatePath(participantId: number, dn: string) {
 export function useWebsocketListeners(
   ws: WebSocket,
   handlerCb: (json: string) => void,
-  reconnectCb: () => void
+  reconnectCb: () => void,
+  restoreReconnectTries: () => void
 ) {
   const decoder = new TextDecoder("utf-8");
 
@@ -350,6 +351,7 @@ export function useWebsocketListeners(
   });
   ws.on("open", () => {
     console.log("Websocket connected");
+    restoreReconnectTries();
     heartbeat();
     ws.on("close", (res, buffer) => {
       console.log("websocket closed", res, decoder.decode(buffer as Buffer));

@@ -48,7 +48,7 @@ export class AppService {
    */
   public async disconnectApplication(intId: AppType): Promise<void> {
     if (intId === AppType.CustomIvr) {
-      await this.customIvrSvc.disconenct();
+      await this.customIvrSvc.disconnect();
     } else if (intId === AppType.Campaign) {
       await this.outboundCampaignSvc.disconnect();
     } else if (intId === AppType.Dialer) {

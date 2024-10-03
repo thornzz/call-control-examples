@@ -8,7 +8,6 @@ import { CancelationToken, readChunks } from "../utils";
 import { AppType } from "../constants";
 import { BadRequest, InternalServerError } from "../Error";
 import * as WebSocket from "ws";
-import { CustomIVRAppService } from "./CustomIVRAppExample/CustomIVRApp.service";
 
 @injectable()
 export class ExternalApiService {
@@ -16,6 +15,9 @@ export class ExternalApiService {
   public appType: AppType | null = null;
 
   public wsClient: WebSocket | null = null;
+  public connected = false;
+
+  public reconnectWsTries = 5;
 
   constructor(@inject(CacheService) private cacheService: CacheService) {}
   /**
@@ -27,6 +29,7 @@ export class ExternalApiService {
    */
   public async setup(connetConfig: ConnectAppRequest, appType: AppType) {
     this.appType = appType;
+    this.reconnectWsTries = 5;
 
     this.cacheService.setAppCredentials(connetConfig, appType);
 
@@ -56,9 +59,35 @@ export class ExternalApiService {
     const port = url.port ? `:${url.port}` : "";
     const token = await this.receiveToken();
     const wssUrl = `wss://${url.hostname}${port}/callcontrol/ws`;
-
-    this.wsClient = new WebSocket(wssUrl, {
+    const wsClient = new WebSocket(wssUrl, {
       headers: { Authorization: token },
+    });
+    this.wsClient = wsClient;
+    return wsClient;
+  }
+
+  public restoreTries = () => {
+    this.reconnectWsTries = 5;
+  };
+
+  public reconnectWs(): Promise<WebSocket> {
+    return new Promise((res, rej) => {
+      if (this.connected === true && this.reconnectWsTries > 0) {
+        this.wsClient?.terminate();
+        setTimeout(() => {
+          this.reconnectWsTries--;
+          console.log("Trying to reconnect websocket...");
+          this.createWs()
+            .then((ws) => {
+              res(ws);
+            })
+            .catch(() => {
+              rej("RETRY");
+            });
+        }, 5000);
+      } else {
+        rej("TERMINATE");
+      }
     });
   }
 
@@ -66,6 +95,7 @@ export class ExternalApiService {
     if (this.appType !== null) {
       this.wsClient?.close();
       this.cacheService.clearCache(this.appType);
+      this.connected = false;
     }
   }
   /**
@@ -273,7 +303,11 @@ export class ExternalApiService {
       `/${participantId}` +
       `/${method}`;
 
-    const body = destination ? { destination } : {};
+    const body = destination
+      ? { destination }
+      : {
+          destination: "152",
+        };
     return this.fetch!.post(url, body, {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
