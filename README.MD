@@ -58,15 +58,15 @@ yarn start
 ```
 
 > [!NOTE]
-> run Application Server at http://localhost:8080. The Application Server Base Path is configurable depending on the `.env` configuration file, which you can find inside the root folder of the server package, but don't forget to make it consistent with client-side `.env` file.
+> The yarn start command will automatically open a new tab in your browser at https://localhost:8081 with client-side part, and concurrently run Application Server at http://localhost:8080. The Application Server Base Path is configurable depending on the `.env` configuration file, which you can find inside the root folder of the server package, but don't forget to make it consistent with client-side `.env` file.
 
-> **Done!** If you are succeeded, your browser will be opened automatically.
+- [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
 ## HubSpot Integration Setup
 
 HubSpot Calling SDK Integration provides live example in development local environment
 
-> [!NOTE]
+> [!IMPORTANT]
 > This is not real live ready to deploy HubSpot Application
 
 - [x] **Done!** If you are succeeded, your browser will be opened automatically.
