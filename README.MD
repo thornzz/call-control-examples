@@ -12,9 +12,10 @@ From the Admin Console in the 3CX Webclient, go to Integrations > API:
  5. (Optional) Specify additional extensions you want to monitor using the API.
  6. After successfully creating a new API instance, you will receive an API key for your third-party applications. This key will be shown only once, so be sure to save it for future use.
 
-**That's it! You've successfully completed the PBX configuration.**
+- [x] **That's it! You've successfully completed the PBX configuration.**
 
-**Please note:** You must have a 3CX Enterprise license and CFD to use 3CX Call Control.
+> [!IMPORTANT]
+> You must have a 3CX Enterprise license and CFD to use 3CX Call Control.
 
 ## External Web Application Installation and Configuration
 
@@ -37,7 +38,7 @@ shared components)
 yarn install
 ```
 
-**Done!** After you installed dependencies, you can proceed with running the Application.
+- [x] **Done!** After you installed dependencies, you can proceed with running the Application.
 
 ### Running Basic Example
 
@@ -56,7 +57,7 @@ To Start the Application, please run following command from terminal:
 yarn start
 ```
 
-> **Please Note:** the `yarn start` command will automatically open a new tab in your browser at https://localhost:8081 with client-side part, and concurrently
+> [!NOTE]
 > run Application Server at http://localhost:8080. The Application Server Base Path is configurable depending on the `.env` configuration file, which you can find inside the root folder of the server package, but don't forget to make it consistent with client-side `.env` file.
 
 > **Done!** If you are succeeded, your browser will be opened automatically.
@@ -65,7 +66,10 @@ yarn start
 
 HubSpot Calling SDK Integration provides live example in development local environment
 
-> **Please note**: This is not real live ready to deploy HubSpot Application
+> [!NOTE]
+> This is not real live ready to deploy HubSpot Application
+
+- [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
 ### Running HubSpot example
 
@@ -75,7 +79,8 @@ Run following command from terminal:
 yarn start-hubspot
 ```
 
-> **Please Note:** the `yarn start` command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
+> [!NOTE]
+> the `yarn start` command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
 
 ### Configuration steps from HubSpot side
 
