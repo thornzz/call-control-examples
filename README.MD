@@ -4,33 +4,17 @@ This is a Full-stack Web Application for 3CX Call Control API demonstration.
 
 ## Configuration steps from PBX Side
 
-1. From `Admin Menu > Advanced > Call Processing Scripts` Create new `Route Point` assigned to "dial code" and specify following processing script:
+From the Admin Console in the 3CX Webclient, go to Integrations > API:
+ 1. Press the Add button to create a new client application.
+ 2. Specify the ClientID (DN for accessing the route point, which is also needed for authorization).
+ 3. If using the Call Control scope, check the Call Control Access Enabled checkbox.
+ 4. (Optional) Specify DID numbers for the Route Point.
+ 5. (Optional) Specify additional extensions you want to monitor using the API.
+ 6. After successfully creating a new API instance, you will receive an API key for your third-party applications. This key will be shown only once, so be sure to save it for future use.
 
-```
-using CallFlow;
-namespace dummy
-{
-    public class dummy:ScriptBase<dummy>
-    {
-        public override void Start()
-        {
-        }
-    }
-}
-```
+**That's it! You've successfully completed the PBX configuration.**
 
-2.  Provide required configuration for created Route Point from `Advanced > Parameters > DN Properties`.
-    Configuration includes following required parameters
-
-    - `APPID` and `APPSECRET`: These are credentials for your external application, responsible for authorizing requests to a configurable `RoutePoint`.
-      > **_Please note:_** For now, you should define them yourself. Later, we will add an automatic procedure.
-    - `APPHOOK`: Represents Webhook URL. Webhook is responsible for receiving messages from PBX, here you should provide endpoint URL,
-      defined on your Application Server (e.g. http://localhost:8080/api/webhook/ivr). For additional Information check [Examples Webhook Routing](#applications-webhook-routing)
-
-      > **Important!**  
-      > All the fields mentioned above are required for the application to start working.
-
-**Done!** After you complete these steps, you can start to work with particular application.
+**Please note:** You must have a 3CX Enterprise license and CFD to use 3CX Call Control.
 
 ## External Web Application Installation and Configuration
 
@@ -76,19 +60,6 @@ yarn start
 > run Application Server at http://localhost:8080. The Application Server Base Path is configurable depending on the `.env` configuration file, which you can find inside the root folder of the server package, but don't forget to make it consistent with client-side `.env` file.
 
 > **Done!** If you are succeeded, your browser will be opened automatically.
-
-### Application's Webhook Routing
-
-Webhooks are the important part of an application, they allow receiving messages from PBX. Please make sure,
-that Webhook endpoints URLs, defined on your Application Server are consistent with the URLs you provided on [PBX Configuration](#configuration-steps-from-pbx-side) for particular application inside `APPHOOK` DN Property.
-
-By default, Example applications are providing following webhook endpoints, which you can find in `webhook.routing.ts`:
-
-- `/api/webhook/ivr` - for **Custom IVR Example**
-- `/api/webhook/campaign` - for **Outbound Campaign Example**
-- `/api/webhook/dialer` - for **Dialer Example**
-
-The resulting absolute URL will look like: http://localhost:8080/api/webhook/ivr. This is an example of what your APPHOOK field should contain.
 
 ## HubSpot Integration Setup
 
