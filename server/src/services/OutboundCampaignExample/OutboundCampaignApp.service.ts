@@ -17,7 +17,7 @@ import {
     EventType,
     WSEvent,
 } from '../../types'
-import { AppType, PARTICIPANT_TYPE_UPDATE } from '../../constants'
+import { AppType, PARTICIPANT_TYPE_UPDATE, WS_CLOSE_REASON_TERMINATE } from '../../constants'
 import { inject, injectable, singleton } from 'tsyringe'
 import { ExternalApiService } from '../ExternalApi.service'
 import { AppError, BadRequest, InternalServerError } from '../../Error'
@@ -113,7 +113,7 @@ export class OutboundCampaignService {
                 )
             })
             .catch((reason) => {
-                if (reason === 'TERMINATE') {
+                if (reason === WS_CLOSE_REASON_TERMINATE) {
                     this.disconnect()
                 }
             })

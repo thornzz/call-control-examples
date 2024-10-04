@@ -29,6 +29,7 @@ import {
     PARTICIPANT_CONTROL_ROUTE_TO,
     PARTICIPANT_STATUS_CONNECTED,
     PARTICIPANT_TYPE_UPDATE,
+    WS_CLOSE_REASON_TERMINATE,
 } from '../../constants'
 import * as path from 'path'
 import axios from 'axios'
@@ -112,7 +113,7 @@ export class CustomIVRAppService {
                 )
             })
             .catch((reason) => {
-                if (reason === 'TERMINATE') {
+                if (reason === WS_CLOSE_REASON_TERMINATE) {
                     this.disconnect()
                 }
             })

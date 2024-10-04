@@ -15,6 +15,7 @@ import {
     AppType,
     PARTICIPANT_TYPE_UPDATE,
     UNREGISTERED_DEVICE_ID,
+    WS_CLOSE_REASON_TERMINATE,
 } from '../../constants'
 import {
     determineOperation,
@@ -144,7 +145,7 @@ export class DialerAppService {
                 )
             })
             .catch((reason) => {
-                if (reason === 'TERMINATE') {
+                if (reason === WS_CLOSE_REASON_TERMINATE) {
                     this.disconnect()
                 }
             })
