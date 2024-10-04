@@ -1,12 +1,12 @@
-import { SubmitHandler, useForm } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import OutboundCampaign from "./outbound-campaign";
-import Instructions from "./instructions";
-import AppStatus from "./app-status";
-import { getStatusFunc, stringifyError } from "../shared";
-import { useEffect, useState } from "react";
-import { APP_TYPE_CUSTOM_IVR } from "../constants";
-import { Error, ButtonForms } from "cc-component-lib";
+import { SubmitHandler, useForm } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import OutboundCampaign from './outbound-campaign';
+import Instructions from './instructions';
+import AppStatus from './app-status';
+import { getStatusFunc, stringifyError } from '../shared';
+import { useEffect, useState } from 'react';
+import { APP_TYPE_CUSTOM_IVR } from '../constants';
+import { Error, ButtonForms } from 'cc-component-lib';
 
 type Inputs = {
   wavSource: string;
@@ -16,19 +16,19 @@ type Inputs = {
 export default function CustomIvr() {
   const { data, refetch } = useQuery({
     queryFn: getStatusFunc(APP_TYPE_CUSTOM_IVR),
-    queryKey: ["status", APP_TYPE_CUSTOM_IVR],
+    queryKey: ['status', APP_TYPE_CUSTOM_IVR]
   });
 
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting }
   } = useForm<Inputs>();
 
   useEffect(() => {
     if (data?.keymap) {
-      setValue("keyCommands", data.keymap);
+      setValue('keyCommands', data.keymap);
     }
   }, [data]);
 
@@ -37,16 +37,13 @@ export default function CustomIvr() {
   const onSubmit: SubmitHandler<Inputs> = async (submitData) => {
     setServerError(undefined);
     const formData = new FormData();
-    formData.append("wavSource", submitData.wavSource[0]);
-    formData.append("keyCommands", JSON.stringify(submitData.keyCommands));
+    formData.append('wavSource', submitData.wavSource[0]);
+    formData.append('keyCommands', JSON.stringify(submitData.keyCommands));
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SERVER_BASE}/api/setup/ivr`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch(`${import.meta.env.VITE_SERVER_BASE}/api/setup/ivr`, {
+        method: 'POST',
+        body: formData
+      });
       const json = await response.json();
       if (json?.errorCode) {
         setServerError(stringifyError(json));
@@ -64,12 +61,12 @@ export default function CustomIvr() {
       content.push(
         <div key={i} className="flex flex-row gap-2">
           <label className="flex items-center" htmlFor={`dtmf${i}`}>
-            {i}:{" "}
+            {i}:{' '}
           </label>
           <input
             className="h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
             id={`dtmf${i}`}
-            {...register(`keyCommands.${i}` as "keyCommands")}
+            {...register(`keyCommands.${i}` as 'keyCommands')}
           />
         </div>
       );
@@ -91,7 +88,7 @@ export default function CustomIvr() {
                   accept=".wav"
                   aria-describedby="file-helper"
                   className="w-full text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none file:cursor-pointer cursor-pointer file:border-0 file:py-2 file:px-4 file:mr-4 file:bg-gray-800 file:hover:bg-gray-700 file:text-white rounded"
-                  {...register("wavSource", { required: "Required" })}
+                  {...register('wavSource', { required: 'Required' })}
                 />
                 <p
                   id="helper-text-explanation"
@@ -100,9 +97,7 @@ export default function CustomIvr() {
                   Select .wav file of IVR prompt
                 </p>
                 {errors.wavSource && (
-                  <p className="text-red-500 text-sm">
-                    {errors.wavSource.message}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.wavSource.message}</p>
                 )}
               </div>
             </div>
@@ -110,9 +105,7 @@ export default function CustomIvr() {
           <div>
             <label>DTMF Redirection Inputs</label>
           </div>
-          <div className="-mx-3 md:flex mb-2 py-5 flex-wrap gap-2 w-full">
-            {renderFunction()}
-          </div>
+          <div className="-mx-3 md:flex mb-2 py-5 flex-wrap gap-2 w-full">{renderFunction()}</div>
           <ButtonForms
             type="submit"
             disabled={isSubmitting}

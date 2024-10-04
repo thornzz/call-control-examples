@@ -1,24 +1,19 @@
-import { useNavigate } from "react-router-dom";
-import { ConnectFormProps } from "../../types";
-import { useQuery } from "@tanstack/react-query";
-import { getStatusFunc } from "../../shared";
+import { useNavigate } from 'react-router-dom';
+import { ConnectFormProps } from '../../types';
+import { useQuery } from '@tanstack/react-query';
+import { getStatusFunc } from '../../shared';
 
 interface NavItemProps {
-  appType: ConnectFormProps["appType"];
+  appType: ConnectFormProps['appType'];
   label: string;
   description: string;
   children: React.ReactNode;
 }
 
-export default function NavItem({
-  appType,
-  label,
-  description,
-  children,
-}: NavItemProps) {
+export default function NavItem({ appType, label, description, children }: NavItemProps) {
   const { data } = useQuery({
     queryFn: getStatusFunc(appType),
-    queryKey: ["status", appType],
+    queryKey: ['status', appType]
   });
   const navigate = useNavigate();
   const handleRowClick = () => {
@@ -54,15 +49,13 @@ export default function NavItem({
           </div>
           <div className="flex flex-col justify-start">
             <span className="mb-1 font-semibold transition-colors duration-200 ease-in-out text-secondary-inverse hover:text-primary">
-              {" "}
-              {label}{" "}
+              {' '}
+              {label}{' '}
             </span>
           </div>
         </div>
       </td>
-      <td className="p-3 pl-0 text-start font-semibold">
-        {renderStatus(data?.connected)}
-      </td>
+      <td className="p-3 pl-0 text-start font-semibold">{renderStatus(data?.connected)}</td>
       <td className="p-3 pl-0 text-start font-semibold">{description}</td>
     </tr>
   );

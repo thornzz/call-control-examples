@@ -15,14 +15,8 @@
         "calling-integration-sdk-demo-react-ts"
     ],
     "devDependencies": {
-        "@types/websocket": "^1",
-        "@types/ws": "^8",
         "concurrently": "^8.2.2",
         "typescript": "^5.5.3"
     },
-    "packageManager": "yarn@4.2.2",
-    "dependencies": {
-        "websocket": "^1.0.35",
-        "ws": "^8.18.0"
-    }
+    "packageManager": "yarn@4.2.2"
 }

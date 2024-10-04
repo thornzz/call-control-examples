@@ -1,36 +1,24 @@
-import { Dialer } from "cc-component-lib";
-import { APP_TYPE_DIALER } from "../constants";
-import AppStatus from "./app-status";
-import Instructions from "./instructions";
-import { useQuery } from "@tanstack/react-query";
-import {
-  controlParticipantRequest,
-  getStatusFunc,
-  makeCallRequest,
-  selectDevice,
-} from "../shared";
-import { useCallback } from "react";
-import { CallControlParticipantAction } from "../types";
+import { Dialer } from 'cc-component-lib';
+import { APP_TYPE_DIALER } from '../constants';
+import AppStatus from './app-status';
+import Instructions from './instructions';
+import { useQuery } from '@tanstack/react-query';
+import { controlParticipantRequest, getStatusFunc, makeCallRequest, selectDevice } from '../shared';
+import { useCallback } from 'react';
+import { CallControlParticipantAction } from '../types';
 
 export default function DialerApp() {
   const { data } = useQuery({
     queryFn: getStatusFunc(APP_TYPE_DIALER),
-    queryKey: ["status", APP_TYPE_DIALER],
+    queryKey: ['status', APP_TYPE_DIALER]
   });
 
-  const onMakeCall = useCallback(
-    (dest?: string) => makeCallRequest(APP_TYPE_DIALER, dest),
-    []
-  );
+  const onMakeCall = useCallback((dest?: string) => makeCallRequest(APP_TYPE_DIALER, dest), []);
 
   const onDeviceSelect = useCallback((id: string) => selectDevice(id), []);
 
   const onControlParticipant = useCallback(
-    (
-      action: CallControlParticipantAction,
-      participantId?: number,
-      dest?: string
-    ) =>
+    (action: CallControlParticipantAction, participantId?: number, dest?: string) =>
       controlParticipantRequest(APP_TYPE_DIALER, action, participantId, dest),
     []
   );
@@ -42,7 +30,7 @@ export default function DialerApp() {
           eventSourceUrl={`${import.meta.env.VITE_SERVER_BASE}/sse`}
           devices={data?.devices ?? []}
           activeDeviceId={data?.activeDeviceId}
-          sourceCallerId={data?.sorceDn!}
+          sourceCallerId={data!.sorceDn!}
           onMakeCall={onMakeCall}
           onDeviceSelect={onDeviceSelect}
           onCallControlParticipant={onControlParticipant}

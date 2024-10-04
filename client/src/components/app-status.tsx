@@ -1,20 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import {
-  controlParticipantRequest,
-  getEnumeredType,
-  getStatusFunc,
-} from "../shared";
-import { CallParticipant, ConnectFormProps } from "../types";
-import { useNavigate } from "react-router-dom";
-import { APP_TYPE_CUSTOM_IVR, PARTICIPANT_CONTROL_DROP } from "../constants";
+import { useQuery } from '@tanstack/react-query';
+import { controlParticipantRequest, getEnumeredType, getStatusFunc } from '../shared';
+import { CallParticipant, ConnectFormProps } from '../types';
+import { useNavigate } from 'react-router-dom';
+import { APP_TYPE_CUSTOM_IVR, PARTICIPANT_CONTROL_DROP } from '../constants';
+import { ErrorPortal } from '../error-portal';
 
 export default function AppStatus({ appType }: ConnectFormProps) {
   const navigate = useNavigate();
 
   const { data } = useQuery({
     queryFn: getStatusFunc(appType),
-    queryKey: ["status", appType],
-    refetchInterval: 5000,
+    queryKey: ['status', appType],
+    refetchInterval: 5000
   });
 
   const onDisconnect = async () => {
@@ -23,25 +20,18 @@ export default function AppStatus({ appType }: ConnectFormProps) {
       return;
     }
     try {
-      await fetch(
-        `${
-          import.meta.env.VITE_SERVER_BASE
-        }/api/disconnect?appId=${enumeredType}`,
-        {
-          method: "POST",
-        }
-      );
+      await fetch(`${import.meta.env.VITE_SERVER_BASE}/api/disconnect?appId=${enumeredType}`, {
+        method: 'POST'
+      });
       navigate(`/${appType}/connect`);
-    } catch (err) {}
+    } catch (err) {
+      console.log(err)
+    }
   };
 
   const onDrop = async (participantId?: number) => {
     try {
-      await controlParticipantRequest(
-        appType,
-        PARTICIPANT_CONTROL_DROP,
-        participantId
-      );
+      await controlParticipantRequest(appType, PARTICIPANT_CONTROL_DROP, participantId);
     } catch (err) {
       console.log(err);
     }
@@ -49,11 +39,8 @@ export default function AppStatus({ appType }: ConnectFormProps) {
 
   function renderCurrentCall(idx: number, part?: CallParticipant) {
     return (
-      <div
-        key={idx}
-        className="w-[200px] h-[35px] flex rounded-full items-center"
-      >
-        {part?.status === "Dialing" ? (
+      <div key={idx} className="w-[200px] h-[35px] flex rounded-full items-center">
+        {part?.status === 'Dialing' ? (
           <span
             className={`h-full rounded-s-lg bg-yellow-500 p-1 flex items-center gap-1 text-white font-bold`}
           >
@@ -98,23 +85,24 @@ export default function AppStatus({ appType }: ConnectFormProps) {
 
   return (
     <div className="w-full whitespace-normal break-words rounded-lg border border-blue-gray-50 bg-white p-4 font-sans text-sm font-normal text-blue-gray-500 shadow-lg shadow-blue-gray-500/10 focus:outline-none">
+      {data?.wsConnected === false && <ErrorPortal message='Experiencing problems with Websocket Connection, trying to reconnect...' />}
       {appType === APP_TYPE_CUSTOM_IVR && (
         <div className="pb-8">
           <span className="block font-sans text-base font-medium leading-relaxed tracking-normal text-blue-gray-900 antialiased transition-colors hover:text-pink-500">
             Application Config
           </span>
           <span className="block font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
-            Wav Source: {data?.wavSource ?? "Empty"}
+            Wav Source: {data?.wavSource ?? 'Empty'}
           </span>
           <span className="block font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
-            DTMFS:{" "}
+            DTMFS:{' '}
             {data?.keymap?.map((el, idx) => (
               <span key={idx}>
                 <span className="font-bold">{idx}:</span>
-                {el || " - "}
-                {"; "}
+                {el || ' - '}
+                {'; '}
               </span>
-            )) ?? "Empty"}
+            )) ?? 'Empty'}
           </span>
         </div>
       )}
@@ -137,15 +125,13 @@ export default function AppStatus({ appType }: ConnectFormProps) {
           Application DN: {data?.sorceDn}
         </span>
         <span className="block font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
-          Current Call Queue: {data?.callQueue?.join(",") ?? "Empty"}
+          Current Call Queue: {data?.callQueue?.join(',') ?? 'Empty'}
         </span>
         <div className="flex gap-1 items-center font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
-          Current Calls:{" "}
+          Current Calls:{' '}
         </div>
         <div className="flex flex-col">
-          {data?.currentParticipants?.map((part, idx) =>
-            renderCurrentCall(idx, part)
-          ) ?? "Empty"}
+          {data?.currentParticipants?.map((part, idx) => renderCurrentCall(idx, part)) ?? 'Empty'}
         </div>
       </div>
       <button

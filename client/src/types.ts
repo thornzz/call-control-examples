@@ -7,8 +7,8 @@ import {
   PARTICIPANT_CONTROL_DIVERT,
   PARTICIPANT_CONTROL_DROP,
   PARTICIPANT_CONTROL_ROUTE_TO,
-  PARTICIPANT_CONTROL_TRANSFER_TO,
-} from "./constants";
+  PARTICIPANT_CONTROL_TRANSFER_TO
+} from './constants';
 
 export type AppStatus = {
   sorceDn: string | null;
@@ -20,7 +20,14 @@ export type AppStatus = {
   devices?: DNDevice[];
   activeDeviceId?: string;
   currentCalls: CurrentCall[];
+  wsConnected: boolean;
 };
+
+export type AppError = {
+  errorCode: number;
+  name: string;
+  message: string
+}
 
 export type CallControlParticipantAction =
   | typeof PARTICIPANT_CONTROL_DROP
@@ -31,13 +38,13 @@ export type CallControlParticipantAction =
   | typeof PARTICIPANT_CONTROL_ATTACH_DATA;
 
 export interface CurrentCall {
-  participantId: CallParticipant["id"];
-  callid: CallParticipant["callid"];
-  legid: CallParticipant["legid"];
-  party: CallParticipant["party_caller_id"];
-  status: CallParticipant["status"];
-  name: CallParticipant["party_caller_name"];
-  directControll: CallParticipant["direct_control"];
+  participantId: CallParticipant['id'];
+  callid: CallParticipant['callid'];
+  legid: CallParticipant['legid'];
+  party: CallParticipant['party_caller_id'];
+  status: CallParticipant['status'];
+  name: CallParticipant['party_caller_name'];
+  directControll: CallParticipant['direct_control'];
 }
 export interface CallParticipant {
   id?: number;
@@ -54,10 +61,7 @@ export interface CallParticipant {
 }
 
 export type ConnectFormProps = {
-  appType:
-    | typeof APP_TYPE_OUTBOUND_CAMPAIGN
-    | typeof APP_TYPE_CUSTOM_IVR
-    | typeof APP_TYPE_DIALER;
+  appType: typeof APP_TYPE_OUTBOUND_CAMPAIGN | typeof APP_TYPE_CUSTOM_IVR | typeof APP_TYPE_DIALER;
 };
 
 export interface DNDevice {

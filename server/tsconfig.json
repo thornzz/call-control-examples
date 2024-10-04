@@ -1,20 +1,20 @@
 {
-  "compilerOptions": {
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "importHelpers": true,
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "target": "es2018",
-    "skipLibCheck": true,
-    "strict": true,
-    "noImplicitAny": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "allowSyntheticDefaultImports": true,
-    "jsx": "react"
-  },
-  "include": ["src/**/*", "../../config"],
-  "exclude": ["node_modules", "**/*.spec.ts"]
+    "compilerOptions": {
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "importHelpers": true,
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "target": "es2018",
+        "skipLibCheck": true,
+        "strict": true,
+        "noImplicitAny": true,
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "allowSyntheticDefaultImports": true,
+        "jsx": "react"
+    },
+    "include": ["src/**/*", "../../config"],
+    "exclude": ["node_modules", "**/*.spec.ts"]
 }

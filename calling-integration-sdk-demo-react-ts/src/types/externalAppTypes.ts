@@ -8,6 +8,7 @@ export interface AppStatus {
   devices?: DNDevice[];
   activeDeviceId?: string;
   currentCalls: CurrentCall[];
+  wsConnected: boolean;
 }
 export interface CallParticipant {
   id?: number;

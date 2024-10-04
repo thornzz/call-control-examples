@@ -1,8 +1,6 @@
-import { ConnectFormProps } from "../types";
+import { ConnectFormProps } from '../types';
 
-export default function Instructions({
-  text,
-}: ConnectFormProps & { text: string }) {
+export default function Instructions({ text }: ConnectFormProps & { text: string }) {
   return (
     <div className="w-full mx-auto bg-slate-900 shadow-lg rounded-lg">
       <div className="px-6 py-5">

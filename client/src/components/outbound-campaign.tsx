@@ -1,11 +1,11 @@
-import { SubmitHandler, useForm } from "react-hook-form";
-import AppStatus from "./app-status";
-import { useState } from "react";
-import { Error, ButtonForms } from "cc-component-lib";
-import Instructions from "./instructions";
-import { ConnectFormProps } from "../types";
-import { APP_TYPE_OUTBOUND_CAMPAIGN } from "../constants";
-import { makeCallRequest, stringifyError } from "../shared";
+import { SubmitHandler, useForm } from 'react-hook-form';
+import AppStatus from './app-status';
+import { useState } from 'react';
+import { Error, ButtonForms } from 'cc-component-lib';
+import Instructions from './instructions';
+import { ConnectFormProps } from '../types';
+import { APP_TYPE_OUTBOUND_CAMPAIGN } from '../constants';
+import { makeCallRequest, stringifyError } from '../shared';
 
 type Inputs = {
   sources: string;
@@ -14,7 +14,7 @@ export default function OutboundCampaign({ appType }: ConnectFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting, errors }
   } = useForm<Inputs>();
   const [serverError, setServerError] = useState<string | undefined>(undefined);
 
@@ -34,19 +34,17 @@ export default function OutboundCampaign({ appType }: ConnectFormProps) {
   return (
     <div
       className={`bg-white ${
-        appType === "campaign" && "px-8"
+        appType === 'campaign' && 'px-8'
       } pt-6 pb-8 mb-4 flex flex-row gap-10 my-2`}
     >
       <form
-        className={`flex flex-col gap3 ${
-          appType === "campaign" ? "w-1/2" : "w-full"
-        }`}
+        className={`flex flex-col gap3 ${appType === 'campaign' ? 'w-1/2' : 'w-full'}`}
         onSubmit={handleSubmit(onSubmit)}
       >
         {serverError && <Error message={serverError} />}
         <label>Call Destinations</label>
         <textarea
-          {...register("sources", { required: "Required" })}
+          {...register('sources', { required: 'Required' })}
           className="w-full h-[176px] resize-none rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
         ></textarea>
         <p
@@ -55,9 +53,7 @@ export default function OutboundCampaign({ appType }: ConnectFormProps) {
         >
           Please specify destination numbers separated by «,»
         </p>
-        {errors.sources && (
-          <p className="text-red-500 text-sm">{errors.sources.message}</p>
-        )}
+        {errors.sources && <p className="text-red-500 text-sm">{errors.sources.message}</p>}
         <ButtonForms
           type="submit"
           disabled={isSubmitting}
