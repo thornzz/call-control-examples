@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "main": "dist/server.js",
-  "author": "kka@3cx.com",
+  "author": "3CX",
   "license": "MIT",
   "scripts": {
     "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
