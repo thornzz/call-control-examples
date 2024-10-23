@@ -15,6 +15,7 @@ export type AppStatus = {
   connected: boolean;
   keymap?: string[];
   callQueue: string[];
+  failedCalls?: string[];
   currentParticipants: CallParticipant[];
   wavSource?: string;
   devices?: DNDevice[];
@@ -26,8 +27,8 @@ export type AppStatus = {
 export type AppError = {
   errorCode: number;
   name: string;
-  message: string
-}
+  message: string;
+};
 
 export type CallControlParticipantAction =
   | typeof PARTICIPANT_CONTROL_DROP

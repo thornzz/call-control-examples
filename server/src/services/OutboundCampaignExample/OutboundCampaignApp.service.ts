@@ -17,7 +17,11 @@ import {
     EventType,
     WSEvent,
 } from '../../types'
-import { AppType, PARTICIPANT_TYPE_UPDATE, WS_CLOSE_REASON_TERMINATE } from '../../constants'
+import {
+    AppType,
+    PARTICIPANT_TYPE_UPDATE,
+    WS_CLOSE_REASON_TERMINATE,
+} from '../../constants'
 import { inject, injectable, singleton } from 'tsyringe'
 import { ExternalApiService } from '../ExternalApi.service'
 import { AppError, BadRequest, InternalServerError } from '../../Error'
@@ -135,11 +139,13 @@ export class OutboundCampaignService {
         return {
             connected: this.externalApiSvc.connected,
             sorceDn: this.sourceDn,
+            failedCalls: this.failedCalls,
             callQueue,
             currentParticipants: participants
                 ? Array.from(participants.values())
                 : [],
-            wsConnected: this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED    
+            wsConnected:
+                this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED,
         }
     }
     /**
@@ -242,15 +248,15 @@ export class OutboundCampaignService {
         }
         if (!this.callQueue.isEmpty()) {
             if (this.callQueue.items.head !== null) {
-                const source = this.fullInfo?.callcontrol.get(this.sourceDn)
-                const device: DNDevice | undefined = source?.devices
-                    ?.values()
-                    .next().value
-                if (!device?.device_id) {
-                    throw new BadRequest('Devices not found')
-                }
                 const destNumber = this.callQueue.getAndRemoveFromQueue()
                 try {
+                    const source = this.fullInfo?.callcontrol.get(this.sourceDn)
+                    const device: DNDevice | undefined = source?.devices
+                        ?.values()
+                        .next().value
+                    if (!device?.device_id) {
+                        throw new BadRequest('Devices not found')
+                    }
                     const response =
                         await this.externalApiSvc.makeCallFromDevice(
                             this.sourceDn,

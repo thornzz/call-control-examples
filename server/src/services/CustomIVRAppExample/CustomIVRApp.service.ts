@@ -36,6 +36,7 @@ import axios from 'axios'
 import { ExternalApiService } from '../ExternalApi.service'
 import { BadRequest, InternalServerError } from '../../Error'
 import { WebSocket } from 'ws'
+import { error } from 'console'
 
 @injectable()
 @singleton()
@@ -156,10 +157,12 @@ export class CustomIVRAppService {
             keymap: this.config?.keyCommands,
             callQueue,
             wavSource: this.config?.wavSource,
+            failedCalls: this.failedCalls,
             currentParticipants: participants
                 ? Array.from(participants.values())
                 : [],
-            wsConnected: this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED  
+            wsConnected:
+                this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED,
         }
     }
     /**
@@ -535,15 +538,15 @@ export class CustomIVRAppService {
         }
         if (!this.callQueue.isEmpty()) {
             if (this.callQueue.items.head !== null) {
-                const source = this.fullInfo?.callcontrol.get(this.sourceDn)
-                const device: DNDevice | undefined = source?.devices
-                    ?.values()
-                    .next().value
-                if (!device?.device_id) {
-                    throw new BadRequest('Devices not found')
-                }
                 const destNumber = this.callQueue.getAndRemoveFromQueue()
                 try {
+                    const source = this.fullInfo?.callcontrol.get(this.sourceDn)
+                    const device: DNDevice | undefined = source?.devices
+                        ?.values()
+                        .next().value
+                    if (!device?.device_id) {
+                        throw new BadRequest('Devices not found')
+                    }
                     const response =
                         await this.externalApiSvc.makeCallFromDevice(
                             this.sourceDn,
@@ -554,6 +557,7 @@ export class CustomIVRAppService {
                         this.failedCalls.push(destNumber!)
                     }
                 } catch {
+                    console.log(error)
                     this.failedCalls.push(destNumber!)
                 }
             }

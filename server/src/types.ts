@@ -52,10 +52,10 @@ export type AppStatus = {
     callQueue?: string[]
     currentParticipants?: CallParticipant[]
     wavSource?: string
-    failedCalls?: string
+    failedCalls?: string[]
     devices?: DNDevice[]
     activeDeviceId?: string
-    currentCalls?: CurrentCall[],
+    currentCalls?: CurrentCall[]
     wsConnected: boolean
 }
 
