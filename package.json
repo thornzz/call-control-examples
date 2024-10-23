@@ -12,11 +12,12 @@
         "client",
         "server",
         "cc-component-lib",
-        "calling-integration-sdk-demo-react-ts"
+        "calling-integration-sdk-demo-react-ts",
+        "call-interceptor"
     ],
     "devDependencies": {
         "concurrently": "^8.2.2",
         "typescript": "^5.5.3"
     },
-    "packageManager": "yarn@4.2.2"
+    "packageManager": "yarn@4.5.1"
 }
