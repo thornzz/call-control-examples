@@ -87,7 +87,7 @@ export class CustomIVRAppService {
 
             if (!thesource) {
                 throw new BadRequest(
-                    'Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be Extension'
+                    'Application bound to the wrong dn, dn is not found or application hook is invalid, type should be Extension'
                 )
             }
             this.sourceDn = thesource.dn ?? null

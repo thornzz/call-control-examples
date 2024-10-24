@@ -39,7 +39,7 @@ export default function DialerApp() {
       <div className="flex flex-col gap-5 w-1/2">
         <Instructions
           appType={APP_TYPE_DIALER}
-          text="This application represents simple Dialer, you may use it like physical phone device. You also free to choose which device from list you will select for call handling"
+          text="This application mimics a simple Dialer. You may use it like a physical phone device. You are also free to choose which device you will select for call handling from the list."
         />
         <AppStatus appType={APP_TYPE_DIALER} />
       </div>

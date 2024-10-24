@@ -77,7 +77,7 @@ export class OutboundCampaignService {
             ).find((val) => val.type === 'Wivr' || val.type === 'Wqueue')
             if (!thesource) {
                 throw new BadRequest(
-                    'Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be IVR/Queue'
+                    'Application bound to the wrong dn, dn is not found or application hook is invalid, type should be IVR/Queue'
                 )
             }
 

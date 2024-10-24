@@ -108,14 +108,12 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
                 className="w-full h-[36px] mb-2 rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
                 placeholder="APPSEC3123klJKSADjasdk"
                 id="appSecret"
-                {...register('appSecret', { required: 'Required' })}
-              ></input>
+                {...register('appSecret', { required: 'Required' })}></input>
               <div className="flex flex-col mb-4">
                 <span
                   id="helper-text-explanation"
-                  className="text-sm text-gray-500 dark:text-gray-400"
-                >
-                  API Key you recieved after configuring Service Principal
+                  className="text-sm text-gray-500 dark:text-gray-400">
+                  API Key you receieved after configuring Service Principal
                 </span>
                 {errors.appSecret && (
                   <span className="text-red-500 text-sm">{errors.appSecret.message}</span>

@@ -92,8 +92,7 @@ export default function CustomIvr() {
                 />
                 <p
                   id="helper-text-explanation"
-                  className="text-sm mt-1 text-gray-500 dark:text-gray-400"
-                >
+                  className="text-sm mt-1 text-gray-500 dark:text-gray-400">
                   Select .wav file of IVR prompt
                 </p>
                 {errors.wavSource && (
@@ -118,7 +117,7 @@ export default function CustomIvr() {
       <div className="flex gap-10 flex-col w-2/5">
         <Instructions
           text="This application implements IVR functionality. After you have connected your APP,
-          you can specify configuration for your IVR. Prompt file will be streamed to each handled by IVR connection,
+          you can specify configuration for your IVR. Prompt file will be streamed to each participant handled by IVR connection,
           you also may specify DTMF string routes for redirection purposes. Moreover, you are able to perform
           outgoing calls from Custom IVR. You may specify comma-separated phone numbers and run dialing campaign."
           appType="ivr"

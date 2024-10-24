@@ -77,7 +77,7 @@ export class DialerAppService {
 
             if (!thesource) {
                 throw new BadRequest(
-                    'Application binded to the wrong dn, dn is not founed or application hook is invalid, type should be Extension'
+                    'Application bound to the wrong dn, dn is not found or application hook is invalid, type should be Extension'
                 )
             }
 
@@ -94,7 +94,7 @@ export class DialerAppService {
             this.deviceMap.set(UNREGISTERED_DEVICE_ID, {
                 dn: thesource.dn,
                 device_id: UNREGISTERED_DEVICE_ID,
-                user_agent: 'Unrgistered Devices',
+                user_agent: 'Unregistered Devices',
                 currentCalls: new Map(),
             })
 
