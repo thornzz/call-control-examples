@@ -163,19 +163,26 @@ export class OutboundCampaignService {
             switch (wsEvent.event.event_type) {
                 case EventType.Upset:
                     {
-                        const request =
-                            await this.externalApiSvc.requestUpdatedEntityFromWebhookEvent(
-                                wsEvent
-                            )
-                        const data = request.data
-                        set(this.fullInfo!, wsEvent.event.entity, data)
-                        if (dn === this.sourceDn) {
-                            if (type === PARTICIPANT_TYPE_UPDATE) {
-                                /**
-                                 * handle here update of participants
-                                 */
-                            }
-                        }
+                        this.externalApiSvc
+                            .requestUpdatedEntityFromWebhookEvent(wsEvent)
+                            .then((res) => {
+                                const data = res.data
+                                set(this.fullInfo!, wsEvent.event.entity, data)
+                                if (dn === this.sourceDn) {
+                                    if (type === PARTICIPANT_TYPE_UPDATE) {
+                                        /**
+                                         * handle here update of participants
+                                         */
+                                    }
+                                }
+                            })
+                            .catch((err) => {
+                                if (axios.isAxiosError(err)) {
+                                    console.log(
+                                        `AXIOS ERROR code: ${err.response?.status}`
+                                    )
+                                } else console.log('Unknown error', err)
+                            })
                     }
                     break
                 case EventType.Remove: {

@@ -5,7 +5,12 @@ import { inject, injectable } from 'tsyringe'
 import * as https from 'https'
 import * as http from 'http'
 import { CancelationToken, readChunks } from '../utils'
-import { AppType, MAX_WS_RECONNECT_TIMES, WS_CLOSE_REASON_RETRY, WS_CLOSE_REASON_TERMINATE } from '../constants'
+import {
+    AppType,
+    MAX_WS_RECONNECT_TIMES,
+    WS_CLOSE_REASON_RETRY,
+    WS_CLOSE_REASON_TERMINATE,
+} from '../constants'
 import { BadRequest, InternalServerError } from '../Error'
 import * as WebSocket from 'ws'
 
@@ -17,7 +22,7 @@ export class ExternalApiService {
     public wsClient: WebSocket | null = null
     public connected = false
 
-    public reconnectWsTries = MAX_WS_RECONNECT_TIMES;
+    public reconnectWsTries = MAX_WS_RECONNECT_TIMES
 
     constructor(@inject(CacheService) private cacheService: CacheService) {}
     /**
@@ -68,7 +73,7 @@ export class ExternalApiService {
     }
 
     public restoreTries = () => {
-        this.reconnectWsTries = MAX_WS_RECONNECT_TIMES; 
+        this.reconnectWsTries = MAX_WS_RECONNECT_TIMES
     }
 
     public reconnectWs(): Promise<WebSocket> {

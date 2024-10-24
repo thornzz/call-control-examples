@@ -36,7 +36,6 @@ import axios from 'axios'
 import { ExternalApiService } from '../ExternalApi.service'
 import { BadRequest, InternalServerError } from '../../Error'
 import { WebSocket } from 'ws'
-import { error } from 'console'
 
 @injectable()
 @singleton()
@@ -223,6 +222,13 @@ export class CustomIVRAppService {
                                         }
                                     }
                                 }
+                            })
+                            .catch((err) => {
+                                if (axios.isAxiosError(err)) {
+                                    console.log(
+                                        `AXIOS ERROR code: ${err.response?.status}`
+                                    )
+                                } else console.log('Unknown error', err)
                             })
                     }
                     break
@@ -557,7 +563,6 @@ export class CustomIVRAppService {
                         this.failedCalls.push(destNumber!)
                     }
                 } catch {
-                    console.log(error)
                     this.failedCalls.push(destNumber!)
                 }
             }

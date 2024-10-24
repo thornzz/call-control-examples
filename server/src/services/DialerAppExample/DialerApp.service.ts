@@ -164,7 +164,8 @@ export class DialerAppService {
             currentCalls: activeDevice?.currentCalls
                 ? Array.from(activeDevice.currentCalls.values())
                 : [],
-            wsConnected: this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED    
+            wsConnected:
+                this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED,
         }
     }
 
@@ -197,44 +198,57 @@ export class DialerAppService {
             const { dn, id, type } = determineOperation(wsEvent.event.entity)
             switch (wsEvent.event.event_type) {
                 case EventType.Upset: {
-                    const request =
-                        await this.externalApiSvc.requestUpdatedEntityFromWebhookEvent(
-                            wsEvent
-                        )
-                    const data = request.data
-                    set(this.fullInfo!, wsEvent.event.entity, data)
-                    if (dn === this.sourceDn) {
-                        if (type === PARTICIPANT_TYPE_UPDATE) {
-                            const participant = this.getParticipantOfDnById(
-                                dn,
-                                id
-                            )
-                            if (participant?.id) {
-                                let device = participant?.device_id
-                                    ? this.deviceMap.get(participant.device_id)
-                                    : undefined
+                    this.externalApiSvc
+                        .requestUpdatedEntityFromWebhookEvent(wsEvent)
+                        .then((res) => {
+                            const data = res.data
+                            set(this.fullInfo!, wsEvent.event.entity, data)
+                            if (dn === this.sourceDn) {
+                                if (type === PARTICIPANT_TYPE_UPDATE) {
+                                    const participant =
+                                        this.getParticipantOfDnById(dn, id)
+                                    if (participant?.id) {
+                                        let device = participant?.device_id
+                                            ? this.deviceMap.get(
+                                                  participant.device_id
+                                              )
+                                            : undefined
 
-                                if (!device) {
-                                    device = this.deviceMap.get(
-                                        UNREGISTERED_DEVICE_ID
-                                    )
+                                        if (!device) {
+                                            device = this.deviceMap.get(
+                                                UNREGISTERED_DEVICE_ID
+                                            )
+                                        }
+                                        device?.currentCalls.set(
+                                            participant.id,
+                                            {
+                                                participantId: participant?.id,
+                                                party: participant?.party_caller_id,
+                                                status: participant?.status,
+                                                name: participant?.party_caller_name,
+                                                callid: participant?.callid,
+                                                legid: participant?.legid,
+                                                directControll:
+                                                    participant?.direct_control,
+                                            }
+                                        )
+
+                                        this.sseEventEmitter?.emit('data', {
+                                            currentCalls:
+                                                this.status()?.currentCalls,
+                                        })
+                                    }
                                 }
-                                device?.currentCalls.set(participant.id, {
-                                    participantId: participant?.id,
-                                    party: participant?.party_caller_id,
-                                    status: participant?.status,
-                                    name: participant?.party_caller_name,
-                                    callid: participant?.callid,
-                                    legid: participant?.legid,
-                                    directControll: participant?.direct_control,
-                                })
-
-                                this.sseEventEmitter?.emit('data', {
-                                    currentCalls: this.status()?.currentCalls,
-                                })
                             }
-                        }
-                    }
+                        })
+                        .catch((err) => {
+                            if (axios.isAxiosError(err)) {
+                                console.log(
+                                    `AXIOS ERROR code: ${err.response?.status}`
+                                )
+                            } else console.log('Unknown error', err)
+                        })
+
                     break
                 }
                 case EventType.Remove:
@@ -288,7 +302,11 @@ export class DialerAppService {
     }
 
     public async makeCall(dest: string) {
-        if (!this.sourceDn || !this.externalApiSvc.connected || !this.activeDeviceId) {
+        if (
+            !this.sourceDn ||
+            !this.externalApiSvc.connected ||
+            !this.activeDeviceId
+        ) {
             throw new InternalServerError(
                 'Source Dn is not defined or application is not connected or device no device selected'
             )
