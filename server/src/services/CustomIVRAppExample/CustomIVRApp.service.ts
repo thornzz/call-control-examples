@@ -253,7 +253,7 @@ export class CustomIVRAppService {
                                     this.handleDTMFInput(
                                         participant.id!,
                                         wsEvent.event.attached_data.dtmf_input
-                                    )
+                                    ).catch((e) => console.log(e))
                                 }
                             }
                         }
