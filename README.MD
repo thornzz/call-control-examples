@@ -70,8 +70,6 @@ HubSpot Calling SDK Integration provides live example in development local envir
 > [!IMPORTANT]
 > This is not real live ready to deploy HubSpot Application
 
-- [x] **Done!** If you are succeeded, your browser will be opened automatically.
-
 ### Running HubSpot example
 
 Run following command from terminal:
@@ -82,6 +80,8 @@ yarn start-hubspot
 
 > [!NOTE]
 > the `yarn start` command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
+
+- [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
 ### Configuration steps from HubSpot side
 
