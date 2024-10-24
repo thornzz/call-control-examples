@@ -113,7 +113,7 @@ export default function ConnectForm({ appType }: ConnectFormProps) {
                 <span
                   id="helper-text-explanation"
                   className="text-sm text-gray-500 dark:text-gray-400">
-                  API Key you receieved after configuring Service Principal
+                  API Key you received after configuring Service Principal
                 </span>
                 {errors.appSecret && (
                   <span className="text-red-500 text-sm">{errors.appSecret.message}</span>
