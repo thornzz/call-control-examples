@@ -98,7 +98,7 @@ export const Dialer: React.FC<DialerProps> = ({
   engagementId,
 }) => {
   const [dialedNumber, setDialed] = useState(phoneNumber ?? "");
-  const [dialerState, setDialerState] = useState(DialerState.Idle);
+  const [dialerState, setState] = useState(DialerState.Idle);
   const [currentCalls, setCurrentCalls] = useState<CurrentCall[]>([]);
   const [callState, dispatchCallState] = useReducer(
     callStateReducer,
@@ -116,6 +116,8 @@ export const Dialer: React.FC<DialerProps> = ({
   const [isForceDropEnabled, setEnableForceDrop] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const endCallTimeout = useRef<number | null>(null);
+  const allowDropTimeout = useRef<number | null>(null);
 
   useEffect(() => {
     const source = new EventSource(eventSourceUrl);
@@ -324,7 +326,7 @@ export const Dialer: React.FC<DialerProps> = ({
 
   const handleCallAnswer = async (phoneNumber?: string) => {
     const isIncoming = callState?.status === PARTICIPANT_STATUS_RINGING;
-    let timeout: number | null = null;
+
     if (isIncoming && callState.directControll) {
       setPerformingAnswer(true);
       try {
@@ -342,18 +344,38 @@ export const Dialer: React.FC<DialerProps> = ({
         setDialed("");
         if (dialerState !== DialerState.Dialing) {
           setDialerState(DialerState.Dialing);
-          timeout = setTimeout(() => {
+          allowDropTimeout.current = setTimeout(() => {
             setEnableForceDrop(true);
+            if (currentCalls.length === 0) {
+              endCallTimeout.current = setTimeout(() => {
+                if (currentCalls.length === 0) {
+                  setDialerState(DialerState.Idle);
+                }
+              }, 300000);
+            }
           }, 5000);
         }
       } catch (e) {
         setDialerState(DialerState.Idle);
-        if (timeout) {
-          clearTimeout(timeout);
+        if (allowDropTimeout.current) {
+          clearTimeout(allowDropTimeout.current);
+        }
+        if (endCallTimeout.current) {
+          clearTimeout(endCallTimeout.current);
         }
       }
     }
   };
+
+  function setDialerState(state: DialerState) {
+    setState(state);
+    if (endCallTimeout.current) {
+      clearTimeout(endCallTimeout.current);
+    }
+    if (allowDropTimeout.current) {
+      clearTimeout(allowDropTimeout.current);
+    }
+  }
 
   const renderStateNumber = () => {
     switch (dialerState) {
