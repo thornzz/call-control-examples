@@ -303,7 +303,7 @@ export class CustomIVRAppService {
     }
 
     private getParticipantOfTheSourceDnById(id: number) {
-        if (!this.sourceDn) throw new Error('source not defined')
+        if (!this.sourceDn) return undefined
         return this.getParticipantOfDnById(this.sourceDn, id)
     }
 
