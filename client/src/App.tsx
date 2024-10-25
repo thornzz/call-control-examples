@@ -18,16 +18,14 @@ function App() {
                   Home page
                 </Link>
               </h3>
-              <div id='error-portal' className='w-1/2 flex items-center justify-center'></div>
+              <div id="error-portal" className="w-1/2 flex items-center justify-center"></div>
               <div>
                 <a
                   className="flex flex-row items-center gap-2 text-[.925rem] font-medium leading-normal text-center align-middle cursor-pointer rounded-2xl transition-colors duration-150 ease-in-out text-light-inverse bg-light-dark border-light shadow-none border-0 py-2 px-5 hover:bg-secondary active:bg-light focus:bg-light"
                   href="https://3cx.com"
                   target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  By{' '}
-                  <img src={logo} alt="3cx Logo" className="dark:invert" width={100} height={24} />
+                  rel="noopener noreferrer">
+                  By <img src={logo} alt="3cx Logo" width={100} height={24} />
                 </a>{' '}
               </div>
             </div>
