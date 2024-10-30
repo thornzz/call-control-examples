@@ -280,9 +280,7 @@ export class OutboundCampaignService {
                     }
                 } catch (error: unknown) {
                     this.failedCalls.push(destNumber!)
-                    if (error instanceof AppError)
-                        throw new BadRequest(error.message)
-                    else throw new Error('Unknown Error')
+                    console.log(error)
                 }
             }
         } else {

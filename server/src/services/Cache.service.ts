@@ -28,6 +28,8 @@ export class CacheService {
      */
     setAppCredentials(config: ConnectAppRequest, key: AppType) {
         this.cache.set(key, config)
+
+        console.log(this.cache.data)
     }
     /**
      * get base pbx url for particular application
@@ -49,8 +51,11 @@ export class CacheService {
      * @returns
      */
     getAppAccessToken(appType: AppType) {
-        const token = this.cache.get<string>(appType + 'Token')
-        return token
+        const app = this.cache.get<ConnectAppRequest>(appType)
+        if (app?.appId) {
+            const token = this.cache.get<string>(app.appId + '_token')
+            return token
+        }
     }
     /**
      * Set PBX access_token for particular application
@@ -58,11 +63,15 @@ export class CacheService {
      * @param token
      */
     setAppAccessToken(appType: AppType, token: string) {
-        this.cache.set(
-            appType + 'Token',
-            'Bearer ' + token,
-            this.TTL_ACCESS_TOKEN
-        )
+        const app = this.cache.get<ConnectAppRequest>(appType)
+
+        if (app?.appId) {
+            this.cache.set(
+                app.appId + '_token',
+                'Bearer ' + token,
+                this.TTL_ACCESS_TOKEN
+            )
+        }
     }
     /**
      * get APPID of particuar application

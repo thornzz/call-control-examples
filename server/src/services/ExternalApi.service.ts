@@ -48,7 +48,6 @@ export class ExternalApiService {
 
         this.fetch.interceptors.request.use(async (conf) => {
             const token = await this.receiveToken()
-
             conf.headers = {
                 ...conf.headers,
                 Authorization: token,
