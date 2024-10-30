@@ -28,8 +28,6 @@ export class CacheService {
      */
     setAppCredentials(config: ConnectAppRequest, key: AppType) {
         this.cache.set(key, config)
-
-        console.log(this.cache.data)
     }
     /**
      * get base pbx url for particular application
