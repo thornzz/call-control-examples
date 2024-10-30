@@ -18,8 +18,11 @@ export class CacheService {
      * @param appType
      */
     clearCache(appType: AppType) {
+        const app = this.cache.get<ConnectAppRequest>(appType)
+        if (app?.appId) {
+            this.cache.del(app.appId + '_token') // remove token
+        }
         this.cache.del(appType) // remove credentials
-        this.cache.del(appType + 'Token') // remove token
     }
     /**
      * set credentials for particular application
