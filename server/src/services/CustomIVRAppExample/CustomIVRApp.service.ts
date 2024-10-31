@@ -529,7 +529,12 @@ export class CustomIVRAppService {
      * @param dialingSetup
      */
     public startDialing(dialingSetup: DialingSetup) {
-        const arr = dialingSetup.sources.split(',')
+        const arr = dialingSetup.sources
+            .split(',')
+            .map((num) => num.trim())
+            .filter((numb) => {
+                return !!numb
+            })
         arr.forEach((destNumber) => this.pushNumbersToQueue(destNumber))
         this.makeCallsToDst()
     }
