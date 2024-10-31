@@ -45,6 +45,11 @@ export type DialingSetup = {
     sources: string
 }
 
+export type TFailedCall = {
+    reason: string
+    callerId: string
+}
+
 export type AppStatus = {
     sorceDn: string | null
     connected: boolean
@@ -52,7 +57,7 @@ export type AppStatus = {
     callQueue?: string[]
     currentParticipants?: CallParticipant[]
     wavSource?: string
-    failedCalls?: string[]
+    failedCalls?: TFailedCall[]
     devices?: DNDevice[]
     activeDeviceId?: string
     currentCalls?: CurrentCall[]

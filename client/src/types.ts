@@ -9,13 +9,17 @@ import {
   PARTICIPANT_CONTROL_ROUTE_TO,
   PARTICIPANT_CONTROL_TRANSFER_TO
 } from './constants';
+export type TFailedCall = {
+  reason: string;
+  callerId: string;
+};
 
 export type AppStatus = {
   sorceDn: string | null;
   connected: boolean;
   keymap?: string[];
   callQueue: string[];
-  failedCalls?: string[];
+  failedCalls?: TFailedCall[];
   currentParticipants: CallParticipant[];
   wavSource?: string;
   devices?: DNDevice[];

@@ -195,9 +195,15 @@ export const Dialer: React.FC<DialerProps> = ({
       setDialerState(DialerState.Ringing);
       dispatchCallState({ type: "full_update", newState: incomingCall });
     }
-
+    const validCall = currentCalls.find((call) => {
+      if (call.callid && call.legid && callState?.callid && callState.legid) {
+        const callId = call?.callid + call?.legid;
+        return callId === callState.callid + callState.legid;
+      }
+      return undefined;
+    });
     if (
-      currentCalls?.length === 0 &&
+      validCall === undefined &&
       callState !== undefined &&
       dialerState !== DialerState.Idle
     ) {

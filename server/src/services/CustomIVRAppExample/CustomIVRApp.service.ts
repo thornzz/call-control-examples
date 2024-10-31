@@ -10,6 +10,7 @@ import {
     EventType,
     TCustomIVRConfig,
     WSEvent,
+    TFailedCall,
 } from '../../types'
 import { inject, injectable, singleton } from 'tsyringe'
 import * as fs from 'fs'
@@ -25,17 +26,21 @@ import {
 } from '../../utils'
 import {
     AppType,
+    CAMPAIGN_SOURCE_BUSY,
+    NO_SOURCE_OR_DISCONNECTED,
     PARTICIPANT_CONTROL_DROP,
     PARTICIPANT_CONTROL_ROUTE_TO,
     PARTICIPANT_STATUS_CONNECTED,
     PARTICIPANT_TYPE_UPDATE,
+    UNKNOWN_CALL_ERROR,
     WS_CLOSE_REASON_TERMINATE,
 } from '../../constants'
 import * as path from 'path'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { ExternalApiService } from '../ExternalApi.service'
 import { BadRequest, InternalServerError } from '../../Error'
 import { WebSocket } from 'ws'
+import { error } from 'console'
 
 @injectable()
 @singleton()
@@ -48,7 +53,7 @@ export class CustomIVRAppService {
 
     public incomingCallsParticipants: Map<number, ExtendedParticipant> =
         new Map()
-    public failedCalls: string[] = []
+    public failedCalls: TFailedCall[] = []
 
     constructor(
         @inject(ExternalApiService) private externalApiSvc: ExternalApiService
@@ -533,18 +538,28 @@ export class CustomIVRAppService {
      * @returns
      */
     public async makeCallsToDst() {
-        if (!this.sourceDn || !this.externalApiSvc.connected) {
-            throw new InternalServerError(
-                'Source Dn is not defined or application is not connected'
-            )
-        }
-        const participants = this.getParticipantsOfDn(this.sourceDn)
-        if (participants && participants.size > 0) {
-            return
-        }
         if (!this.callQueue.isEmpty()) {
             if (this.callQueue.items.head !== null) {
                 const destNumber = this.callQueue.getAndRemoveFromQueue()
+
+                if (!this.sourceDn || !this.externalApiSvc.connected) {
+                    if (destNumber)
+                        this.failedCalls.push({
+                            callerId: destNumber,
+                            reason: NO_SOURCE_OR_DISCONNECTED,
+                        })
+                    return
+                }
+                const participants = this.getParticipantsOfDn(this.sourceDn)
+                if (participants && participants.size > 0) {
+                    if (destNumber)
+                        this.failedCalls.push({
+                            callerId: destNumber,
+                            reason: CAMPAIGN_SOURCE_BUSY,
+                        })
+                    return
+                }
+
                 try {
                     const source = this.fullInfo?.callcontrol.get(this.sourceDn)
                     const device: DNDevice | undefined = source?.devices
@@ -560,10 +575,27 @@ export class CustomIVRAppService {
                             destNumber!
                         )
                     if (!response.data.result?.id) {
-                        this.failedCalls.push(destNumber!)
+                        this.failedCalls.push({
+                            callerId: destNumber!,
+                            reason:
+                                response?.data?.reasontext ||
+                                UNKNOWN_CALL_ERROR,
+                        })
                     }
-                } catch {
-                    this.failedCalls.push(destNumber!)
+                } catch (error: unknown) {
+                    if (axios.isAxiosError(error)) {
+                        this.failedCalls.push({
+                            callerId: destNumber!,
+                            reason:
+                                error.response?.data.reasontext ||
+                                UNKNOWN_CALL_ERROR,
+                        })
+                    } else {
+                        this.failedCalls.push({
+                            callerId: destNumber!,
+                            reason: UNKNOWN_CALL_ERROR,
+                        })
+                    }
                 }
             }
         } else {

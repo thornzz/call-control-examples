@@ -15,16 +15,20 @@ import {
     DialingSetup,
     DnInfoModel,
     EventType,
+    TFailedCall,
     WSEvent,
 } from '../../types'
 import {
     AppType,
+    CAMPAIGN_SOURCE_BUSY,
+    NO_SOURCE_OR_DISCONNECTED,
     PARTICIPANT_TYPE_UPDATE,
+    UNKNOWN_CALL_ERROR,
     WS_CLOSE_REASON_TERMINATE,
 } from '../../constants'
 import { inject, injectable, singleton } from 'tsyringe'
 import { ExternalApiService } from '../ExternalApi.service'
-import { AppError, BadRequest, InternalServerError } from '../../Error'
+import { BadRequest, InternalServerError } from '../../Error'
 import { WebSocket } from 'ws'
 import axios from 'axios'
 
@@ -35,7 +39,7 @@ export class OutboundCampaignService {
     private sourceDn: string | null = null
 
     public callQueue = new Queue<string>()
-    public failedCalls: string[] = []
+    public failedCalls: TFailedCall[] = []
     public incomingCallsParticipants: Map<number, CallParticipant> = new Map()
 
     constructor(
@@ -244,18 +248,28 @@ export class OutboundCampaignService {
      * @returns
      */
     public async makeCallsToDst() {
-        if (!this.sourceDn || !this.externalApiSvc.connected) {
-            throw new InternalServerError(
-                'Source Dn is not defined or application is not connected'
-            )
-        }
-        const participants = this.getParticipantsOfDn(this.sourceDn)
-        if (participants && participants.size > 0) {
-            return
-        }
         if (!this.callQueue.isEmpty()) {
             if (this.callQueue.items.head !== null) {
                 const destNumber = this.callQueue.getAndRemoveFromQueue()
+
+                if (!this.sourceDn || !this.externalApiSvc.connected) {
+                    if (destNumber)
+                        this.failedCalls.push({
+                            callerId: destNumber,
+                            reason: NO_SOURCE_OR_DISCONNECTED,
+                        })
+                    return
+                }
+                const participants = this.getParticipantsOfDn(this.sourceDn)
+                if (participants && participants.size > 0) {
+                    if (destNumber)
+                        this.failedCalls.push({
+                            callerId: destNumber,
+                            reason: CAMPAIGN_SOURCE_BUSY,
+                        })
+                    return
+                }
+
                 try {
                     const source = this.fullInfo?.callcontrol.get(this.sourceDn)
                     const device: DNDevice | undefined = source?.devices
@@ -276,11 +290,27 @@ export class OutboundCampaignService {
                             response.data.result
                         )
                     } else {
-                        this.failedCalls.push(destNumber!)
+                        this.failedCalls.push({
+                            callerId: destNumber!,
+                            reason:
+                                response?.data?.reasontext ||
+                                UNKNOWN_CALL_ERROR,
+                        })
                     }
                 } catch (error: unknown) {
-                    this.failedCalls.push(destNumber!)
-                    console.log(error)
+                    if (axios.isAxiosError(error)) {
+                        this.failedCalls.push({
+                            callerId: destNumber!,
+                            reason:
+                                error.response?.data.reasontext ||
+                                UNKNOWN_CALL_ERROR,
+                        })
+                    } else {
+                        this.failedCalls.push({
+                            callerId: destNumber!,
+                            reason: UNKNOWN_CALL_ERROR,
+                        })
+                    }
                 }
             }
         } else {

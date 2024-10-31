@@ -24,6 +24,14 @@ export const INTERNAL_SERVER_ERROR = 'Internal Server Error'
 export const NOT_FOUND = 'Not Found'
 
 //ws
-export const MAX_WS_RECONNECT_TIMES = 10;
-export const WS_CLOSE_REASON_TERMINATE = "TERMINATE";
-export const WS_CLOSE_REASON_RETRY = "RETRY"
+export const MAX_WS_RECONNECT_TIMES = 10
+export const WS_CLOSE_REASON_TERMINATE = 'TERMINATE'
+export const WS_CLOSE_REASON_RETRY = 'RETRY'
+
+//fail call reasons
+export const CAMPAIGN_SOURCE_BUSY =
+    'Campaign source is busy, please finish campaign and try again'
+export const NO_SOURCE_OR_DISCONNECTED =
+    'Application is disconnected or source DN is not found'
+export const UNKNOWN_CALL_ERROR =
+    'The call has been failed due to unexpected reason'

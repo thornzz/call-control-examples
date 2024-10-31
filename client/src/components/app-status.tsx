@@ -1,9 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
 import { controlParticipantRequest, getEnumeredType, getStatusFunc } from '../shared';
-import { CallParticipant, ConnectFormProps } from '../types';
+import { CallParticipant, ConnectFormProps, TFailedCall } from '../types';
 import { useNavigate } from 'react-router-dom';
 import { APP_TYPE_CUSTOM_IVR, PARTICIPANT_CONTROL_DROP } from '../constants';
 import { ErrorPortal } from '../error-portal';
+import { useState } from 'react';
+
+export function TooltipNumber({ callerId, reason }: TFailedCall) {
+  const [showTooltip, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <div
+        className="bg-slate-600 text-white absolute bottom-5 left-2 p-1 opacity-3 rounded-md w-[200px] text-center"
+        style={{ visibility: showTooltip ? 'visible' : 'hidden' }}>
+        Reason: {reason}
+      </div>
+      <div
+        className="font-bold text-red-500 cursor-pointer"
+        onMouseOver={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}>
+        {callerId}
+      </div>
+    </div>
+  );
+}
 
 export default function AppStatus({ appType }: ConnectFormProps) {
   const navigate = useNavigate();
@@ -124,9 +144,11 @@ export default function AppStatus({ appType }: ConnectFormProps) {
         <span className="block font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
           Current Call Queue: {data?.callQueue?.join(',') ?? 'Empty'}
         </span>
-        <span className="block font-sans text-sm font-normal leading-normal text-gray-700 antialiased ">
+        <span className="flex gap-1 font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
           Failed Calls:{' '}
-          <span className="font-bold text-red-500">{data?.failedCalls?.join(',') ?? 'Empty'}</span>
+          {data?.failedCalls?.map((fcall, idx) => {
+            return <TooltipNumber {...fcall} key={idx} />;
+          }) ?? 'Empty'}
         </span>
         <div className="flex gap-1 items-center font-sans text-sm font-normal leading-normal text-gray-700 antialiased">
           Current Calls:{' '}
