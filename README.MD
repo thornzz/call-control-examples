@@ -16,7 +16,7 @@ From the Admin Console in the 3CX Webclient, go to Integrations > API:
 - [x] **That's it! You've successfully completed the PBX configuration.**
 
 > [!IMPORTANT]
-> You must have a 3CX Enterprise license and CFD to use 3CX Call Control.
+> You must have a 3CX Enterprise license and CFD access to use 3CX Call Control.
 
 ## External Web Application Installation and Configuration
 
@@ -36,20 +36,20 @@ npm install -g yarn
 
 Follow these steps to install and set up the application:
 
-1. **Clone the Repository**
+1. **Clone the Repository:**
 Open a terminal and clone the repository to your local machine:
 
 ```bash
 git clone https://github.com/3cx/call-control-examples.git
 ```
 
-2. **Navigate to the Project Directory**
+2. **Navigate to the Project Directory:**
 
 ```bash
 cd call-control-examples
 ```
 
-3. **Understand the Project Structure**
+3. **Understand the Project Structure:**
 
 The project contains the following folders:
 
@@ -58,7 +58,7 @@ The project contains the following folders:
 * calling-integration-sdk-demo-react-ts: A HubSpot integration example widget (React + TypeScript).
 * cc-component-lib: A library of shared components used across the examples.
 
-4. **Install dependencies**
+4. **Install dependencies:**
 Use Yarn to install the necessary packages for the project:
 
 ```bash
@@ -69,23 +69,49 @@ yarn install
 
 ### Running Basic Example
 
-Basic example contains 3 different approaches of PBX Call Control API usage, for each of them you need to have [Configured from PBX side RoutePoint](#configuration-steps-from-pbx-side)
+The basic example demonstrates three different approaches to using the PBX Call Control API. Each requires a [Configured from PBX side RoutePoint](#configuration-steps-from-pbx-side).
 
-- `Custom IVR implementation`: This application implements IVR functionality. After you have connected your APP,
-  you can specify configuration for your IVR. Prompt file will be streamed to each participant handled by IVR connection,
-  you also may specify DTMF string routes for redirection purposes. Moreover, you are able to perform
-  outgoing calls from Custom IVR. You may specify comma-separated phone numbers and run dialing campaign.
-- `Outbound Campaign implementation`: This application represents simple Outbound Campaign, you may specify comma-separated phone numbers and run dialing campaign
-- `Dialer implementation`: This application mimics a simple Dialer. You may use it like a physical phone device. You are also free to choose which device you will select for call handling from the list.
+1. **Custom IVR Implementation**:
+    This application implements IVR (Interactive Voice Response) functionality. Key features include:
 
-To Start the Application, please run following command from terminal:
+    Prompt Streaming: Stream a prompt file to participants handled by the IVR connection.
+    DTMF Routing: Specify DTMF string routes for redirection purposes.
+    Outbound Calls: Perform outgoing calls by specifying a comma-separated list of phone numbers to initiate a dialing campaign.
 
-```
+2. **Outbound Campaign Implementation:**
+    This application represents a simple Outbound Campaign:
+
+    Allows you to specify comma-separated phone numbers and initiate a dialing campaign.
+    Ideal for managing batch calls efficiently.
+
+3. **Dialer Implementation:**
+    The Dialer application acts as a virtual phone connected to your PBX Extension, offering several call management capabilities:
+
+    * Device Selection: Choose from the devices available for your PBX Extension to handle calls.
+    * Make and Receive Calls: Easily initiate or answer calls directly from the application.
+    * Call Operations:
+        * Transfer Calls: Redirect an active call to another destination.
+        * Divert Calls: Forward incoming calls to another number or device.
+    
+    This application provides a streamlined experience for managing calls as if using a physical phone device, all while being integrated with your PBX system.
+
+#### Starting the Application
+
+To run the application, execute the following command in your terminal:
+
+```bash
 yarn start
 ```
 
+#### What Happens Next?
+
+The yarn start command will:
+
+1. Automatically open a new browser tab with the client-side interface at https://localhost:8081.
+2. Concurrently run the Application Server at http://localhost:8080.
+
 > [!NOTE]
-> The yarn start command will automatically open a new tab in your browser at https://localhost:8081 with client-side part, and concurrently run Application Server at http://localhost:8080. The Application Server Base Path is configurable depending on the `.env` configuration file, which you can find inside the root folder of the server package, but don't forget to make it consistent with client-side `.env` file.
+> ⚙️ Both the Development Server (client-side) and Backend Server base paths are configurable via their respective `.env` files.
 
 - [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
@@ -100,7 +126,7 @@ HubSpot Calling SDK Integration provides live example in development local envir
 
 Run following command from terminal:
 
-```
+```bash
 yarn start-hubspot
 ```
 
