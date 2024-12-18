@@ -73,7 +73,7 @@ Follow these steps to install and set up the application:
 
 - [x] **Done!** After you installed dependencies, you can proceed with running the Application.
 
-### Starting the Application
+## Starting the Application
 
 To run the application, execute the following command in your terminal:
 
@@ -81,7 +81,7 @@ To run the application, execute the following command in your terminal:
 yarn start
 ```
 
-#### What Happens Next?
+### What Happens Next?
 
 The `yarn start` command will:
 
@@ -101,7 +101,7 @@ The `yarn start` command will:
 > [!NOTE]
 > ⚙️ Both the Development Server (client-side) and Backend Server base paths are configurable via their respective `.env` files.
 
-### Working with Examples
+## Working with Examples
 
 Once you've opened the UI in your browser, you'll see a list of available examples. Follow these steps to connect your application to the PBX and start working with the selected example:
 
@@ -119,7 +119,7 @@ Once you've opened the UI in your browser, you'll see a list of available exampl
 
  Below, you can read about each example in detail to understand its purpose and functionality.
 
-### Examples Description
+## Examples Description
 
 The basic example demonstrates three different approaches to using the PBX Call Control API. All these examples are built around the 3CX Call Control Web API, showcasing its versatility and capabilities.
 
