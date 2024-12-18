@@ -20,22 +20,48 @@ From the Admin Console in the 3CX Webclient, go to Integrations > API:
 
 ## External Web Application Installation and Configuration
 
-### Installation
+### Prerequisites
 
-To run the Application please follow the instructions below:
+Before running the application, ensure you have the following installed:
 
-1. Install [Node.js](https://nodejs.org/en).
+* [Node.js](https://nodejs.org/en) (LTS version recommended)
 
-2. Clone the entire folder to somewhere on your hard drive.
+* [Yarn (package manager)](https://yarnpkg.com/) – If not installed, run:
 
-3. Open a command prompt and go to that directory
-
-The Directory contains following folders: server (main backend), client (examples UI), calling-integration-sdk-demo-react-ts (HubSpot integration example widget), cc-component-lib(for
-shared components)
-
-4. Run packages installation
-
+```bash
+npm install -g yarn
 ```
+
+### Installation Steps
+
+Follow these steps to install and set up the application:
+
+1. **Clone the Repository**
+Open a terminal and clone the repository to your local machine:
+
+```bash
+git clone https://github.com/3cx/call-control-examples.git
+```
+
+2. **Navigate to the Project Directory**
+
+```bash
+cd call-control-examples
+```
+
+3. **Understand the Project Structure**
+
+The project contains the following folders:
+
+* server: The main backend server.
+* client: Example User Interface showcasing the integration.
+* calling-integration-sdk-demo-react-ts: A HubSpot integration example widget (React + TypeScript).
+* cc-component-lib: A library of shared components used across the examples.
+
+4. **Install dependencies**
+Use Yarn to install the necessary packages for the project:
+
+```bash
 yarn install
 ```
 
