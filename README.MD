@@ -96,9 +96,28 @@ http://localhost:8080
 
 - [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
-### Basic Example Description
+### Working with Examples
 
-The basic example demonstrates three different approaches to using the PBX Call Control API. Each requires a [Configured from PBX side RoutePoint](#configuration-steps-from-pbx-side).
+Once you've opened the UI in your browser, you'll see a list of available examples. Follow these steps to connect your application to the PBX and start working with the selected example:
+
+1. **Select an Example:** 
+Choose the example you want to explore from the list
+2. **Fill in the Connection Form:**
+Provide the required details to establish a connection:
+    * **PBX Base URL:** The URL of your PBX instance (eg. https://pbxuser.3cx.com)
+    * **APP ID:** The Client ID of the [Service Principal](#configuration-steps-from-pbx-side), configured on the PBX Side.
+    * **APP Secret:** the secret key generated when you created the [Service Principal](#configuration-steps-from-pbx-side)
+3. **Connect to the PBX:**
+Click *Connect* to establish the connection.   
+4. **Interact with the Example:**
+Once connected, you can begin working with the selected example and explore its functionality.
+
+ Below, you can read about each example in detail to understand its purpose and functionality.
+
+### Examples Description
+
+The basic example demonstrates three different approaches to using the PBX Call Control API. Each requires a [Configured from PBX side RoutePoint aka Service Principal](#configuration-steps-from-pbx-side).
+
 
 1. **Custom IVR Implementation**:
     This application implements IVR (Interactive Voice Response) functionality. Key features include:
