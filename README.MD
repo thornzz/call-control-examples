@@ -67,22 +67,51 @@ yarn install
 
 - [x] **Done!** After you installed dependencies, you can proceed with running the Application.
 
-### Running Basic Example
+### Starting the Application
+
+To run the application, execute the following command in your terminal:
+
+```bash
+yarn start
+```
+
+#### What Happens Next?
+
+The `yarn start` command will:
+
+1. Start the client-side interface at:
+```arduino
+https://localhost:8081
+```
+**Open this URL manually in your browser to access the client interface.**
+
+2. Concurrently run the Application Server at:
+
+```arduino
+http://localhost:8080
+```
+
+> [!NOTE]
+> ⚙️ Both the Development Server (client-side) and Backend Server base paths are configurable via their respective `.env` files.
+
+- [x] **Done!** If you are succeeded, your browser will be opened automatically.
+
+### Basic Example Description
 
 The basic example demonstrates three different approaches to using the PBX Call Control API. Each requires a [Configured from PBX side RoutePoint](#configuration-steps-from-pbx-side).
 
 1. **Custom IVR Implementation**:
     This application implements IVR (Interactive Voice Response) functionality. Key features include:
 
-    Prompt Streaming: Stream a prompt file to participants handled by the IVR connection.
-    DTMF Routing: Specify DTMF string routes for redirection purposes.
-    Outbound Calls: Perform outgoing calls by specifying a comma-separated list of phone numbers to initiate a dialing campaign.
+    * Prompt Streaming: Stream a prompt file to participants handled by the IVR connection.
+    * DTMF Routing: Specify DTMF string routes for redirection purposes.
+    * Outbound Calls: Perform outgoing calls by specifying a comma-separated list of phone numbers to initiate a dialing campaign.
 
 2. **Outbound Campaign Implementation:**
     This application represents a simple Outbound Campaign:
 
-    Allows you to specify comma-separated phone numbers and initiate a dialing campaign.
-    Ideal for managing batch calls efficiently.
+    * Allows you to specify comma-separated phone numbers and initiate a dialing campaign.
+    * Ideal for managing batch calls efficiently.
 
 3. **Dialer Implementation:**
     The Dialer application acts as a virtual phone connected to your PBX Extension, offering several call management capabilities:
@@ -94,26 +123,6 @@ The basic example demonstrates three different approaches to using the PBX Call 
         * Divert Calls: Forward incoming calls to another number or device.
     
     This application provides a streamlined experience for managing calls as if using a physical phone device, all while being integrated with your PBX system.
-
-#### Starting the Application
-
-To run the application, execute the following command in your terminal:
-
-```bash
-yarn start
-```
-
-#### What Happens Next?
-
-The yarn start command will:
-
-1. Automatically open a new browser tab with the client-side interface at https://localhost:8081.
-2. Concurrently run the Application Server at http://localhost:8080.
-
-> [!NOTE]
-> ⚙️ Both the Development Server (client-side) and Backend Server base paths are configurable via their respective `.env` files.
-
-- [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
 ## HubSpot Integration Setup
 
