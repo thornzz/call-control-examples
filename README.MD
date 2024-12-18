@@ -40,14 +40,13 @@ Follow these steps to install and set up the application:
     You can get the project files in one of the following ways:
 
     * **Using Git:** Open a terminal and run the following command to clone the repository:
-    
     ```bash
     git clone https://github.com/3cx/call-control-examples.git
     ```
+    
     * **Without Git:**
-
-    * Click the green Code button and select Download ZIP.
-    * Extract the downloaded ZIP file to a directory of your choice.
+        * Click the green Code button and select Download ZIP.
+        * Extract the downloaded ZIP file to a directory of your choice.
 
 2. **Navigate to the Project Directory:**
 
