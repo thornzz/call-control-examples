@@ -37,33 +37,35 @@ npm install -g yarn
 Follow these steps to install and set up the application:
 
 1. **Clone the Repository:**
-Open a terminal and clone the repository to your local machine:
 
-```bash
-git clone https://github.com/3cx/call-control-examples.git
-```
+    Open a terminal and clone the repository to your local machine:
+
+    ```bash
+    git clone https://github.com/3cx/call-control-examples.git
+    ```
 
 2. **Navigate to the Project Directory:**
 
-```bash
-cd call-control-examples
-```
+    ```bash
+    cd call-control-examples
+    ```
 
-3. **Understand the Project Structure:**
+3. **Install dependencies:**
 
-The project contains the following folders:
+    Use Yarn to install the necessary packages for the project:
 
-* server: The main backend server.
-* client: Example User Interface showcasing the integration.
-* calling-integration-sdk-demo-react-ts: A HubSpot integration example widget (React + TypeScript).
-* cc-component-lib: A library of shared components used across the examples.
+    ```bash
+    yarn install
+    ```
 
-4. **Install dependencies:**
-Use Yarn to install the necessary packages for the project:
+4. **Understand the Project Structure:**
 
-```bash
-yarn install
-```
+    The project contains the following folders:
+
+    * `server`: The main backend server.
+    * `client`: Example User Interface showcasing the integration.
+    * `calling-integration-sdk-demo-react-ts`: A HubSpot integration example widget (React + TypeScript).
+    * `cc-component-lib`: A library of shared components used across the examples.
 
 - [x] **Done!** After you installed dependencies, you can proceed with running the Application.
 
@@ -80,16 +82,17 @@ yarn start
 The `yarn start` command will:
 
 1. Start the client-side interface at:
-```arduino
-https://localhost:8081
-```
-**Open this URL manually in your browser to access the client interface.**
+
+    ```arduino
+    https://localhost:8081
+    ```
+    **Open this URL manually in your browser to access the client interface.**
 
 2. Concurrently run the Application Server at:
 
-```arduino
-http://localhost:8080
-```
+    ```arduino
+    http://localhost:8080
+    ```
 
 > [!NOTE]
 > ⚙️ Both the Development Server (client-side) and Backend Server base paths are configurable via their respective `.env` files.
@@ -101,16 +104,16 @@ http://localhost:8080
 Once you've opened the UI in your browser, you'll see a list of available examples. Follow these steps to connect your application to the PBX and start working with the selected example:
 
 1. **Select an Example:** 
-Choose the example you want to explore from the list
+    Choose the example you want to explore from the list
 2. **Fill in the Connection Form:**
-Provide the required details to establish a connection:
-    * **PBX Base URL:** The URL of your PBX instance (eg. https://pbxuser.3cx.com)
-    * **APP ID:** The Client ID of the [Service Principal](#configuration-steps-from-pbx-side), configured on the PBX Side.
-    * **APP Secret:** the secret key generated when you created the [Service Principal](#configuration-steps-from-pbx-side)
+    Provide the required details to establish a connection:
+        * **PBX Base URL:** The URL of your PBX instance (eg. https://pbxuser.3cx.com)
+        * **APP ID:** The Client ID of the [Service Principal](#configuration-steps-from-pbx-side), configured on the PBX Side.
+        * **APP Secret:** the secret key generated when you created the [Service Principal](#configuration-steps-from-pbx-side)
 3. **Connect to the PBX:**
-Click *Connect* to establish the connection.   
+    Click *Connect* to establish the connection.   
 4. **Interact with the Example:**
-Once connected, you can begin working with the selected example and explore its functionality.
+    Once connected, you can begin working with the selected example and explore its functionality.
 
  Below, you can read about each example in detail to understand its purpose and functionality.
 
