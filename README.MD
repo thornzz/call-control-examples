@@ -45,7 +45,7 @@ Follow these steps to install and set up the application:
     ```
     
     * **Without Git:**
-        * Click the green Code button and select Download ZIP.
+        * Click the **Code** button on top of the repository and select Download ZIP.
         * Extract the downloaded ZIP file to a directory of your choice.
 
 2. **Navigate to the Project Directory:**
@@ -167,7 +167,7 @@ yarn start-hubspot
 ```
 
 > [!NOTE]
-> the `yarn start` command will automatically open a new tab in your browser at https://localhost:9025/, and you may need to bypass a "Your connection is not secure" warning in order to access the application.
+> the `yarn start` command will launch development server at https://localhost:9025/, you need manually enter the URL in your browser, then may need to bypass a "Your connection is not secure" warning in order to access the application.
 
 - [x] **Done!** If you are succeeded, your browser will be opened automatically.
 
