@@ -1,5 +1,5 @@
 {
-    "name": "3cx-call-control-apps",
+    "name": "@3cx/3cx-call-control-apps",
     "scripts": {
         "build-lib": "yarn workspace cc-component-lib build",
         "start-server": "yarn workspace server start",
