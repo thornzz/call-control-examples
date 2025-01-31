@@ -11,38 +11,48 @@ import { Error, ButtonForms } from 'cc-component-lib';
 type Inputs = {
   wavSource: string;
   keyCommands: string[];
+  aiModeOn: boolean;
+  aiStreamMode: number;
 };
 
 export default function CustomIvr() {
   const { data, refetch } = useQuery({
     queryFn: getStatusFunc(APP_TYPE_CUSTOM_IVR),
-    queryKey: ['status', APP_TYPE_CUSTOM_IVR]
+    queryKey: ['status', APP_TYPE_CUSTOM_IVR],
   });
 
   const {
     register,
     handleSubmit,
     setValue,
-    formState: { errors, isSubmitting }
-  } = useForm<Inputs>();
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<Inputs>({ defaultValues: { aiStreamMode: 1 } });
 
+  const { aiModeOn } = watch();
   useEffect(() => {
     if (data?.keymap) {
       setValue('keyCommands', data.keymap);
     }
-  }, [data]);
+  }, [data, setValue]);
 
   const [serverError, setServerError] = useState<string | undefined>(undefined);
 
   const onSubmit: SubmitHandler<Inputs> = async (submitData) => {
     setServerError(undefined);
     const formData = new FormData();
-    formData.append('wavSource', submitData.wavSource[0]);
-    formData.append('keyCommands', JSON.stringify(submitData.keyCommands));
+    if (!submitData.aiModeOn) {
+      formData.append('wavSource', submitData.wavSource[0]);
+      formData.append('keyCommands', JSON.stringify(submitData.keyCommands));
+    } else {
+      formData.append('aiStreamMode', JSON.stringify(submitData.aiStreamMode));
+    }
+    formData.append('aiModeOn', JSON.stringify(submitData.aiModeOn));
+
     try {
       const response = await fetch(`${import.meta.env.VITE_SERVER_BASE}/api/setup/ivr`, {
         method: 'POST',
-        body: formData
+        body: formData,
       });
       const json = await response.json();
       if (json?.errorCode) {
@@ -64,11 +74,12 @@ export default function CustomIvr() {
             {i}:{' '}
           </label>
           <input
-            className="h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none"
+            disabled={aiModeOn}
+            className="h-[36px] rounded p-1 text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
             id={`dtmf${i}`}
             {...register(`keyCommands.${i}` as 'keyCommands')}
           />
-        </div>
+        </div>,
       );
     }
     return content;
@@ -78,6 +89,48 @@ export default function CustomIvr() {
       <div className="bg-white rounded px-8 mb-4 flex flex-col w-3/5">
         {serverError && <Error message={serverError} />}
         <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="inline-flex items-center mb-2">
+            <label className="flex items-center cursor-pointer relative">
+              <input
+                type="checkbox"
+                className="peer h-5 w-5 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-slate-800 checked:border-slate-800"
+                id="check"
+                {...register('aiModeOn')}
+              />
+              <span className="absolute text-white opacity-0 peer-checked:opacity-100 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  stroke="currentColor"
+                  strokeWidth="1"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  ></path>
+                </svg>
+              </span>
+            </label>
+            <span className="ml-2">Enable AI Mode</span>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="opts" className="flex items-center cursor-pointer gap-2">
+              AI Type:
+              <select
+                id="opts"
+                disabled={!aiModeOn}
+                defaultValue={1}
+                {...register('aiStreamMode')}
+                className="bg-gray-50 w-[150px] h-[30px] borderdisabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+              >
+                <option value={1}>AI Chat</option>
+                <option value={0}>Echo</option>
+              </select>
+            </label>
+          </div>
           <div className="-mx-3 md:flex mb-6">
             <div className="md:w-full px-3">
               <div className="flex flex-col">
@@ -87,12 +140,14 @@ export default function CustomIvr() {
                   id="datasource"
                   accept=".wav"
                   aria-describedby="file-helper"
-                  className="w-full text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none file:cursor-pointer cursor-pointer file:border-0 file:py-2 file:px-4 file:mr-4 file:bg-gray-800 file:hover:bg-gray-700 file:text-white rounded"
-                  {...register('wavSource', { required: 'Required' })}
+                  disabled={aiModeOn}
+                  className="w-full text-gray-500 font-medium text-sm bg-gray-100 shadow appearance-none file:cursor-pointer cursor-pointer file:border-0 file:py-2 file:px-4 file:mr-4 file:bg-gray-800 file:hover:bg-gray-700 file:text-white rounded disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed"
+                  {...register('wavSource')}
                 />
                 <p
                   id="helper-text-explanation"
-                  className="text-sm mt-1 text-gray-500 dark:text-gray-400">
+                  className="text-sm mt-1 text-gray-500 dark:text-gray-400"
+                >
                   Select .wav file of IVR prompt
                 </p>
                 {errors.wavSource && (

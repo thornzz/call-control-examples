@@ -14,7 +14,7 @@ export default function OutboundCampaign({ appType }: ConnectFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting, errors }
+    formState: { isSubmitting, errors },
   } = useForm<Inputs>();
   const [serverError, setServerError] = useState<string | undefined>(undefined);
 
@@ -27,7 +27,7 @@ export default function OutboundCampaign({ appType }: ConnectFormProps) {
         return;
       }
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   };
 

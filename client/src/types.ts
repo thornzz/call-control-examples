@@ -7,7 +7,7 @@ import {
   PARTICIPANT_CONTROL_DIVERT,
   PARTICIPANT_CONTROL_DROP,
   PARTICIPANT_CONTROL_ROUTE_TO,
-  PARTICIPANT_CONTROL_TRANSFER_TO
+  PARTICIPANT_CONTROL_TRANSFER_TO,
 } from './constants';
 export type TFailedCall = {
   reason: string;
@@ -26,6 +26,7 @@ export type AppStatus = {
   activeDeviceId?: string;
   currentCalls: CurrentCall[];
   wsConnected: boolean;
+  aiModeOn?: boolean;
 };
 
 export type AppError = {

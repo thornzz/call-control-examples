@@ -1,15 +1,15 @@
-import { AppStatus } from "./types/externalAppTypes";
+import { AppStatus } from './types/externalAppTypes';
 
 export const getStatusFunc = () => {
   const getStatus = async () => {
     const response: Promise<AppStatus> = fetch(
       `${process.env.REACT_APP_SERVER_BASE}/api/status?appId=2`,
       {
-        method: "GET",
-      }
+        method: 'GET',
+      },
     )
       .then((res) => res.json())
-      .catch((err) => console.log(err));
+      .catch((err) => console.error(err));
     return (await response) || null;
   };
 
@@ -17,7 +17,5 @@ export const getStatusFunc = () => {
 };
 
 export function stringifyError(error: any) {
-  return `[${error.errorCode + " "}${error.name ?? "Unknown Error"}]: ${
-    error.message || ""
-  }`;
+  return `[${error.errorCode + ' '}${error.name ?? 'Unknown Error'}]: ${error.message || ''}`;
 }
