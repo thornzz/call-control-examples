@@ -174,6 +174,7 @@ export class CustomIVRAppService {
         : [],
       wsConnected: this.externalApiSvc.wsClient?.readyState !== WebSocket.CLOSED,
       aiModeOn: this.config?.aiModeOn,
+      aiStreamMode: this.config?.aiStreamMode,
     };
   }
   /**
@@ -182,7 +183,10 @@ export class CustomIVRAppService {
    * @param config
    */
   public setup(config: Record<string, unknown>) {
-    this.config = config as TCustomIVRConfig;
+    this.config = {
+      ...config,
+      aiStreamMode: Number(config.aiStreamMode),
+    } as TCustomIVRConfig;
   }
   /**
    * event handler for incoming webhooks from PBX
@@ -360,6 +364,7 @@ export class CustomIVRAppService {
   }
 
   public handleAIStreams(participantId: number) {
+    console.log(this.config);
     if (!this.config) {
       return;
     }

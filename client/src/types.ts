@@ -27,6 +27,7 @@ export type AppStatus = {
   currentCalls: CurrentCall[];
   wsConnected: boolean;
   aiModeOn?: boolean;
+  aiStreamMode?: number;
 };
 
 export type AppError = {

@@ -31,6 +31,12 @@ export default function CustomIvr() {
 
   const { aiModeOn } = watch();
   useEffect(() => {
+    if (data?.aiModeOn) {
+      setValue('aiModeOn', data.aiModeOn);
+    }
+    if (data?.aiStreamMode !== undefined) {
+      setValue('aiStreamMode', data.aiStreamMode);
+    }
     if (data?.keymap) {
       setValue('keyCommands', data.keymap);
     }
@@ -170,13 +176,21 @@ export default function CustomIvr() {
         {data?.wavSource && <OutboundCampaign appType={APP_TYPE_CUSTOM_IVR} />}
       </div>
       <div className="flex gap-10 flex-col w-2/5">
-        <Instructions
-          text="This application implements IVR functionality. After you have connected your APP,
-          you can specify configuration for your IVR. Prompt file will be streamed to each participant handled by IVR connection,
-          you also may specify DTMF string routes for redirection purposes. Moreover, you are able to perform
-          outgoing calls from Custom IVR. You may specify comma-separated phone numbers and run dialing campaign."
-          appType="ivr"
-        />
+        <Instructions appType="ivr">
+          <p>
+            This application implements IVR functionality. After you have connected your APP, you
+            can specify configuration for your IVR. Prompt file will be streamed to each participant
+            handled by IVR connection, you also may specify DTMF string routes for redirection
+            purposes. Moreover, you are able to perform outgoing calls from Custom IVR. You may
+            specify comma-separated phone numbers and run dialing campaign.
+          </p>
+          <p className="pt-2">
+            <span className="font-bold">AI Mode:</span> this option enable showcase with AI google
+            speech API + vertex AI Api. To make it work please make sure that you have .json with
+            Google Service Account credentials in your server root folder, that inludes
+            speech-to-text, text-to-speech, vertex-ai permissions.
+          </p>
+        </Instructions>
         <AppStatus appType={APP_TYPE_CUSTOM_IVR} />
       </div>
     </section>
