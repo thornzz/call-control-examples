@@ -613,13 +613,6 @@ export class CustomIVRAppService {
     }
   }
   /**
-   * push number to call queue for campaign
-   * @param str
-   */
-  pushNumbersToQueue(str: string) {
-    this.callQueue.push(str);
-  }
-  /**
    *  start prepare queue and start makeCalls
    * @param dialingSetup
    */
@@ -630,7 +623,7 @@ export class CustomIVRAppService {
       .filter((numb) => {
         return !!numb;
       });
-    arr.forEach((destNumber) => this.pushNumbersToQueue(destNumber));
+    arr.forEach((destNumber) => this.callQueue.enqueue(destNumber));
     this.makeCallsToDst();
   }
   /**
@@ -640,7 +633,7 @@ export class CustomIVRAppService {
   public async makeCallsToDst() {
     if (!this.callQueue.isEmpty()) {
       if (this.callQueue.items.head !== null) {
-        const destNumber = this.callQueue.getAndRemoveFromQueue();
+        const destNumber = this.callQueue.dequeue();
 
         if (!this.sourceDn || !this.externalApiSvc.connected) {
           if (destNumber)

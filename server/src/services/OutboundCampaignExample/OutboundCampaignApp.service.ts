@@ -152,7 +152,7 @@ export class OutboundCampaignService {
    * @param webhook
    * @returns
    */
-  private wsEventHandler = async (json: string) => {
+  private wsEventHandler = (json: string) => {
     try {
       const wsEvent: WSEvent = JSON.parse(json);
       if (!this.externalApiSvc.connected || !wsEvent?.event?.entity) {
@@ -193,7 +193,7 @@ export class OutboundCampaignService {
                 this.incomingCallsParticipants.delete(removed.id);
                 const participants = this.getParticipantsOfDn(this.sourceDn);
                 if (!participants || participants?.size < 1) {
-                  await this.makeCallsToDst();
+                  this.makeCallsToDst();
                 }
               }
             }
@@ -207,10 +207,6 @@ export class OutboundCampaignService {
     }
   };
 
-  pushNumbersToQueue(str: string) {
-    this.callQueue.push(str);
-  }
-
   private getParticipantOfDnById(dn: string, id: string) {
     return this.fullInfo?.callcontrol.get(dn)?.participants.get(id);
   }
@@ -223,13 +219,13 @@ export class OutboundCampaignService {
    * @param dialingSetup
    */
   public startDialing(dialingSetup: DialingSetup) {
-    const arr = dialingSetup.sources
+    const destinations = dialingSetup.sources
       .split(',')
       .map((num) => num.trim())
-      .filter((numb) => {
-        return !!numb;
-      });
-    arr.forEach((destNumber) => this.pushNumbersToQueue(destNumber));
+      .filter(Boolean);
+
+    destinations.forEach((destNumber) => this.callQueue.enqueue(destNumber));
+
     this.makeCallsToDst();
   }
 
@@ -238,63 +234,61 @@ export class OutboundCampaignService {
    * @returns
    */
   public async makeCallsToDst() {
-    if (!this.callQueue.isEmpty()) {
-      if (this.callQueue.items.head !== null) {
-        const destNumber = this.callQueue.getAndRemoveFromQueue();
+    if (this.callQueue.isEmpty()) return;
 
-        if (!this.sourceDn || !this.externalApiSvc.connected) {
-          if (destNumber)
-            this.failedCalls.push({
-              callerId: destNumber,
-              reason: NO_SOURCE_OR_DISCONNECTED,
-            });
-          return;
-        }
-        const participants = this.getParticipantsOfDn(this.sourceDn);
-        if (participants && participants.size > 0) {
-          if (destNumber)
-            this.failedCalls.push({
-              callerId: destNumber,
-              reason: CAMPAIGN_SOURCE_BUSY,
-            });
-          return;
-        }
+    const destNumber = this.callQueue.dequeue();
 
-        try {
-          const source = this.fullInfo?.callcontrol.get(this.sourceDn);
-          const device: DNDevice | undefined = source?.devices?.values().next().value;
-          if (!device?.device_id) {
-            throw new BadRequest('Devices not found');
-          }
-          const response = await this.externalApiSvc.makeCallFromDevice(
-            this.sourceDn,
-            encodeURIComponent(device.device_id),
-            destNumber!,
-          );
-          if (response.data.result?.id) {
-            this.incomingCallsParticipants.set(response.data.result.id, response.data.result);
-          } else {
-            this.failedCalls.push({
-              callerId: destNumber!,
-              reason: response?.data?.reasontext || UNKNOWN_CALL_ERROR,
-            });
-          }
-        } catch (error: unknown) {
-          if (axios.isAxiosError(error)) {
-            this.failedCalls.push({
-              callerId: destNumber!,
-              reason: error.response?.data.reasontext || UNKNOWN_CALL_ERROR,
-            });
-          } else {
-            this.failedCalls.push({
-              callerId: destNumber!,
-              reason: UNKNOWN_CALL_ERROR,
-            });
-          }
-        }
+    if (!this.sourceDn || !this.externalApiSvc.connected) {
+      if (destNumber)
+        this.failedCalls.push({
+          callerId: destNumber,
+          reason: NO_SOURCE_OR_DISCONNECTED,
+        });
+      return;
+    }
+
+    const participants = this.getParticipantsOfDn(this.sourceDn);
+
+    if (participants && participants.size > 0) {
+      if (destNumber)
+        this.failedCalls.push({
+          callerId: destNumber,
+          reason: CAMPAIGN_SOURCE_BUSY,
+        });
+      return;
+    }
+
+    try {
+      const source = this.fullInfo?.callcontrol.get(this.sourceDn);
+      const device: DNDevice | undefined = source?.devices?.values().next().value;
+      if (!device?.device_id) {
+        throw new BadRequest('Devices not found');
       }
-    } else {
-      // queue is empty
+      const response = await this.externalApiSvc.makeCallFromDevice(
+        this.sourceDn,
+        encodeURIComponent(device.device_id),
+        destNumber!,
+      );
+      if (response.data.result?.id) {
+        this.incomingCallsParticipants.set(response.data.result.id, response.data.result);
+      } else {
+        this.failedCalls.push({
+          callerId: destNumber!,
+          reason: response?.data?.reasontext || UNKNOWN_CALL_ERROR,
+        });
+      }
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        this.failedCalls.push({
+          callerId: destNumber!,
+          reason: error.response?.data.reasontext || UNKNOWN_CALL_ERROR,
+        });
+      } else {
+        this.failedCalls.push({
+          callerId: destNumber!,
+          reason: UNKNOWN_CALL_ERROR,
+        });
+      }
     }
   }
 

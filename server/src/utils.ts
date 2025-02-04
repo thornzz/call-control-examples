@@ -25,11 +25,11 @@ export function determineOperation(entity: string) {
 export class Queue<T> {
   items = new List<T>();
 
-  push(value: T) {
+  enqueue(value: T) {
     this.items.insertEnd(value);
   }
 
-  getAndRemoveFromQueue() {
+  dequeue() {
     return this.items.removeBegin();
   }
 
