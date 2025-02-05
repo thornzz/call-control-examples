@@ -297,10 +297,10 @@ export class ExternalApiService {
 
   /**
    * request for incremental update of full info entity
-   * @param webhook
+   * @param ws
    * @returns
    */
-  public requestUpdatedEntityFromWebhookEvent(webhook: WSEvent) {
-    return this.fetch!.get(webhook.event.entity);
+  public requestUpdatedEntityFromWebhookEvent(ws: WSEvent) {
+    return this.fetch!.get(ws.event.entity);
   }
 }
