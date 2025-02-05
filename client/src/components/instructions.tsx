@@ -36,7 +36,7 @@ export default function Instructions({
             <div className="flex items-end justify-between whitespace-normal">
               <div className="max-w-md text-indigo-100">
                 <p className="mb-2">{text}</p>
-                <p className="mb-2">{children}</p>
+                <div>{children}</div>
               </div>
             </div>
           </div>
