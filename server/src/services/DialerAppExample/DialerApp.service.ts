@@ -218,8 +218,8 @@ export class DialerAppService {
             })
             .catch((err) => {
               if (axios.isAxiosError(err)) {
-                console.error(chalk.red(`💣 AXIOS ERROR code: ${err.response?.status}`));
-              } else console.error(chalk.red('⛔ Unknown error', err));
+                console.error(chalk.red(`❌ AXIOS ERROR code: ${err.response?.status}`));
+              } else console.error(chalk.red('❌ Unknown error', err));
             });
 
           break;
@@ -289,9 +289,9 @@ export class DialerAppService {
       }
     } catch (err) {
       if (isAxiosError(err)) {
-        console.error(chalk.red('🦀', err.code, err.message));
+        console.error(chalk.red('❌', err.code, err.message));
       } else {
-        console.error(chalk.red('🦭', err));
+        console.error(chalk.red('❌', err));
       }
     }
   }

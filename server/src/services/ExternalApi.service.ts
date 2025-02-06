@@ -137,7 +137,7 @@ export class ExternalApiService {
         this.cacheService.setAppAccessToken(this.appType, resp.data.access_token);
         return this.cacheService.getAppAccessToken(this.appType)!;
       } catch (err) {
-        console.error('🦥', chalk.red(err));
+        console.error('❌', chalk.red(err));
         throw new InternalServerError('Unable to receive access token');
       }
     }
