@@ -11,7 +11,7 @@ import chalk = require('chalk');
 @singleton()
 export class AiIntegrationService {
   private clientTTS = new textToSpeech.TextToSpeechClient();
-  private clientSTS = new speech.SpeechClient();
+  private clientSTT = new speech.SpeechClient();
   private vertexAI = new VertexAI({ project: process.env.PROJECT_ID! });
 
   public createSpeech(input: string) {
@@ -46,7 +46,7 @@ export class AiIntegrationService {
       interimResults: true,
     };
 
-    return this.clientSTS.streamingRecognize(request, {});
+    return this.clientSTT.streamingRecognize(request, {});
   }
 
   public createChatCompletion() {

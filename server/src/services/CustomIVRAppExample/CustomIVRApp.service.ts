@@ -415,7 +415,7 @@ export class CustomIVRAppService {
         await this.sendAudioToStream(audioResponse, participant);
       }
     } catch (err) {
-      console.error(chalk.red('Vertex AI error:', err));
+      console.error(chalk.red('❌ Vertex AI error:', err));
     }
   }
 
