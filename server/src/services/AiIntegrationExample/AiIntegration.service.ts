@@ -5,6 +5,7 @@ import tts from '@google-cloud/text-to-speech/build/protos/protos';
 import ISynthesizeSpeechRequest = tts.google.cloud.texttospeech.v1.ISynthesizeSpeechRequest;
 import * as protosTypes from '@google-cloud/speech/build/protos/protos';
 import { VertexAI } from '@google-cloud/vertexai';
+import chalk = require('chalk');
 
 @injectable()
 @singleton()
@@ -24,7 +25,7 @@ export class AiIntegrationService {
       };
       return this.clientTTS.synthesizeSpeech(request);
     } catch (e) {
-      console.error('Google Text to Speech API req error', e);
+      console.error(chalk.red('🚨 Google Text to Speech API req error', e));
       //throw new Error('Google Text to Speech API req error')
     }
   }

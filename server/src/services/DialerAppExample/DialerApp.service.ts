@@ -22,6 +22,7 @@ import * as EventEmitter from 'events';
 import axios, { isAxiosError } from 'axios';
 import { BadRequest, InternalServerError } from '../../Error';
 import { WebSocket } from 'ws';
+import * as chalk from 'chalk';
 
 @injectable()
 @singleton()
@@ -217,8 +218,8 @@ export class DialerAppService {
             })
             .catch((err) => {
               if (axios.isAxiosError(err)) {
-                console.error(`AXIOS ERROR code: ${err.response?.status}`);
-              } else console.error('Unknown error', err);
+                console.error(chalk.red(`💣 AXIOS ERROR code: ${err.response?.status}`));
+              } else console.error(chalk.red('⛔ Unknown error', err));
             });
 
           break;
@@ -288,9 +289,9 @@ export class DialerAppService {
       }
     } catch (err) {
       if (isAxiosError(err)) {
-        console.error(err.code, err.message);
+        console.error(chalk.red('🦀', err.code, err.message));
       } else {
-        console.error(err);
+        console.error(chalk.red('🦭', err));
       }
     }
   }

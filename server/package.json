@@ -22,6 +22,7 @@
     "@types/pumpify": "^1.4.4",
     "@types/wav": "^1.0.4",
     "@types/ws": "^8",
+    "chalk": "4",
     "eslint": "^9.11.1",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",

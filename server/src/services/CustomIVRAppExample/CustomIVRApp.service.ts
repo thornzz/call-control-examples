@@ -42,6 +42,7 @@ import { ExternalApiService } from '../ExternalApi.service';
 import { BadRequest, InternalServerError } from '../../Error';
 import { WebSocket } from 'ws';
 import { AiIntegrationService } from '../AiIntegrationExample/AiIntegration.service';
+import * as chalk from 'chalk';
 
 @injectable()
 @singleton()
@@ -131,7 +132,7 @@ export class CustomIVRAppService {
   async disconnect() {
     for (const part of this.getParticipantsOfDn(this.sourceDn!)?.values() ?? []) {
       if (part.streamCancelationToken) {
-        await this.gratefulShutDownStream(part.id!);
+        await this.gracefulShutdownStream(part.id!);
       }
     }
     this.externalApiSvc.disconnect();
@@ -229,8 +230,8 @@ export class CustomIVRAppService {
               })
               .catch((err) => {
                 if (axios.isAxiosError(err)) {
-                  console.error(`AXIOS ERROR code: ${err.response?.status}`);
-                } else console.error('Unknown error', err);
+                  console.error(chalk.red(`❌ AXIOS ERROR code: ${err.response?.status}`));
+                } else console.error(chalk.red('❌ Unknown error', err));
               });
           }
           break;
@@ -251,7 +252,7 @@ export class CustomIVRAppService {
                   this.handleDTMFInput(
                     participant.id!,
                     wsEvent.event.attached_data.dtmf_input,
-                  ).catch((e) => console.error(e));
+                  ).catch((e) => console.error(chalk.red('🚨', e)));
                 }
               }
             }
@@ -265,7 +266,7 @@ export class CustomIVRAppService {
                */
               const idNumeric = parseFloat(id);
               if (idNumeric) {
-                this.gratefulShutDownStream(idNumeric).finally(() => {
+                this.gracefulShutdownStream(idNumeric).finally(() => {
                   set(this.fullInfo!, wsEvent.event.entity, undefined);
                   const participants = this.getParticipantsOfDn(this.sourceDn);
                   if (!participants || participants?.size < 1) {
@@ -279,7 +280,7 @@ export class CustomIVRAppService {
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
-        console.error(`AXIOS ERROR code: ${err.response?.status}`);
+        console.error(chalk.red(`❌AXIOS ERROR code: ${err.response?.status}`));
       } else console.error('Unknown error', err);
     }
   };
@@ -351,142 +352,153 @@ export class CustomIVRAppService {
         .getAudioStream(this.sourceDn, participant.id)
         .then((response) => {
           response.data.on('close', () => {
-            this.gratefulShutDownStream(participant.id!);
+            this.gracefulShutdownStream(participant.id!);
           });
         });
       this.startStreamFromFile('output.wav', participant.id!);
       return Promise.all([getAudio, postAudio]).catch(() => {
-        this.gratefulShutDownStream(participant.id!);
+        this.gracefulShutdownStream(participant.id!);
       });
     } catch {
-      this.gratefulShutDownStream(participant.id!);
+      this.gracefulShutdownStream(participant.id!);
+    }
+  }
+  private async processTranscription(chunk: any, participant: ExtendedParticipant) {
+    const transcription = chunk.results?.[0]?.alternatives?.[0]?.transcript || '';
+
+    if (chunk.results?.[0]?.isFinal && transcription) {
+      if (this.config!.aiStreamMode === StreamMode.AiChat) {
+        await this.handleAiChatMode(participant, transcription);
+      } else if (this.config!.aiStreamMode === StreamMode.Echo) {
+        await this.handleEchoMode(participant, transcription);
+      }
     }
   }
 
-  public handleAIStreams(participantId: number) {
-    if (!this.config) {
-      return;
+  private async streamOutgoingAudio(participantId: number, recognizeStream: any) {
+    try {
+      const response = await this.externalApiSvc.getAudioStream(this.sourceDn!, participantId);
+      let chunks: Buffer[] = [];
+
+      response.data.on('data', (chunk: Buffer) => {
+        chunks.push(chunk);
+        if (chunks.length >= 50) {
+          recognizeStream.write(Buffer.concat(chunks));
+          chunks = [];
+        }
+      });
+
+      response.data.on('close', () => this.gracefulShutdownStream(participantId));
+    } catch (err) {
+      console.error(chalk.red('Speech API error:', err));
     }
+  }
+
+  private async handleAiChatMode(participant: ExtendedParticipant, transcription: string) {
+    try {
+      const responseChat = this.aiSvc.createChatCompletion();
+      const response = await responseChat.sendMessage(transcription);
+
+      const parts = response?.response?.candidates?.[0]?.content?.parts || [];
+      let responseText = parts
+        .map((part) => part.text?.replace(/\*+/gm, ''))
+        .join(' ')
+        .trim();
+
+      console.info(chalk.green('🌞🚀 Prompt created:'), chalk.blue(responseText));
+
+      if (responseText && participant.flushChunksToken) {
+        participant.flushChunksToken.emit('cancel');
+        console.info(chalk.cyan('💬 Creating speech...'));
+        const audioResponse = await this.aiSvc.createSpeech(responseText);
+        console.info(chalk.green('✅ Audio response created'));
+        await this.sendAudioToStream(audioResponse, participant);
+      }
+    } catch (err) {
+      console.error(chalk.red('Vertex AI error:', err));
+    }
+  }
+
+  private async handleEchoMode(participant: ExtendedParticipant, transcription: string) {
+    try {
+      const audioResponse = await this.aiSvc.createSpeech(transcription);
+      await this.sendAudioToStream(audioResponse, participant);
+    } catch (err) {
+      console.error(chalk.red('❌ Error in Echo mode create speech:', err));
+    }
+  }
+
+  private async sendAudioToStream(audioResponse: any, participant: ExtendedParticipant) {
+    if (audioResponse?.[0]?.audioContent && participant.flushChunksToken) {
+      console.warn(chalk.green('✅ Audio response recieved'));
+      try {
+        await writeSlicedAudioStream(
+          audioResponse[0].audioContent as Uint8Array,
+          participant.stream!,
+          participant.flushChunksToken,
+        );
+      } catch (err) {
+        console.warn(chalk.yellow('🤚 Sliced audio stream has been stopped...', err));
+      }
+    }
+  }
+
+  private initializeStreams(participanId: number) {
+    const outputStream = new TransformStream();
+    const outputWriter = outputStream.writable.getWriter();
+    const recognizeStream = this.aiSvc.createRecognizeStream();
+
+    const updatedParticipant = this.updateParticipant(participanId, {
+      stream: outputWriter,
+      streamCancelationToken: new CancelationToken(),
+      flushChunksToken: new CancelationToken(),
+      recognizeStream,
+    });
+
+    if (!updatedParticipant) return { updatedParticipant: undefined, outputStream: undefined };
+
+    recognizeStream.on('error', (error) => {
+      console.error(chalk.red('❌ Google Speech API Stream Error:', error));
+      recognizeStream.destroy();
+    });
+
+    recognizeStream.on('data', async (chunk) => {
+      await this.processTranscription(chunk, updatedParticipant);
+    });
+
+    return { updatedParticipant, outputStream };
+  }
+
+  public handleAIStreams(participantId: number) {
+    if (!this.config) return;
 
     const participant = this.getParticipantOfTheSourceDnById(participantId);
     if (!participant || !this.sourceDn || !participant.id || participant.stream !== undefined)
       return;
 
     try {
-      const outputStream = new TransformStream();
-      const outputWriter = outputStream.writable.getWriter();
-      const recognizeStream = this.aiSvc.createRecognizeStream();
+      const { updatedParticipant, outputStream } = this.initializeStreams(participantId);
 
-      const updated = this.updateParticipant(participant.id, {
-        stream: outputWriter,
-        streamCancelationToken: new CancelationToken(),
-        flushChunksToken: new CancelationToken(),
-        recognizeStream,
+      if (!updatedParticipant || !outputStream) {
+        console.error(chalk.red('❌ Cannot proceed with the stream, participant is missing'));
+        return;
+      }
+
+      const audioStreamingTasks = [
+        this.streamOutgoingAudio(participant.id, updatedParticipant.recognizeStream),
+        this.externalApiSvc.postAudioStream(
+          this.sourceDn,
+          participant.id,
+          outputStream.readable,
+          updatedParticipant.streamCancelationToken!,
+        ),
+      ];
+
+      return Promise.all(audioStreamingTasks).catch(() => {
+        this.gracefulShutdownStream(participant.id!);
       });
-
-      const postAudio = this.externalApiSvc.postAudioStream(
-        this.sourceDn,
-        participant.id,
-        outputStream.readable,
-        updated!.streamCancelationToken!,
-      );
-
-      const getAudio = this.externalApiSvc
-        .getAudioStream(this.sourceDn, participant.id)
-        .then((response) => {
-          let chunks: Buffer[] = [];
-          response.data.on('data', (chunk: Buffer) => {
-            if (chunks.length < 50) {
-              chunks.push(chunk);
-            } else {
-              const bigBuff = Buffer.concat(chunks);
-              if (!recognizeStream.destroyed) {
-                recognizeStream.write(bigBuff);
-              }
-              chunks = [];
-            }
-          });
-          response.data.on('close', () => {
-            this.gratefulShutDownStream(participant.id!);
-          });
-        })
-        .catch((err) => console.error('speech api error', err));
-
-      recognizeStream.on('error', (error) => {
-        console.error('❌ Google Speech API Stream Error:', error);
-        recognizeStream.destroy();
-      });
-      recognizeStream.on('data', async (stream) => {
-        let transcription = '';
-        if (stream.results[0] && stream.results[0].alternatives[0]) {
-          transcription = stream.results[0].alternatives[0].transcript;
-        }
-
-        if (stream.results[0]?.isFinal && transcription.length) {
-          if (this.config!.aiStreamMode === StreamMode.AiChat) {
-            const responseChat = this.aiSvc.createChatCompletion();
-
-            responseChat
-              .sendMessage(transcription)
-              .then(async (response) => {
-                const parts = response.response.candidates?.[0].content.parts;
-                if (parts) {
-                  let str = '';
-                  for (const part of parts) {
-                    if (part.text?.length) {
-                      const replaced = part.text.replace(/\*+/gm, '');
-                      str += ' ' + replaced;
-                    }
-                    if (str.length) {
-                      const participant = this.getParticipantOfTheSourceDnById(participantId);
-                      if (participant?.flushChunksToken) {
-                        participant?.flushChunksToken.emit('cancel');
-                        const response = await this.aiSvc.createSpeech(str);
-                        const arr = response?.[0].audioContent;
-                        if (arr) {
-                          try {
-                            await writeSlicedAudioStream(
-                              arr as Uint8Array,
-                              outputWriter,
-                              participant?.flushChunksToken,
-                            );
-                          } catch (err) {
-                            console.error(err);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              })
-              .catch((err) => console.error('vertex ai error', err));
-          } else if (this.config!.aiStreamMode === StreamMode.Echo) {
-            if (transcription.length) {
-              const response = await this.aiSvc.createSpeech(transcription);
-              const arr = response?.[0].audioContent;
-              const participant = this.getParticipantOfTheSourceDnById(participantId);
-
-              if (arr && participant?.flushChunksToken) {
-                try {
-                  await writeSlicedAudioStream(
-                    arr as Uint8Array,
-                    outputWriter,
-                    participant.flushChunksToken,
-                  );
-                } catch (err) {
-                  console.error(err);
-                }
-              }
-            }
-          }
-        }
-      });
-
-      return Promise.all([getAudio, postAudio]).catch(() => {
-        this.gratefulShutDownStream(participantId);
-      });
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(chalk.red('❌ Error handling AI streams:', error));
     }
   }
 
@@ -549,7 +561,7 @@ export class CustomIVRAppService {
    * Stop writing to writeable stream and Shutdown all streams for participant
    * @param participantId
    */
-  private gratefulShutDownStream(participantId: number) {
+  private gracefulShutdownStream(participantId: number) {
     const participant = this.getParticipantOfTheSourceDnById(participantId);
     if (participant?.recognizeStream) {
       participant.recognizeStream.destroy();
@@ -560,7 +572,7 @@ export class CustomIVRAppService {
       if (participant.stream) {
         return participant.stream
           .close()
-          .catch((e) => console.error(e))
+          .catch((e) => console.error(chalk.red(e)))
           .finally(() => {
             this.updateParticipant(participant.id!, {
               stream: undefined,
@@ -570,6 +582,7 @@ export class CustomIVRAppService {
           });
       }
     }
+    console.warn(chalk.yellow('✅ Streams have been gracefully ended'));
     return Promise.resolve();
   }
   /**
@@ -579,7 +592,7 @@ export class CustomIVRAppService {
    */
   public async handleDTMFInput(participantId: number, dtmfCode: string) {
     if (!this.config || !this.sourceDn) {
-      throw new BadRequest('Config is missing');
+      throw new BadRequest(chalk.red('❌ Config is missing'));
     }
     const participant = this.getParticipantOfTheSourceDnById(participantId);
     if (!participant) return;
@@ -595,7 +608,7 @@ export class CustomIVRAppService {
           redirectionNumber,
         );
         // SUCCESS
-        this.gratefulShutDownStream(participant.id!);
+        this.gracefulShutdownStream(participant.id!);
         await this.externalApiSvc.controlParticipant(
           this.sourceDn,
           participant.id!,

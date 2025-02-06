@@ -31,6 +31,7 @@ import { ExternalApiService } from '../ExternalApi.service';
 import { BadRequest, InternalServerError } from '../../Error';
 import { WebSocket } from 'ws';
 import axios from 'axios';
+import chalk from 'chalk';
 
 @injectable()
 @singleton()
@@ -177,8 +178,8 @@ export class OutboundCampaignService {
               })
               .catch((err) => {
                 if (axios.isAxiosError(err)) {
-                  console.error(`AXIOS ERROR code: ${err.response?.status}`);
-                } else console.error('Unknown error', err);
+                  console.error(chalk.red(`🦭 AXIOS ERROR code: ${err.response?.status}`));
+                } else console.error(chalk.red('🦞 Unknown error', err));
               });
           }
           break;
@@ -202,8 +203,8 @@ export class OutboundCampaignService {
       }
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        console.error(`AXIOS ERROR code: ${err.response?.status}`);
-      } else console.error('Unknown error', err);
+        console.error(chalk.red(`🪳 AXIOS ERROR code: ${err.response?.status}`));
+      } else console.error(chalk.red('🐞Unknown error', err));
     }
   };
 

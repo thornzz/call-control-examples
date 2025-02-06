@@ -13,6 +13,7 @@ import {
 } from '../constants';
 import { BadRequest, InternalServerError } from '../Error';
 import * as WebSocket from 'ws';
+import * as chalk from 'chalk';
 
 @injectable()
 export class ExternalApiService {
@@ -80,7 +81,7 @@ export class ExternalApiService {
         this.wsClient?.terminate();
         setTimeout(() => {
           this.reconnectWsTries--;
-          console.warn('Trying to reconnect websocket...');
+          console.warn(chalk.yellow('🍌 Trying to reconnect websocket...'));
           this.createWs()
             .then((ws) => {
               res(ws);
@@ -136,7 +137,7 @@ export class ExternalApiService {
         this.cacheService.setAppAccessToken(this.appType, resp.data.access_token);
         return this.cacheService.getAppAccessToken(this.appType)!;
       } catch (err) {
-        console.error(err);
+        console.error('🦥', chalk.red(err));
         throw new InternalServerError('Unable to receive access token');
       }
     }

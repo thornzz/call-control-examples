@@ -2,6 +2,7 @@
 import { EventEmitter, Transform, TransformCallback } from 'stream';
 import { CallControl, CallParticipant, DNDevice, DNInfo, DnInfoModel } from './types';
 import * as WebSocket from 'ws';
+import * as chalk from 'chalk';
 
 export function readChunks(reader: ReadableStreamDefaultReader) {
   return {
@@ -325,15 +326,15 @@ export function useWebsocketListeners(
   if (!ws) throw Error('ws now initialized');
 
   ws.on('error', (error) => {
-    console.error('websocket error', error);
+    console.error(chalk.red('⛔ Websocket error'), error);
     reconnectCb();
   });
   ws.on('open', () => {
-    console.log('Websocket connected');
+    console.log(chalk.green('⚡Websocket connected'));
     restoreReconnectTries();
     heartbeat();
     ws.on('close', (res, buffer) => {
-      console.warn('websocket closed', res, decoder.decode(buffer as Buffer));
+      console.warn(chalk.yellow('🔕 Websocket closed'), res, decoder.decode(buffer as Buffer));
       reconnectCb();
     });
     ws.on('message', (buffer) => {
