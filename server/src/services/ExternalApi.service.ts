@@ -285,9 +285,9 @@ export class ExternalApiService {
       '/callcontrol' + `/${source}` + '/participants' + `/${participantId}` + `/${method}`;
 
     const body = destination
-      ? { destination }
+      ? { destination, reason: 'Holiday' }
       : {
-          destination: '152',
+          destination,
         };
     return this.fetch!.post(url, body, {
       headers: {
