@@ -284,11 +284,7 @@ export class ExternalApiService {
     const url =
       '/callcontrol' + `/${source}` + '/participants' + `/${participantId}` + `/${method}`;
 
-    const body = destination
-      ? { destination }
-      : {
-          destination,
-        };
+    const body = destination ? { destination } : {};
     return this.fetch!.post(url, body, {
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
