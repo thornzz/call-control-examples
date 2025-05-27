@@ -285,7 +285,7 @@ export class ExternalApiService {
       '/callcontrol' + `/${source}` + '/participants' + `/${participantId}` + `/${method}`;
 
     const body = destination
-      ? { destination, reason: 'Holiday' }
+      ? { destination }
       : {
           destination,
         };
