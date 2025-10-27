@@ -149,6 +149,8 @@ export interface ExtendedParticipant extends CallParticipant {
   lastAiResponseAt?: number;
   ignoreTranscriptsUntil?: number;
   processingTranscription?: boolean;
+  isAiSpeaking?: boolean; // Track if AI is currently speaking (for barge-in detection)
+  conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>; // Conversation context
 }
 
 export interface CallControlResultResponse {

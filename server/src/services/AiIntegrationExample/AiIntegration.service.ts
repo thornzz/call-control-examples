@@ -21,6 +21,7 @@ interface RecognizeStreamOptions {
   sampleRate: number;
   minChunkDurationMs?: number;
   flushIntervalMs?: number;
+  silenceDurationMs?: number;
 }
 
 interface PausableStream {
@@ -44,6 +45,7 @@ export class AiIntegrationService {
     'Sen, 3CX IVR aramalarında görev yapan, kısa ve net cevaplar veren yardımsever bir asistansın. Her zaman Türkçe yanıt ver.';
   private readonly sttMinChunkDurationMs = Number(process.env.OPENAI_STT_MIN_CHUNK_MS ?? '1600');
   private readonly sttFlushIntervalMs = Number(process.env.OPENAI_STT_FLUSH_INTERVAL_MS ?? '2400');
+  private readonly sttSilenceDurationMs = Number(process.env.OPENAI_STT_SILENCE_DURATION_MS ?? '2500');
 
   constructor() {
     if (!process.env.OPENAI_API_KEY) {
@@ -81,18 +83,33 @@ export class AiIntegrationService {
       sampleRate: TARGET_SAMPLE_RATE,
       minChunkDurationMs: this.sttMinChunkDurationMs,
       flushIntervalMs: this.sttFlushIntervalMs,
+      silenceDurationMs: this.sttSilenceDurationMs,
     });
   }
 
-  public async createChatCompletion(prompt: string): Promise<string | null> {
+  public async createChatCompletion(
+    prompt: string,
+    conversationHistory?: Array<{ role: 'user' | 'assistant'; content: string }>,
+  ): Promise<string | null> {
     try {
       const client = this.getClient();
+
+      // Build messages with conversation history
+      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+        { role: 'system', content: this.llmSystemPrompt },
+      ];
+
+      // Add conversation history if available
+      if (conversationHistory && conversationHistory.length > 0) {
+        messages.push(...conversationHistory);
+      }
+
+      // Add current user prompt
+      messages.push({ role: 'user', content: prompt });
+
       const response = await client.responses.create({
         model: this.llmModel,
-        input: [
-          { role: 'system', content: this.llmSystemPrompt },
-          { role: 'user', content: prompt },
-        ],
+        input: messages,
         max_output_tokens: this.llmMaxOutputTokens,
         temperature: 0.6,
       });
@@ -134,7 +151,7 @@ class OpenAIRecognizeStream extends Writable implements PausableStream {
   private readonly minChunkBytes: number;
   private readonly flushIntervalMs: number;
   private readonly silenceThreshold = 0.01; // Energy threshold for silence detection
-  private readonly silenceDurationMs = 800; // Wait 800ms of silence before flushing
+  private silenceDurationMs: number; // Configurable silence duration
 
   private buffers: Buffer[] = [];
   private bufferLength = 0;
@@ -153,6 +170,7 @@ class OpenAIRecognizeStream extends Writable implements PausableStream {
     this.sampleRate = options.sampleRate;
     const minDuration = options.minChunkDurationMs ?? 1200;
     this.flushIntervalMs = options.flushIntervalMs ?? 1800;
+    this.silenceDurationMs = options.silenceDurationMs ?? 2500; // Default 2.5 seconds
     this.minChunkBytes = Math.max(
       this.sampleRate * BYTES_PER_SAMPLE * TARGET_CHANNELS * (minDuration / 1000),
       this.sampleRate * BYTES_PER_SAMPLE,

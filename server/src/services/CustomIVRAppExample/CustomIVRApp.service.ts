@@ -463,13 +463,33 @@ export class CustomIVRAppService {
 
     const normalized = this.normalizeText(transcription);
     console.log(chalk.yellow(`📝 Transcription received: "${transcription}" (normalized: "${normalized}")`));
-    
+
     if (!normalized) {
       console.log(chalk.yellow('⚠️  Normalized transcription is empty, skipping'));
       return;
     }
 
-    if (this.shouldIgnoreTranscription(normalized, participant)) {
+    const trimmed = transcription.trim();
+
+    // BARGE-IN DETECTION: Check FIRST before duplicate detection
+    // User interrupting AI should ALWAYS be processed
+    if (participant?.isAiSpeaking) {
+      console.log(chalk.magenta(`🛑 BARGE-IN DETECTED! User interrupted AI with: "${trimmed}"`));
+
+      // Cancel ongoing TTS playback
+      if (participant.flushChunksToken) {
+        participant.flushChunksToken.emit('cancel');
+        console.log(chalk.magenta('⏹️  Stopping AI audio playback...'));
+      }
+
+      // Mark AI as no longer speaking and clear last AI response to avoid duplicate detection
+      this.updateParticipant(participantId, {
+        isAiSpeaking: false,
+        lastAiResponse: undefined,
+        lastAiResponseNormalized: undefined,
+      });
+    } else if (this.shouldIgnoreTranscription(normalized, participant)) {
+      // Only check duplicates if NOT a barge-in
       console.log(chalk.yellow(`⚠️  Ignoring duplicate/similar transcription: "${normalized}"`));
       return;
     }
@@ -482,9 +502,8 @@ export class CustomIVRAppService {
       ignoreTranscriptsUntil: undefined,
     });
 
-    const trimmed = transcription.trim();
     console.log(chalk.green(`✅ Processing transcription: "${trimmed}"`));
-    
+
     try {
       if (this.config!.aiStreamMode === StreamMode.AiChat) {
         await this.handleAiChatMode(participantId, trimmed);
@@ -538,37 +557,51 @@ export class CustomIVRAppService {
     const participant = this.getParticipantOfTheSourceDnById(participantId);
 
     try {
-      // CRITICAL: Pause STT stream IMMEDIATELY to prevent re-processing AI's voice output
-      if (participant?.recognizeStream && 'pause' in participant.recognizeStream) {
-        console.log(chalk.cyan('⏸️  PAUSING STT stream before AI processing...'));
-        (participant.recognizeStream as any).pause();
-      } else {
-        console.log(chalk.yellow('⚠️  recognizeStream not available for pause'));
+      // Initialize conversation history if not exists
+      if (!participant?.conversationHistory) {
+        this.updateParticipant(participantId, {
+          conversationHistory: [],
+        });
       }
 
+      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
+      const conversationHistory = updatedParticipant?.conversationHistory || [];
+
       console.info(chalk.cyan('🤖 Sending to LLM:'), chalk.blue(transcription));
-      const responseText = await this.aiSvc.createChatCompletion(transcription);
+      console.info(chalk.gray(`📚 Conversation history: ${conversationHistory.length} messages`));
+
+      const responseText = await this.aiSvc.createChatCompletion(transcription, conversationHistory);
 
       if (responseText) {
         console.info(chalk.green('🌞 LLM Response:'), chalk.blue(responseText));
       }
 
       if (!responseText || !participant?.flushChunksToken) {
-        console.log(chalk.yellow('⚠️  No response from LLM or missing flush token, resuming STT...'));
-        if (participant?.recognizeStream && 'resume' in participant.recognizeStream) {
-          (participant.recognizeStream as any).resume();
-        }
+        console.log(chalk.yellow('⚠️  No response from LLM or missing flush token'));
         return;
       }
 
       // Cancel any ongoing audio playback
       participant.flushChunksToken.emit('cancel');
 
+      // Update conversation history
+      const newHistory = [
+        ...conversationHistory,
+        { role: 'user' as const, content: transcription },
+        { role: 'assistant' as const, content: responseText },
+      ];
+
+      // Keep only last 10 exchanges (20 messages) to avoid token limit
+      const trimmedHistory = newHistory.slice(-20);
+
       const normalizedResponse = this.normalizeText(responseText);
       this.updateParticipant(participantId, {
         lastAiResponse: responseText,
         lastAiResponseNormalized: normalizedResponse,
         lastAiResponseAt: Date.now(),
+        isAiSpeaking: true, // Track that AI is speaking for barge-in detection
+        processingTranscription: false, // CRITICAL: Allow new transcriptions during TTS playback
+        conversationHistory: trimmedHistory, // Save conversation context
       });
 
       console.info(chalk.cyan('💬 Generating TTS audio...'));
@@ -576,37 +609,26 @@ export class CustomIVRAppService {
       console.info(chalk.green('✅ TTS audio generated'));
 
       if (!audioResponse) {
-        console.log(chalk.yellow('⚠️  No audio response received, resuming STT...'));
-        const resumeParticipant = this.getParticipantOfTheSourceDnById(participantId);
-        if (resumeParticipant?.recognizeStream && 'resume' in resumeParticipant.recognizeStream) {
-          (resumeParticipant.recognizeStream as any).resume();
-        }
+        console.log(chalk.yellow('⚠️  No audio response received'));
+        this.updateParticipant(participantId, { isAiSpeaking: false });
         return;
       }
 
-      // Send audio while STT is still paused
+      // BARGE-IN ENABLED: Start TTS playback with STT active
+      // User can interrupt at any time
+      console.info(chalk.cyan('🎙️  Starting TTS playback (barge-in enabled)...'));
+
+      // Send audio - this will be interruptible
       await this.sendAudioToStream(audioResponse, participantId);
 
-      console.info(chalk.green('✅ TTS audio buffer sent'));
+      console.info(chalk.green('✅ TTS audio playback completed'));
 
-      // CONVERSATIONAL MODE: Resume immediately for natural interaction
-      // Trust energy-based filtering to handle echo/overlap
-      // No waiting - this creates a real-time conversation feel
-      console.info(chalk.cyan('⚡ Resuming STT immediately for conversational response...'));
-
-      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
-      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
-        console.log(chalk.cyan('▶️  RESUMING STT stream (ready for user speech)...'));
-        (updatedParticipant.recognizeStream as any).resume();
-      }
+      // Mark AI as done speaking
+      this.updateParticipant(participantId, { isAiSpeaking: false });
     } catch (err) {
       console.error(chalk.red('❌ OpenAI Chat error:'), err);
-      // Always resume STT on error
-      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
-      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
-        console.log(chalk.cyan('▶️  RESUMING STT stream after error...'));
-        (updatedParticipant.recognizeStream as any).resume();
-      }
+      // Mark AI as done speaking on error
+      this.updateParticipant(participantId, { isAiSpeaking: false });
     }
   }
 
@@ -614,19 +636,8 @@ export class CustomIVRAppService {
     const participant = this.getParticipantOfTheSourceDnById(participantId);
 
     try {
-      // CRITICAL: Pause STT stream IMMEDIATELY to prevent re-processing AI's voice output
-      if (participant?.recognizeStream && 'pause' in participant.recognizeStream) {
-        console.log(chalk.cyan('⏸️  PAUSING STT stream before Echo TTS...'));
-        (participant.recognizeStream as any).pause();
-      } else {
-        console.log(chalk.yellow('⚠️  recognizeStream not available for pause'));
-      }
-
       if (!participant?.flushChunksToken) {
-        console.log(chalk.yellow('⚠️  Missing flush token, resuming STT...'));
-        if (participant?.recognizeStream && 'resume' in participant.recognizeStream) {
-          (participant.recognizeStream as any).resume();
-        }
+        console.log(chalk.yellow('⚠️  Missing flush token'));
         return;
       }
 
@@ -638,6 +649,8 @@ export class CustomIVRAppService {
         lastAiResponse: transcription,
         lastAiResponseNormalized: normalizedResponse,
         lastAiResponseAt: Date.now(),
+        isAiSpeaking: true, // Track that AI is speaking for barge-in detection
+        processingTranscription: false, // CRITICAL: Allow new transcriptions during TTS playback
       });
 
       console.info(chalk.cyan('💬 Generating Echo TTS audio...'));
@@ -645,37 +658,26 @@ export class CustomIVRAppService {
       console.info(chalk.green('✅ Echo TTS audio generated'));
 
       if (!audioResponse) {
-        console.log(chalk.yellow('⚠️  No audio response received, resuming STT...'));
-        const resumeParticipant = this.getParticipantOfTheSourceDnById(participantId);
-        if (resumeParticipant?.recognizeStream && 'resume' in resumeParticipant.recognizeStream) {
-          (resumeParticipant.recognizeStream as any).resume();
-        }
+        console.log(chalk.yellow('⚠️  No audio response received'));
+        this.updateParticipant(participantId, { isAiSpeaking: false });
         return;
       }
 
-      // Send audio while STT is still paused
+      // BARGE-IN ENABLED: Start TTS playback with STT active
+      // User can interrupt at any time
+      console.info(chalk.cyan('🎙️  Starting Echo TTS playback (barge-in enabled)...'));
+
+      // Send audio - this will be interruptible
       await this.sendAudioToStream(audioResponse, participantId);
 
-      console.info(chalk.green('✅ Echo TTS audio buffer sent'));
+      console.info(chalk.green('✅ Echo TTS audio playback completed'));
 
-      // CONVERSATIONAL MODE: Resume immediately for natural interaction
-      // Trust energy-based filtering to handle echo/overlap
-      // No waiting - this creates a real-time conversation feel
-      console.info(chalk.cyan('⚡ Resuming STT immediately for conversational response...'));
-
-      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
-      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
-        console.log(chalk.cyan('▶️  RESUMING STT stream (ready for user speech)...'));
-        (updatedParticipant.recognizeStream as any).resume();
-      }
+      // Mark AI as done speaking
+      this.updateParticipant(participantId, { isAiSpeaking: false });
     } catch (err) {
       console.error(chalk.red('❌ Error in Echo mode create speech:'), err);
-      // Always resume STT on error
-      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
-      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
-        console.log(chalk.cyan('▶️  RESUMING STT stream after error...'));
-        (updatedParticipant.recognizeStream as any).resume();
-      }
+      // Mark AI as done speaking on error
+      this.updateParticipant(participantId, { isAiSpeaking: false });
     }
   }
 
