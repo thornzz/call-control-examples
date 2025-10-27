@@ -23,6 +23,12 @@ interface RecognizeStreamOptions {
   flushIntervalMs?: number;
 }
 
+interface PausableStream {
+  pause(): void;
+  resume(): void;
+  isPaused(): boolean;
+}
+
 @injectable()
 @singleton()
 export class AiIntegrationService {
@@ -67,7 +73,7 @@ export class AiIntegrationService {
     }
   }
 
-  public createRecognizeStream(): OpenAIRecognizeStream {
+  public createRecognizeStream(): PausableStream & Writable {
     const client = this.getClient();
     return new OpenAIRecognizeStream({
       openai: client,
@@ -121,18 +127,24 @@ export class AiIntegrationService {
   }
 }
 
-class OpenAIRecognizeStream extends Writable {
+class OpenAIRecognizeStream extends Writable implements PausableStream {
   private readonly openai: OpenAI;
   private readonly model: string;
   private readonly sampleRate: number;
   private readonly minChunkBytes: number;
   private readonly flushIntervalMs: number;
+  private readonly silenceThreshold = 0.01; // Energy threshold for silence detection
+  private readonly silenceDurationMs = 800; // Wait 800ms of silence before flushing
 
   private buffers: Buffer[] = [];
   private bufferLength = 0;
   private flushTimer: NodeJS.Timeout | null = null;
   private processing = false;
   private pendingForceFlush = false;
+  private paused = false;
+  private pausedBuffers: Buffer[] = [];
+  private lastSpeechTime = Date.now();
+  private silenceDetected = false;
 
   constructor(options: RecognizeStreamOptions) {
     super();
@@ -163,16 +175,66 @@ class OpenAIRecognizeStream extends Writable {
       return;
     }
 
+    if (this.paused) {
+      this.pausedBuffers.push(chunk);
+      callback();
+      return;
+    }
+
+    // Calculate chunk energy to detect speech vs silence
+    const chunkEnergy = this.calculateAudioEnergy(chunk);
+    const isSpeech = chunkEnergy > this.silenceThreshold;
+
+    if (isSpeech) {
+      // Speech detected, reset silence timer
+      this.lastSpeechTime = Date.now();
+      this.silenceDetected = false;
+    } else {
+      // Silence detected, check if it's been long enough
+      const silenceDuration = Date.now() - this.lastSpeechTime;
+      if (silenceDuration >= this.silenceDurationMs && this.bufferLength >= this.minChunkBytes) {
+        // Enough silence after speech, flush now (end of utterance)
+        if (!this.silenceDetected) {
+          this.silenceDetected = true;
+          console.log(chalk.cyan(`🔇 End of speech detected (${silenceDuration}ms silence), flushing...`));
+          void this.flush(false);
+          callback();
+          return;
+        }
+      }
+    }
+
     this.buffers.push(chunk);
     this.bufferLength += chunk.length;
 
-    if (this.bufferLength >= this.minChunkBytes * 1.5) {
+    // Fallback: if buffer gets too large, flush anyway
+    if (this.bufferLength >= this.minChunkBytes * 3) {
+      console.log(chalk.yellow('⚠️  Buffer too large, force flushing...'));
       void this.flush(false);
     } else {
       this.scheduleFlush();
     }
 
     callback();
+  }
+
+  pause(): void {
+    this.paused = true;
+    this.clearFlushTimer();
+    this.pausedBuffers = []; // Discard buffered data from AI's voice output
+    console.log(chalk.cyan('⏸️  STT stream PAUSED'));
+  }
+
+  resume(): void {
+    this.paused = false;
+    this.pausedBuffers = [];
+    this.buffers = [];
+    this.bufferLength = 0;
+    console.log(chalk.cyan('▶️  STT stream RESUMED'));
+  }
+
+  isPaused(): boolean {
+    return this.paused;
   }
 
   override _final(callback: (error?: Error | null) => void): void {
@@ -232,6 +294,17 @@ class OpenAIRecognizeStream extends Writable {
       return;
     }
 
+    // CRITICAL: Check audio energy to prevent Whisper hallucinations from silence/noise
+    const audioEnergy = this.calculateAudioEnergy(combined);
+    const ENERGY_THRESHOLD = 0.01; // Minimum energy threshold for real speech
+
+    if (audioEnergy < ENERGY_THRESHOLD) {
+      console.log(
+        chalk.gray(`🔇 Skipping STT: audio energy too low (${audioEnergy.toFixed(4)} < ${ENERGY_THRESHOLD})`),
+      );
+      return;
+    }
+
     this.processing = true;
     try {
       const wavBuffer = pcmToWav(combined, this.sampleRate, TARGET_CHANNELS);
@@ -247,7 +320,10 @@ class OpenAIRecognizeStream extends Writable {
       });
 
       const transcript = response.text?.trim();
-      if (transcript) {
+
+      // Validate transcript to prevent Whisper hallucinations
+      if (transcript && this.isValidTranscript(transcript)) {
+        console.log(chalk.magenta(`🎤 Audio energy: ${audioEnergy.toFixed(4)}`));
         const payload: StreamingResult = {
           results: [
             {
@@ -257,6 +333,10 @@ class OpenAIRecognizeStream extends Writable {
           ],
         };
         this.emit('data', payload);
+      } else if (transcript) {
+        console.log(
+          chalk.yellow(`⚠️  Discarding suspicious transcript (possible hallucination): "${transcript}"`),
+        );
       }
     } catch (error) {
       this.emit('error', error as Error);
@@ -268,6 +348,50 @@ class OpenAIRecognizeStream extends Writable {
         await this.flush(true);
       }
     }
+  }
+
+  private calculateAudioEnergy(buffer: Buffer): number {
+    // Calculate RMS (Root Mean Square) energy of audio
+    let sum = 0;
+    const samples = buffer.length / BYTES_PER_SAMPLE;
+
+    for (let i = 0; i < buffer.length; i += BYTES_PER_SAMPLE) {
+      const sample = buffer.readInt16LE(i) / 32768.0; // Normalize to -1.0 to 1.0
+      sum += sample * sample;
+    }
+
+    return Math.sqrt(sum / samples);
+  }
+
+  private isValidTranscript(transcript: string): boolean {
+    // Filter out common Whisper hallucinations
+    const hallucinations = [
+      'thank you',
+      'thanks for watching',
+      'copyright',
+      'subtitles',
+      'subscribe',
+      'like and subscribe',
+      'altyazı',
+      'teşekkürler',
+      'abone ol',
+    ];
+
+    const lowerTranscript = transcript.toLowerCase();
+
+    // Check for hallucination patterns
+    for (const pattern of hallucinations) {
+      if (lowerTranscript.includes(pattern)) {
+        return false;
+      }
+    }
+
+    // Minimum length check (very short transcripts from silence are suspicious)
+    if (transcript.length < 3) {
+      return false;
+    }
+
+    return true;
   }
 }
 
@@ -314,16 +438,23 @@ function parseWav(buffer: Buffer) {
     throw new Error('WAV file is missing data chunk.');
   }
 
-  const maxAvailable = Math.max(0, Math.min(dataLength, buffer.length - dataOffset));
+  // Handle invalid chunk sizes from OpenAI TTS (0xFFFFFFFF or larger than buffer)
+  const maxAvailable = buffer.length - dataOffset;
   if (maxAvailable <= 0) {
     throw new Error('WAV data chunk is empty or malformed.');
   }
 
-  const usableLength = maxAvailable - (maxAvailable % BYTES_PER_SAMPLE);
-  if (usableLength !== dataLength) {
+  // If chunk size is invalid (too large or 0xFFFFFFFF), use actual buffer size
+  const actualDataLength = (dataLength > maxAvailable || dataLength === 0xFFFFFFFF)
+    ? maxAvailable
+    : Math.min(dataLength, maxAvailable);
+
+  const usableLength = actualDataLength - (actualDataLength % BYTES_PER_SAMPLE);
+
+  if (dataLength === 0xFFFFFFFF || dataLength > maxAvailable) {
     console.warn(
       chalk.yellow(
-        `⚠️  WAV data chunk length ${dataLength} adjusted to ${usableLength} bytes (audio may be truncated).`,
+        `⚠️  WAV data chunk has invalid size (${dataLength}), using actual buffer size: ${usableLength} bytes`,
       ),
     );
   }

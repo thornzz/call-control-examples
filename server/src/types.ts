@@ -148,6 +148,7 @@ export interface ExtendedParticipant extends CallParticipant {
   lastAiResponseNormalized?: string;
   lastAiResponseAt?: number;
   ignoreTranscriptsUntil?: number;
+  processingTranscription?: boolean;
 }
 
 export interface CallControlResultResponse {

@@ -7,3 +7,4 @@ output.wav
 yarn-error.log
 install-state.gz
 outbound-caller-424807.json
+*server/.env

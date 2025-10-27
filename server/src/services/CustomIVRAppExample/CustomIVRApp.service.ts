@@ -455,26 +455,47 @@ export class CustomIVRAppService {
       return;
     }
 
+    // Prevent concurrent processing of transcriptions
+    if (participant.processingTranscription) {
+      console.log(chalk.yellow('⚠️  Already processing transcription, skipping'));
+      return;
+    }
+
     const normalized = this.normalizeText(transcription);
+    console.log(chalk.yellow(`📝 Transcription received: "${transcription}" (normalized: "${normalized}")`));
+    
     if (!normalized) {
+      console.log(chalk.yellow('⚠️  Normalized transcription is empty, skipping'));
       return;
     }
 
     if (this.shouldIgnoreTranscription(normalized, participant)) {
+      console.log(chalk.yellow(`⚠️  Ignoring duplicate/similar transcription: "${normalized}"`));
       return;
     }
 
+    // Mark as processing
     this.updateParticipant(participantId, {
+      processingTranscription: true,
       lastAiResponse: undefined,
       lastAiResponseNormalized: undefined,
       ignoreTranscriptsUntil: undefined,
     });
 
     const trimmed = transcription.trim();
-    if (this.config!.aiStreamMode === StreamMode.AiChat) {
-      await this.handleAiChatMode(participantId, trimmed);
-    } else if (this.config!.aiStreamMode === StreamMode.Echo) {
-      await this.handleEchoMode(participantId, trimmed);
+    console.log(chalk.green(`✅ Processing transcription: "${trimmed}"`));
+    
+    try {
+      if (this.config!.aiStreamMode === StreamMode.AiChat) {
+        await this.handleAiChatMode(participantId, trimmed);
+      } else if (this.config!.aiStreamMode === StreamMode.Echo) {
+        await this.handleEchoMode(participantId, trimmed);
+      }
+    } finally {
+      // Mark processing as complete
+      this.updateParticipant(participantId, {
+        processingTranscription: false,
+      });
     }
   }
 
@@ -483,34 +504,66 @@ export class CustomIVRAppService {
       const response = await this.externalApiSvc.getAudioStream(this.sourceDn!, participantId);
       let chunks: Buffer[] = [];
 
-      response.data.on('data', (chunk: Buffer) => {
+      const handleDataChunk = (chunk: Buffer) => {
+        // Check if stream is currently paused
+        const isStreamPaused = 'isPaused' in recognizeStream && recognizeStream.isPaused();
+
+        if (isStreamPaused) {
+          // Stream is paused, discard all incoming audio to prevent AI voice echo
+          // This prevents the AI's TTS output from being transcribed back
+          return;
+        }
+
+        // Send audio directly to STT stream
+        // Energy-based filtering happens in OpenAIRecognizeStream
         chunks.push(chunk);
         if (chunks.length >= 50) {
           recognizeStream.write(Buffer.concat(chunks));
           chunks = [];
         }
-      });
+      };
 
+      response.data.on('data', handleDataChunk);
       response.data.on('close', () => this.gracefulShutdownStream(participantId));
+      response.data.on('error', (err: Error) => {
+        console.error(chalk.red('❌ Audio stream error:'), err);
+        this.gracefulShutdownStream(participantId);
+      });
     } catch (err) {
       console.error(chalk.red('❌ OpenAI speech stream error:'), err);
     }
   }
 
   private async handleAiChatMode(participantId: number, transcription: string) {
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+
     try {
+      // CRITICAL: Pause STT stream IMMEDIATELY to prevent re-processing AI's voice output
+      if (participant?.recognizeStream && 'pause' in participant.recognizeStream) {
+        console.log(chalk.cyan('⏸️  PAUSING STT stream before AI processing...'));
+        (participant.recognizeStream as any).pause();
+      } else {
+        console.log(chalk.yellow('⚠️  recognizeStream not available for pause'));
+      }
+
+      console.info(chalk.cyan('🤖 Sending to LLM:'), chalk.blue(transcription));
       const responseText = await this.aiSvc.createChatCompletion(transcription);
 
       if (responseText) {
-        console.info(chalk.green('🌞🚀 Prompt created:'), chalk.blue(responseText));
+        console.info(chalk.green('🌞 LLM Response:'), chalk.blue(responseText));
       }
 
-      const participant = this.getParticipantOfTheSourceDnById(participantId);
       if (!responseText || !participant?.flushChunksToken) {
+        console.log(chalk.yellow('⚠️  No response from LLM or missing flush token, resuming STT...'));
+        if (participant?.recognizeStream && 'resume' in participant.recognizeStream) {
+          (participant.recognizeStream as any).resume();
+        }
         return;
       }
 
+      // Cancel any ongoing audio playback
       participant.flushChunksToken.emit('cancel');
+
       const normalizedResponse = this.normalizeText(responseText);
       this.updateParticipant(participantId, {
         lastAiResponse: responseText,
@@ -518,23 +571,68 @@ export class CustomIVRAppService {
         lastAiResponseAt: Date.now(),
       });
 
-      console.info(chalk.cyan('💬 Creating speech...'));
+      console.info(chalk.cyan('💬 Generating TTS audio...'));
       const audioResponse = await this.aiSvc.createSpeech(responseText);
-      console.info(chalk.green('✅ Audio response created'));
+      console.info(chalk.green('✅ TTS audio generated'));
+
+      if (!audioResponse) {
+        console.log(chalk.yellow('⚠️  No audio response received, resuming STT...'));
+        const resumeParticipant = this.getParticipantOfTheSourceDnById(participantId);
+        if (resumeParticipant?.recognizeStream && 'resume' in resumeParticipant.recognizeStream) {
+          (resumeParticipant.recognizeStream as any).resume();
+        }
+        return;
+      }
+
+      // Send audio while STT is still paused
       await this.sendAudioToStream(audioResponse, participantId);
+
+      console.info(chalk.green('✅ TTS audio buffer sent'));
+
+      // CONVERSATIONAL MODE: Resume immediately for natural interaction
+      // Trust energy-based filtering to handle echo/overlap
+      // No waiting - this creates a real-time conversation feel
+      console.info(chalk.cyan('⚡ Resuming STT immediately for conversational response...'));
+
+      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
+      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
+        console.log(chalk.cyan('▶️  RESUMING STT stream (ready for user speech)...'));
+        (updatedParticipant.recognizeStream as any).resume();
+      }
     } catch (err) {
       console.error(chalk.red('❌ OpenAI Chat error:'), err);
+      // Always resume STT on error
+      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
+      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
+        console.log(chalk.cyan('▶️  RESUMING STT stream after error...'));
+        (updatedParticipant.recognizeStream as any).resume();
+      }
     }
   }
 
   private async handleEchoMode(participantId: number, transcription: string) {
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+
     try {
-      const participant = this.getParticipantOfTheSourceDnById(participantId);
+      // CRITICAL: Pause STT stream IMMEDIATELY to prevent re-processing AI's voice output
+      if (participant?.recognizeStream && 'pause' in participant.recognizeStream) {
+        console.log(chalk.cyan('⏸️  PAUSING STT stream before Echo TTS...'));
+        (participant.recognizeStream as any).pause();
+      } else {
+        console.log(chalk.yellow('⚠️  recognizeStream not available for pause'));
+      }
+
       if (!participant?.flushChunksToken) {
+        console.log(chalk.yellow('⚠️  Missing flush token, resuming STT...'));
+        if (participant?.recognizeStream && 'resume' in participant.recognizeStream) {
+          (participant.recognizeStream as any).resume();
+        }
         return;
       }
 
+      // Cancel any ongoing audio playback
       participant.flushChunksToken.emit('cancel');
+
       const normalizedResponse = this.normalizeText(transcription);
       this.updateParticipant(participantId, {
         lastAiResponse: transcription,
@@ -542,10 +640,42 @@ export class CustomIVRAppService {
         lastAiResponseAt: Date.now(),
       });
 
+      console.info(chalk.cyan('💬 Generating Echo TTS audio...'));
       const audioResponse = await this.aiSvc.createSpeech(transcription);
+      console.info(chalk.green('✅ Echo TTS audio generated'));
+
+      if (!audioResponse) {
+        console.log(chalk.yellow('⚠️  No audio response received, resuming STT...'));
+        const resumeParticipant = this.getParticipantOfTheSourceDnById(participantId);
+        if (resumeParticipant?.recognizeStream && 'resume' in resumeParticipant.recognizeStream) {
+          (resumeParticipant.recognizeStream as any).resume();
+        }
+        return;
+      }
+
+      // Send audio while STT is still paused
       await this.sendAudioToStream(audioResponse, participantId);
+
+      console.info(chalk.green('✅ Echo TTS audio buffer sent'));
+
+      // CONVERSATIONAL MODE: Resume immediately for natural interaction
+      // Trust energy-based filtering to handle echo/overlap
+      // No waiting - this creates a real-time conversation feel
+      console.info(chalk.cyan('⚡ Resuming STT immediately for conversational response...'));
+
+      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
+      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
+        console.log(chalk.cyan('▶️  RESUMING STT stream (ready for user speech)...'));
+        (updatedParticipant.recognizeStream as any).resume();
+      }
     } catch (err) {
       console.error(chalk.red('❌ Error in Echo mode create speech:'), err);
+      // Always resume STT on error
+      const updatedParticipant = this.getParticipantOfTheSourceDnById(participantId);
+      if (updatedParticipant?.recognizeStream && 'resume' in updatedParticipant.recognizeStream) {
+        console.log(chalk.cyan('▶️  RESUMING STT stream after error...'));
+        (updatedParticipant.recognizeStream as any).resume();
+      }
     }
   }
 
