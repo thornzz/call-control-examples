@@ -1,4 +1,4 @@
-import Pumpify from 'pumpify';
+import type { Writable } from 'stream';
 import {
   PARTICIPANT_CONTROL_ANSWER,
   PARTICIPANT_CONTROL_ATTACH_DATA,
@@ -141,9 +141,13 @@ export interface CallParticipant {
 export interface ExtendedParticipant extends CallParticipant {
   streamCancelationToken?: CancelationToken;
   flushChunksToken?: CancelationToken;
-  recognizeStream?: Pumpify;
+  recognizeStream?: Writable;
   dtmfHandlingInProcess?: boolean;
   stream?: WritableStreamDefaultWriter<unknown>;
+  lastAiResponse?: string;
+  lastAiResponseNormalized?: string;
+  lastAiResponseAt?: number;
+  ignoreTranscriptsUntil?: number;
 }
 
 export interface CallControlResultResponse {

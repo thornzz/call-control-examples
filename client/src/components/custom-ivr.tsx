@@ -185,10 +185,10 @@ export default function CustomIvr() {
             specify comma-separated phone numbers and run dialing campaign.
           </p>
           <p className="pt-2">
-            <span className="font-bold">AI Mode:</span> this option enable showcase with AI google
-            speech API + vertex AI Api. To make it work please make sure that you have .json with
-            Google Service Account credentials in your server root folder, that inludes
-            speech-to-text, text-to-speech, vertex-ai permissions.
+            <span className="font-bold">AI Mode:</span> this option enables the OpenAI-based flow.
+            Provide your OpenAI API key in the server <code>.env</code>, then Whisper handles the
+            live transcription, GPT-4o-mini generates responses, and the Alloy voice renders
+            text-to-speech. No Google credentials are required anymore.
           </p>
         </Instructions>
         <AppStatus appType={APP_TYPE_CUSTOM_IVR} />

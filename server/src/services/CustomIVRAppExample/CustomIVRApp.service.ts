@@ -44,6 +44,10 @@ import { WebSocket } from 'ws';
 import { AiIntegrationService } from '../AiIntegrationExample/AiIntegration.service';
 import * as chalk from 'chalk';
 
+const PCM_SAMPLE_RATE = 8000;
+const PCM_BYTES_PER_SAMPLE = 2;
+const RESPONSE_PADDING_MS = 750;
+
 @injectable()
 @singleton()
 export class CustomIVRAppService {
@@ -298,6 +302,81 @@ export class CustomIVRAppService {
     return dn ? this.fullInfo?.callcontrol.get(dn)?.participants : undefined;
   }
 
+  private normalizeText(value: string) {
+    return value
+      .toLocaleLowerCase('tr-TR')
+      .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private tokensSimilarityRatio(a: string, b: string) {
+    const tokensA = a.split(' ').filter(Boolean);
+    const tokensB = b.split(' ').filter(Boolean);
+    if (!tokensA.length || !tokensB.length) return 0;
+
+    const counter = new Map<string, number>();
+    for (const token of tokensB) {
+      counter.set(token, (counter.get(token) ?? 0) + 1);
+    }
+
+    let overlap = 0;
+    for (const token of tokensA) {
+      const current = counter.get(token) ?? 0;
+      if (current > 0) {
+        overlap += 1;
+        counter.set(token, current - 1);
+      }
+    }
+
+    return overlap / Math.min(tokensA.length, tokensB.length);
+  }
+
+  private shouldIgnoreTranscription(normalizedTranscription: string, participant: ExtendedParticipant) {
+    if (!normalizedTranscription) {
+      return true;
+    }
+
+    if (participant.ignoreTranscriptsUntil && Date.now() < participant.ignoreTranscriptsUntil) {
+      return true;
+    }
+
+    const lastNormalized = participant.lastAiResponseNormalized;
+    if (!lastNormalized) {
+      return false;
+    }
+
+    if (participant.lastAiResponseAt && Date.now() - participant.lastAiResponseAt > 10000) {
+      return false;
+    }
+
+    if (normalizedTranscription === lastNormalized) {
+      return true;
+    }
+
+    const tokensCurrent = normalizedTranscription.split(' ').filter(Boolean);
+    const tokensLast = lastNormalized.split(' ').filter(Boolean);
+
+    if (tokensCurrent.length >= 3 && tokensLast.length >= 3) {
+      const minLen = Math.min(normalizedTranscription.length, lastNormalized.length);
+      if (minLen >= 12) {
+        if (
+          lastNormalized.includes(normalizedTranscription) ||
+          normalizedTranscription.includes(lastNormalized)
+        ) {
+          return true;
+        }
+      }
+
+      const ratio = this.tokensSimilarityRatio(normalizedTranscription, lastNormalized);
+      if (ratio >= 0.8) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private updateParticipant(
     participantId: number,
     newData: Partial<ExtendedParticipant>,
@@ -363,15 +442,39 @@ export class CustomIVRAppService {
       this.gracefulShutdownStream(participant.id!);
     }
   }
-  private async processTranscription(chunk: any, participant: ExtendedParticipant) {
-    const transcription = chunk.results?.[0]?.alternatives?.[0]?.transcript || '';
+  private async processTranscription(chunk: any, participantId: number) {
+    const transcription = chunk.results?.[0]?.alternatives?.[0]?.transcript ?? '';
+    const isFinal = chunk.results?.[0]?.isFinal;
 
-    if (chunk.results?.[0]?.isFinal && transcription) {
-      if (this.config!.aiStreamMode === StreamMode.AiChat) {
-        await this.handleAiChatMode(participant, transcription);
-      } else if (this.config!.aiStreamMode === StreamMode.Echo) {
-        await this.handleEchoMode(participant, transcription);
-      }
+    if (!isFinal) {
+      return;
+    }
+
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+    if (!participant) {
+      return;
+    }
+
+    const normalized = this.normalizeText(transcription);
+    if (!normalized) {
+      return;
+    }
+
+    if (this.shouldIgnoreTranscription(normalized, participant)) {
+      return;
+    }
+
+    this.updateParticipant(participantId, {
+      lastAiResponse: undefined,
+      lastAiResponseNormalized: undefined,
+      ignoreTranscriptsUntil: undefined,
+    });
+
+    const trimmed = transcription.trim();
+    if (this.config!.aiStreamMode === StreamMode.AiChat) {
+      await this.handleAiChatMode(participantId, trimmed);
+    } else if (this.config!.aiStreamMode === StreamMode.Echo) {
+      await this.handleEchoMode(participantId, trimmed);
     }
   }
 
@@ -390,55 +493,88 @@ export class CustomIVRAppService {
 
       response.data.on('close', () => this.gracefulShutdownStream(participantId));
     } catch (err) {
-      console.error(chalk.red('Speech API error:', err));
+      console.error(chalk.red('❌ OpenAI speech stream error:'), err);
     }
   }
 
-  private async handleAiChatMode(participant: ExtendedParticipant, transcription: string) {
+  private async handleAiChatMode(participantId: number, transcription: string) {
     try {
-      const responseChat = this.aiSvc.createChatCompletion();
-      const response = await responseChat.sendMessage(transcription);
+      const responseText = await this.aiSvc.createChatCompletion(transcription);
 
-      const parts = response?.response?.candidates?.[0]?.content?.parts || [];
-      let responseText = parts
-        .map((part) => part.text?.replace(/\*+/gm, ''))
-        .join(' ')
-        .trim();
-
-      console.info(chalk.green('🌞🚀 Prompt created:'), chalk.blue(responseText));
-
-      if (responseText && participant.flushChunksToken) {
-        participant.flushChunksToken.emit('cancel');
-        console.info(chalk.cyan('💬 Creating speech...'));
-        const audioResponse = await this.aiSvc.createSpeech(responseText);
-        console.info(chalk.green('✅ Audio response created'));
-        await this.sendAudioToStream(audioResponse, participant);
+      if (responseText) {
+        console.info(chalk.green('🌞🚀 Prompt created:'), chalk.blue(responseText));
       }
+
+      const participant = this.getParticipantOfTheSourceDnById(participantId);
+      if (!responseText || !participant?.flushChunksToken) {
+        return;
+      }
+
+      participant.flushChunksToken.emit('cancel');
+      const normalizedResponse = this.normalizeText(responseText);
+      this.updateParticipant(participantId, {
+        lastAiResponse: responseText,
+        lastAiResponseNormalized: normalizedResponse,
+        lastAiResponseAt: Date.now(),
+      });
+
+      console.info(chalk.cyan('💬 Creating speech...'));
+      const audioResponse = await this.aiSvc.createSpeech(responseText);
+      console.info(chalk.green('✅ Audio response created'));
+      await this.sendAudioToStream(audioResponse, participantId);
     } catch (err) {
-      console.error(chalk.red('❌ Vertex AI error:', err));
+      console.error(chalk.red('❌ OpenAI Chat error:'), err);
     }
   }
 
-  private async handleEchoMode(participant: ExtendedParticipant, transcription: string) {
+  private async handleEchoMode(participantId: number, transcription: string) {
     try {
+      const participant = this.getParticipantOfTheSourceDnById(participantId);
+      if (!participant?.flushChunksToken) {
+        return;
+      }
+
+      participant.flushChunksToken.emit('cancel');
+      const normalizedResponse = this.normalizeText(transcription);
+      this.updateParticipant(participantId, {
+        lastAiResponse: transcription,
+        lastAiResponseNormalized: normalizedResponse,
+        lastAiResponseAt: Date.now(),
+      });
+
       const audioResponse = await this.aiSvc.createSpeech(transcription);
-      await this.sendAudioToStream(audioResponse, participant);
+      await this.sendAudioToStream(audioResponse, participantId);
     } catch (err) {
-      console.error(chalk.red('❌ Error in Echo mode create speech:', err));
+      console.error(chalk.red('❌ Error in Echo mode create speech:'), err);
     }
   }
 
-  private async sendAudioToStream(audioResponse: any, participant: ExtendedParticipant) {
-    if (audioResponse?.[0]?.audioContent && participant.flushChunksToken) {
-      console.warn(chalk.green('✅ Audio response recieved'));
-      try {
-        await writeSlicedAudioStream(
-          audioResponse[0].audioContent as Uint8Array,
-          participant.stream!,
-          participant.flushChunksToken,
-        );
-      } catch (err) {
-        console.warn(chalk.yellow('🤚 Sliced audio stream has been stopped...', err));
+  private async sendAudioToStream(audioResponse: Buffer | null, participantId: number) {
+    const participant = this.getParticipantOfTheSourceDnById(participantId);
+    if (!audioResponse || !participant?.flushChunksToken || !participant.stream) {
+      return;
+    }
+
+    console.warn(chalk.green('✅ Audio response received'));
+    try {
+      const estimatedDurationMs = Math.ceil(
+        (audioResponse.length / (PCM_SAMPLE_RATE * PCM_BYTES_PER_SAMPLE)) * 1000,
+      );
+      const updatedParticipant =
+        this.updateParticipant(participantId, {
+          ignoreTranscriptsUntil: Date.now() + estimatedDurationMs + RESPONSE_PADDING_MS,
+        }) ?? participant;
+
+      await writeSlicedAudioStream(
+        audioResponse,
+        updatedParticipant.stream!,
+        updatedParticipant.flushChunksToken!,
+      );
+    } catch (err) {
+      if (err) {
+        console.warn(chalk.yellow('🤚 Sliced audio stream has been stopped...'), err);
+      } else {
+        console.warn(chalk.yellow('🤚 Sliced audio stream has been stopped...'));
       }
     }
   }
@@ -458,12 +594,12 @@ export class CustomIVRAppService {
     if (!updatedParticipant) return { updatedParticipant: undefined, outputStream: undefined };
 
     recognizeStream.on('error', (error) => {
-      console.error(chalk.red('❌ Google Speech API Stream Error:', error));
+      console.error(chalk.red('❌ OpenAI Speech Stream Error:'), error);
       recognizeStream.destroy();
     });
 
     recognizeStream.on('data', async (chunk) => {
-      await this.processTranscription(chunk, updatedParticipant);
+      await this.processTranscription(chunk, participanId);
     });
 
     return { updatedParticipant, outputStream };
